@@ -572,7 +572,13 @@ export default function CreateChart() {
                     )}
 
                     {activeWorkload.type === "Pod" && (
-                      <p className="text-foreground/60 text-sm">Pod configuration is handled through containers below.</p>
+                      <div className="space-y-4">
+                        <p className="text-foreground/60 text-sm font-medium mb-4">Pod Configuration</p>
+                        <PodConfiguration
+                          config={activeWorkload.config}
+                          onConfigChange={(key, value) => updateWorkloadConfig(activeWorkload.id, key, value)}
+                        />
+                      </div>
                     )}
                   </div>
 
