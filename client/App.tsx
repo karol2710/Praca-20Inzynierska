@@ -1,7 +1,7 @@
 import "./global.css";
 
 import { Toaster } from "@/components/ui/toaster";
-import { createRoot } from "react-dom/client";
+import { createRoot, Root } from "react-dom/client";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -14,7 +14,7 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const App = () => (
+const AppComponent = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
@@ -33,7 +33,16 @@ const App = () => (
   </QueryClientProvider>
 );
 
+declare global {
+  interface Window {
+    __reactRoot?: Root;
+  }
+}
+
 const rootElement = document.getElementById("root");
-if (rootElement && !rootElement.__reactRootContainer) {
-  createRoot(rootElement).render(<App />);
+if (rootElement) {
+  if (!window.__reactRoot) {
+    window.__reactRoot = createRoot(rootElement);
+  }
+  window.__reactRoot.render(<AppComponent />);
 }
