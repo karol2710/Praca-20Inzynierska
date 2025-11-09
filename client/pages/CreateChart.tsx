@@ -128,9 +128,16 @@ export default function CreateChart() {
         {/* Mode Selector */}
         <div className="grid md:grid-cols-2 gap-6 mb-12">
           {/* Standard Mode Card */}
-          <button
+          <div
             onClick={() => setMode("standard")}
-            className={`p-8 rounded-xl border-2 transition-all text-left ${
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                setMode("standard");
+              }
+            }}
+            className={`p-8 rounded-xl border-2 transition-all text-left cursor-pointer ${
               mode === "standard"
                 ? "border-primary bg-primary/5"
                 : "border-border bg-card hover:border-primary/30"
@@ -151,12 +158,19 @@ export default function CreateChart() {
               <li>✓ Add kubectl install command</li>
               <li>✓ Deploy in minutes</li>
             </ul>
-          </button>
+          </div>
 
           {/* Advanced Mode Card */}
-          <button
+          <div
             onClick={() => setMode("advanced")}
-            className={`p-8 rounded-xl border-2 transition-all text-left ${
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                setMode("advanced");
+              }
+            }}
+            className={`p-8 rounded-xl border-2 transition-all text-left cursor-pointer ${
               mode === "advanced"
                 ? "border-accent bg-accent/5"
                 : "border-border bg-card hover:border-accent/30"
@@ -177,7 +191,7 @@ export default function CreateChart() {
               <li>✓ Manage environment variables</li>
               <li>✓ Complete control</li>
             </ul>
-          </button>
+          </div>
         </div>
 
         {/* Standard Mode Form */}
