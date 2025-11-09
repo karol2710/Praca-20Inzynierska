@@ -1,15 +1,10 @@
 import { useState } from "react";
 import Layout from "@/components/Layout";
-import { Upload, Link as LinkIcon, Plus, X, Zap } from "lucide-react";
+import { Upload, Plus, X, Zap } from "lucide-react";
 
 type ChartMode = "standard" | "advanced";
 type InputType = "file" | "repo";
-
-interface Workflow {
-  id: string;
-  name: string;
-  containers: Container[];
-}
+type WorkloadType = "Pod" | "Deployment" | "ReplicaSet" | "StatefulSet" | "DaemonSet" | "Job" | "CronJob";
 
 interface Container {
   id: string;
@@ -18,18 +13,39 @@ interface Container {
   env: Record<string, string>;
 }
 
+interface WorkloadConfig {
+  replicas?: number;
+  serviceName?: string;
+  schedule?: string;
+  parallelism?: number;
+  completions?: number;
+  backoffLimit?: number;
+  selector?: Record<string, string>;
+}
+
+interface Workload {
+  id: string;
+  name: string;
+  type: WorkloadType;
+  containers: Container[];
+  config: WorkloadConfig;
+}
+
 export default function CreateChart() {
   const [mode, setMode] = useState<ChartMode>("standard");
   const [inputType, setInputType] = useState<InputType>("file");
   const [fileName, setFileName] = useState<string>("");
   const [repoUrl, setRepoUrl] = useState<string>("");
   const [kubectlCommand, setKubectlCommand] = useState<string>("");
-  const [workflows, setWorkflows] = useState<Workflow[]>([]);
-  const [newWorkflowName, setNewWorkflowName] = useState<string>("");
-  const [activeWorkflowId, setActiveWorkflowId] = useState<string>("");
+  const [workloads, setWorkloads] = useState<Workload[]>([]);
+  const [selectedWorkloadType, setSelectedWorkloadType] = useState<WorkloadType>("Pod");
+  const [newWorkloadName, setNewWorkloadName] = useState<string>("");
+  const [activeWorkloadId, setActiveWorkloadId] = useState<string>("");
   const [newContainerImage, setNewContainerImage] = useState<string>("");
   const [newContainerPort, setNewContainerPort] = useState<string>("8080");
   const [isCreating, setIsCreating] = useState(false);
+
+  const workloadTypes: WorkloadType[] = ["Pod", "Deployment", "ReplicaSet", "StatefulSet", "DaemonSet", "Job", "CronJob"];
 
   // Standard mode handlers
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -49,29 +65,48 @@ export default function CreateChart() {
   };
 
   // Advanced mode handlers
-  const addWorkflow = () => {
-    if (!newWorkflowName.trim()) return;
-    const newWorkflow: Workflow = {
+  const addWorkload = () => {
+    if (!newWorkloadName.trim()) return;
+
+    const defaultConfig: WorkloadConfig = {};
+    if (["Deployment", "ReplicaSet", "StatefulSet"].includes(selectedWorkloadType)) {
+      defaultConfig.replicas = 1;
+    }
+    if (selectedWorkloadType === "StatefulSet") {
+      defaultConfig.serviceName = "default";
+    }
+    if (selectedWorkloadType === "CronJob") {
+      defaultConfig.schedule = "0 0 * * *";
+    }
+    if (selectedWorkloadType === "Job") {
+      defaultConfig.parallelism = 1;
+      defaultConfig.completions = 1;
+      defaultConfig.backoffLimit = 3;
+    }
+
+    const newWorkload: Workload = {
       id: Date.now().toString(),
-      name: newWorkflowName,
+      name: newWorkloadName,
+      type: selectedWorkloadType,
       containers: [],
+      config: defaultConfig,
     };
-    setWorkflows([...workflows, newWorkflow]);
-    setActiveWorkflowId(newWorkflow.id);
-    setNewWorkflowName("");
+    setWorkloads([...workloads, newWorkload]);
+    setActiveWorkloadId(newWorkload.id);
+    setNewWorkloadName("");
   };
 
-  const deleteWorkflow = (id: string) => {
-    setWorkflows(workflows.filter((w) => w.id !== id));
-    if (activeWorkflowId === id) {
-      setActiveWorkflowId(workflows.find((w) => w.id !== id)?.id || "");
+  const deleteWorkload = (id: string) => {
+    setWorkloads(workloads.filter((w) => w.id !== id));
+    if (activeWorkloadId === id) {
+      setActiveWorkloadId(workloads.find((w) => w.id !== id)?.id || "");
     }
   };
 
   const addContainer = () => {
-    if (!newContainerImage.trim() || !activeWorkflowId) return;
-    const activeWorkflow = workflows.find((w) => w.id === activeWorkflowId);
-    if (!activeWorkflow) return;
+    if (!newContainerImage.trim() || !activeWorkloadId) return;
+    const activeWorkload = workloads.find((w) => w.id === activeWorkloadId);
+    if (!activeWorkload) return;
 
     const newContainer: Container = {
       id: Date.now().toString(),
@@ -80,9 +115,9 @@ export default function CreateChart() {
       env: {},
     };
 
-    setWorkflows(
-      workflows.map((w) =>
-        w.id === activeWorkflowId
+    setWorkloads(
+      workloads.map((w) =>
+        w.id === activeWorkloadId
           ? { ...w, containers: [...w.containers, newContainer] }
           : w
       )
@@ -91,11 +126,21 @@ export default function CreateChart() {
     setNewContainerPort("8080");
   };
 
-  const deleteContainer = (workflowId: string, containerId: string) => {
-    setWorkflows(
-      workflows.map((w) =>
-        w.id === workflowId
+  const deleteContainer = (workloadId: string, containerId: string) => {
+    setWorkloads(
+      workloads.map((w) =>
+        w.id === workloadId
           ? { ...w, containers: w.containers.filter((c) => c.id !== containerId) }
+          : w
+      )
+    );
+  };
+
+  const updateWorkloadConfig = (workloadId: string, key: keyof WorkloadConfig, value: any) => {
+    setWorkloads(
+      workloads.map((w) =>
+        w.id === workloadId
+          ? { ...w, config: { ...w.config, [key]: value } }
           : w
       )
     );
@@ -103,18 +148,18 @@ export default function CreateChart() {
 
   const handleAdvancedSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (workflows.length === 0) {
-      alert("Please add at least one workflow");
+    if (workloads.length === 0) {
+      alert("Please add at least one workload");
       return;
     }
     setIsCreating(true);
     setTimeout(() => {
       setIsCreating(false);
-      alert(`Advanced chart created with ${workflows.length} workflow(s)`);
+      alert(`Advanced chart created with ${workloads.length} workload(s)`);
     }, 1500);
   };
 
-  const activeWorkflow = workflows.find((w) => w.id === activeWorkflowId);
+  const activeWorkload = workloads.find((w) => w.id === activeWorkloadId);
 
   return (
     <Layout>
@@ -186,7 +231,7 @@ export default function CreateChart() {
               </div>
             </div>
             <ul className="space-y-2 text-sm text-foreground/70">
-              <li>✓ Create multiple workflows</li>
+              <li>✓ Create multiple workloads</li>
               <li>✓ Configure containers</li>
               <li>✓ Manage environment variables</li>
               <li>✓ Complete control</li>
@@ -290,53 +335,85 @@ export default function CreateChart() {
         {/* Advanced Mode Form */}
         {mode === "advanced" && (
           <div className="space-y-8">
-            {/* Add Workflow */}
-            <div className="bg-card border border-border rounded-xl p-8 max-w-2xl">
-              <h2 className="text-xl font-bold text-foreground mb-4">Workflows</h2>
-              <div className="flex gap-2 mb-6">
-                <input
-                  type="text"
-                  value={newWorkflowName}
-                  onChange={(e) => setNewWorkflowName(e.target.value)}
-                  placeholder="Workflow name (e.g., API Server, Database)"
-                  className="input-field flex-1"
-                />
+            {/* Add Workload */}
+            <div className="bg-card border border-border rounded-xl p-8 max-w-3xl">
+              <h2 className="text-xl font-bold text-foreground mb-6">Create Workload</h2>
+              <div className="space-y-4 mb-6">
+                {/* Workload Type Selection */}
+                <div>
+                  <label className="block text-sm font-semibold text-foreground mb-3">Workload Type</label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    {workloadTypes.map((type) => (
+                      <button
+                        key={type}
+                        onClick={() => setSelectedWorkloadType(type)}
+                        className={`p-3 rounded-lg border-2 text-sm font-medium transition-all ${
+                          selectedWorkloadType === type
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-border text-foreground hover:border-primary/50"
+                        }`}
+                      >
+                        {type}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Workload Name */}
+                <div>
+                  <label htmlFor="workloadName" className="block text-sm font-semibold text-foreground mb-2">
+                    Workload Name
+                  </label>
+                  <input
+                    id="workloadName"
+                    type="text"
+                    value={newWorkloadName}
+                    onChange={(e) => setNewWorkloadName(e.target.value)}
+                    placeholder="e.g., api-server, database"
+                    className="input-field"
+                  />
+                </div>
+
+                {/* Add Workload Button */}
                 <button
-                  onClick={addWorkflow}
-                  className="btn-primary whitespace-nowrap"
+                  onClick={addWorkload}
+                  className="btn-primary w-full"
                 >
-                  <Plus className="w-5 h-5" />
+                  <Plus className="w-5 h-5 inline mr-2" />
+                  Create {selectedWorkloadType}
                 </button>
               </div>
 
-              {/* Workflows List */}
-              {workflows.length > 0 && (
+              {/* Workloads List */}
+              {workloads.length > 0 && (
                 <div className="space-y-2">
-                  {workflows.map((workflow) => (
+                  {workloads.map((workload) => (
                     <div
-                      key={workflow.id}
-                      onClick={() => setActiveWorkflowId(workflow.id)}
+                      key={workload.id}
+                      onClick={() => setActiveWorkloadId(workload.id)}
                       role="button"
                       tabIndex={0}
                       onKeyDown={(e) => {
                         if (e.key === "Enter" || e.key === " ") {
-                          setActiveWorkflowId(workflow.id);
+                          setActiveWorkloadId(workload.id);
                         }
                       }}
                       className={`w-full p-4 rounded-lg border-2 text-left transition-all flex items-center justify-between cursor-pointer ${
-                        activeWorkflowId === workflow.id
+                        activeWorkloadId === workload.id
                           ? "border-primary bg-primary/5"
                           : "border-border hover:border-primary/30"
                       }`}
                     >
                       <div>
-                        <p className="font-semibold text-foreground">{workflow.name}</p>
-                        <p className="text-sm text-foreground/60">{workflow.containers.length} container(s)</p>
+                        <p className="font-semibold text-foreground">{workload.name || "Unnamed"}</p>
+                        <p className="text-sm text-foreground/60">
+                          {workload.type} • {workload.containers.length} container(s)
+                        </p>
                       </div>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          deleteWorkflow(workflow.id);
+                          deleteWorkload(workload.id);
                         }}
                         className="text-destructive hover:bg-destructive/10 p-1 rounded hover:opacity-75 transition-opacity"
                       >
@@ -348,72 +425,179 @@ export default function CreateChart() {
               )}
             </div>
 
-            {/* Configure Containers */}
-            {activeWorkflow && (
-              <div className="bg-card border border-border rounded-xl p-8 max-w-2xl">
-                <h2 className="text-xl font-bold text-foreground mb-6">Containers in "{activeWorkflow.name}"</h2>
+            {/* Configure Workload */}
+            {activeWorkload && (
+              <div className="space-y-8">
+                {/* Workload Configuration */}
+                <div className="bg-card border border-border rounded-xl p-8 max-w-3xl">
+                  <h2 className="text-xl font-bold text-foreground mb-6">Configure "{activeWorkload.name}" ({activeWorkload.type})</h2>
 
-                {/* Add Container */}
-                <div className="mb-6 p-6 bg-muted/30 rounded-lg border border-border">
-                  <h3 className="font-semibold text-foreground mb-4">Add Container</h3>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-foreground mb-2">Image</label>
-                      <input
-                        type="text"
-                        value={newContainerImage}
-                        onChange={(e) => setNewContainerImage(e.target.value)}
-                        placeholder="nginx:latest"
-                        className="input-field"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-foreground mb-2">Port</label>
-                      <input
-                        type="number"
-                        value={newContainerPort}
-                        onChange={(e) => setNewContainerPort(e.target.value)}
-                        placeholder="8080"
-                        className="input-field"
-                      />
-                    </div>
-                    <button
-                      onClick={addContainer}
-                      className="btn-primary w-full"
-                    >
-                      <Plus className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
+                  {/* Type-specific Configuration */}
+                  <div className="space-y-4 mb-8 p-6 bg-muted/30 rounded-lg border border-border">
+                    <h3 className="font-semibold text-foreground mb-4">Configuration</h3>
 
-                {/* Containers List */}
-                {activeWorkflow.containers.length > 0 && (
-                  <div className="space-y-3">
-                    {activeWorkflow.containers.map((container) => (
-                      <div
-                        key={container.id}
-                        className="p-4 bg-muted/20 border border-border rounded-lg flex items-center justify-between"
-                      >
-                        <div>
-                          <p className="font-semibold text-foreground">{container.image}</p>
-                          <p className="text-sm text-foreground/60">Port: {container.port}</p>
-                        </div>
-                        <button
-                          onClick={() => deleteContainer(activeWorkflow.id, container.id)}
-                          className="text-destructive hover:bg-destructive/10 p-1 rounded"
-                        >
-                          <X className="w-5 h-5" />
-                        </button>
+                    {["Deployment", "ReplicaSet", "StatefulSet"].includes(activeWorkload.type) && (
+                      <div>
+                        <label htmlFor="replicas" className="block text-sm font-medium text-foreground mb-2">
+                          Replicas
+                        </label>
+                        <input
+                          id="replicas"
+                          type="number"
+                          min="1"
+                          value={activeWorkload.config.replicas || 1}
+                          onChange={(e) => updateWorkloadConfig(activeWorkload.id, "replicas", parseInt(e.target.value) || 1)}
+                          className="input-field"
+                        />
                       </div>
-                    ))}
+                    )}
+
+                    {activeWorkload.type === "StatefulSet" && (
+                      <div>
+                        <label htmlFor="serviceName" className="block text-sm font-medium text-foreground mb-2">
+                          Service Name
+                        </label>
+                        <input
+                          id="serviceName"
+                          type="text"
+                          value={activeWorkload.config.serviceName || ""}
+                          onChange={(e) => updateWorkloadConfig(activeWorkload.id, "serviceName", e.target.value)}
+                          placeholder="headless-service"
+                          className="input-field"
+                        />
+                      </div>
+                    )}
+
+                    {activeWorkload.type === "CronJob" && (
+                      <div>
+                        <label htmlFor="schedule" className="block text-sm font-medium text-foreground mb-2">
+                          Cron Schedule
+                        </label>
+                        <input
+                          id="schedule"
+                          type="text"
+                          value={activeWorkload.config.schedule || ""}
+                          onChange={(e) => updateWorkloadConfig(activeWorkload.id, "schedule", e.target.value)}
+                          placeholder="0 0 * * *"
+                          className="input-field"
+                        />
+                        <p className="text-xs text-foreground/50 mt-1">Format: minute hour day month weekday</p>
+                      </div>
+                    )}
+
+                    {activeWorkload.type === "Job" && (
+                      <>
+                        <div>
+                          <label htmlFor="parallelism" className="block text-sm font-medium text-foreground mb-2">
+                            Parallelism
+                          </label>
+                          <input
+                            id="parallelism"
+                            type="number"
+                            min="1"
+                            value={activeWorkload.config.parallelism || 1}
+                            onChange={(e) => updateWorkloadConfig(activeWorkload.id, "parallelism", parseInt(e.target.value) || 1)}
+                            className="input-field"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="completions" className="block text-sm font-medium text-foreground mb-2">
+                            Completions
+                          </label>
+                          <input
+                            id="completions"
+                            type="number"
+                            min="1"
+                            value={activeWorkload.config.completions || 1}
+                            onChange={(e) => updateWorkloadConfig(activeWorkload.id, "completions", parseInt(e.target.value) || 1)}
+                            className="input-field"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="backoffLimit" className="block text-sm font-medium text-foreground mb-2">
+                            Backoff Limit
+                          </label>
+                          <input
+                            id="backoffLimit"
+                            type="number"
+                            min="0"
+                            value={activeWorkload.config.backoffLimit || 3}
+                            onChange={(e) => updateWorkloadConfig(activeWorkload.id, "backoffLimit", parseInt(e.target.value) || 3)}
+                            className="input-field"
+                          />
+                        </div>
+                      </>
+                    )}
+
+                    {activeWorkload.type === "Pod" && (
+                      <p className="text-foreground/60 text-sm">Pod configuration is handled through containers below.</p>
+                    )}
                   </div>
-                )}
+
+                  {/* Add Container */}
+                  <div className="mb-8 p-6 bg-muted/30 rounded-lg border border-border">
+                    <h3 className="font-semibold text-foreground mb-4">Add Container</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-foreground mb-2">Image</label>
+                        <input
+                          type="text"
+                          value={newContainerImage}
+                          onChange={(e) => setNewContainerImage(e.target.value)}
+                          placeholder="nginx:latest"
+                          className="input-field"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-foreground mb-2">Port</label>
+                        <input
+                          type="number"
+                          value={newContainerPort}
+                          onChange={(e) => setNewContainerPort(e.target.value)}
+                          placeholder="8080"
+                          className="input-field"
+                        />
+                      </div>
+                      <button
+                        onClick={addContainer}
+                        className="btn-primary w-full"
+                      >
+                        <Plus className="w-5 h-5 inline mr-2" />
+                        Add Container
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Containers List */}
+                  {activeWorkload.containers.length > 0 && (
+                    <div className="space-y-3">
+                      <h3 className="font-semibold text-foreground">Containers</h3>
+                      {activeWorkload.containers.map((container) => (
+                        <div
+                          key={container.id}
+                          className="p-4 bg-muted/20 border border-border rounded-lg flex items-center justify-between"
+                        >
+                          <div>
+                            <p className="font-semibold text-foreground">{container.image}</p>
+                            <p className="text-sm text-foreground/60">Port: {container.port}</p>
+                          </div>
+                          <button
+                            onClick={() => deleteContainer(activeWorkload.id, container.id)}
+                            className="text-destructive hover:bg-destructive/10 p-1 rounded"
+                          >
+                            <X className="w-5 h-5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
             {/* Submit Button */}
-            {workflows.length > 0 && (
-              <div className="max-w-2xl">
+            {workloads.length > 0 && (
+              <div className="max-w-3xl">
                 <button
                   onClick={handleAdvancedSubmit}
                   disabled={isCreating}
