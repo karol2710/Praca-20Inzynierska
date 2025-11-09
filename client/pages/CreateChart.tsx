@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Layout from "@/components/Layout";
-import { Upload, Plus, X, Zap, ChevronDown } from "lucide-react";
+import PodConfiguration from "@/components/PodConfiguration";
+import { Upload, Plus, X, Zap } from "lucide-react";
 
 type ChartMode = "standard" | "advanced";
 type InputType = "file" | "repo";
