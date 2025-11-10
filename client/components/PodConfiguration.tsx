@@ -516,6 +516,362 @@ export default function PodConfiguration({ config, onConfigChange }: PodConfigur
                     ))}
                   </div>
                 </div>
+              ) : section.id === "topologySpreadConstraints" ? (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h5 className="font-medium text-foreground text-sm">Topology Spread Constraints</h5>
+                    <button
+                      onClick={() => {
+                        const constraints = config.topologySpreadConstraints || [];
+                        onConfigChange("topologySpreadConstraints", [...constraints, { maxSkew: 1, topologyKey: "" }]);
+                      }}
+                      className="text-primary hover:opacity-70 text-sm"
+                    >
+                      + Add Constraint
+                    </button>
+                  </div>
+                  <div className="space-y-4">
+                    {(config.topologySpreadConstraints || []).map((constraint, idx) => (
+                      <div key={idx} className="p-4 bg-muted/20 border border-border rounded-lg space-y-4">
+                        {/* Basic Fields */}
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs font-medium text-foreground mb-1">Max Skew*</label>
+                            <input
+                              type="number"
+                              value={constraint.maxSkew}
+                              onChange={(e) => {
+                                const updated = [...(config.topologySpreadConstraints || [])];
+                                updated[idx] = { ...constraint, maxSkew: parseInt(e.target.value) || 1 };
+                                onConfigChange("topologySpreadConstraints", updated);
+                              }}
+                              placeholder="1"
+                              className="input-field text-sm"
+                              min="1"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-foreground mb-1">Topology Key*</label>
+                            <input
+                              type="text"
+                              value={constraint.topologyKey}
+                              onChange={(e) => {
+                                const updated = [...(config.topologySpreadConstraints || [])];
+                                updated[idx] = { ...constraint, topologyKey: e.target.value };
+                                onConfigChange("topologySpreadConstraints", updated);
+                              }}
+                              placeholder="kubernetes.io/hostname"
+                              className="input-field text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-foreground mb-1">Min Domains</label>
+                            <input
+                              type="number"
+                              value={constraint.minDomains || ""}
+                              onChange={(e) => {
+                                const updated = [...(config.topologySpreadConstraints || [])];
+                                updated[idx] = { ...constraint, minDomains: e.target.value ? parseInt(e.target.value) : undefined };
+                                onConfigChange("topologySpreadConstraints", updated);
+                              }}
+                              placeholder="1"
+                              className="input-field text-sm"
+                              min="1"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-foreground mb-1">When Unsatisfiable</label>
+                            <select
+                              value={constraint.whenUnsatisfiable || ""}
+                              onChange={(e) => {
+                                const updated = [...(config.topologySpreadConstraints || [])];
+                                updated[idx] = { ...constraint, whenUnsatisfiable: e.target.value || undefined };
+                                onConfigChange("topologySpreadConstraints", updated);
+                              }}
+                              className="input-field text-sm"
+                            >
+                              <option value="">Select</option>
+                              <option value="DoNotSchedule">DoNotSchedule</option>
+                              <option value="ScheduleAnyway">ScheduleAnyway</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-foreground mb-1">Node Affinity Policy</label>
+                            <select
+                              value={constraint.nodeAffinityPolicy || ""}
+                              onChange={(e) => {
+                                const updated = [...(config.topologySpreadConstraints || [])];
+                                updated[idx] = { ...constraint, nodeAffinityPolicy: e.target.value || undefined };
+                                onConfigChange("topologySpreadConstraints", updated);
+                              }}
+                              className="input-field text-sm"
+                            >
+                              <option value="">Select</option>
+                              <option value="Honor">Honor</option>
+                              <option value="Ignore">Ignore</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-foreground mb-1">Node Taints Policy</label>
+                            <select
+                              value={constraint.nodeTaintsPolicy || ""}
+                              onChange={(e) => {
+                                const updated = [...(config.topologySpreadConstraints || [])];
+                                updated[idx] = { ...constraint, nodeTaintsPolicy: e.target.value || undefined };
+                                onConfigChange("topologySpreadConstraints", updated);
+                              }}
+                              className="input-field text-sm"
+                            >
+                              <option value="">Select</option>
+                              <option value="Honor">Honor</option>
+                              <option value="Ignore">Ignore</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        {/* Label Selector Section */}
+                        <div className="border-t border-border pt-4">
+                          <h6 className="text-sm font-semibold text-foreground mb-3">Label Selector</h6>
+
+                          {/* Match Labels */}
+                          <div className="mb-4">
+                            <div className="flex items-center justify-between mb-2">
+                              <label className="block text-xs font-medium text-foreground">Match Labels</label>
+                              <button
+                                onClick={() => {
+                                  const updated = [...(config.topologySpreadConstraints || [])];
+                                  const labels = { ...constraint.labelSelector?.matchLabels } || {};
+                                  labels[""] = "";
+                                  updated[idx] = {
+                                    ...constraint,
+                                    labelSelector: { ...constraint.labelSelector, matchLabels: labels },
+                                  };
+                                  onConfigChange("topologySpreadConstraints", updated);
+                                }}
+                                className="text-primary hover:opacity-70 text-xs"
+                              >
+                                + Add
+                              </button>
+                            </div>
+                            <div className="space-y-2">
+                              {Object.entries(constraint.labelSelector?.matchLabels || {}).map(([key, value], lIdx) => (
+                                <div key={lIdx} className="flex gap-2">
+                                  <input
+                                    type="text"
+                                    value={key}
+                                    onChange={(e) => {
+                                      const updated = [...(config.topologySpreadConstraints || [])];
+                                      const labels = { ...constraint.labelSelector?.matchLabels } || {};
+                                      delete labels[key];
+                                      labels[e.target.value] = value;
+                                      updated[idx] = {
+                                        ...constraint,
+                                        labelSelector: { ...constraint.labelSelector, matchLabels: labels },
+                                      };
+                                      onConfigChange("topologySpreadConstraints", updated);
+                                    }}
+                                    placeholder="key"
+                                    className="input-field text-sm flex-1"
+                                  />
+                                  <input
+                                    type="text"
+                                    value={value}
+                                    onChange={(e) => {
+                                      const updated = [...(config.topologySpreadConstraints || [])];
+                                      const labels = { ...constraint.labelSelector?.matchLabels } || {};
+                                      labels[key] = e.target.value;
+                                      updated[idx] = {
+                                        ...constraint,
+                                        labelSelector: { ...constraint.labelSelector, matchLabels: labels },
+                                      };
+                                      onConfigChange("topologySpreadConstraints", updated);
+                                    }}
+                                    placeholder="value"
+                                    className="input-field text-sm flex-1"
+                                  />
+                                  <button
+                                    onClick={() => {
+                                      const updated = [...(config.topologySpreadConstraints || [])];
+                                      const labels = { ...constraint.labelSelector?.matchLabels } || {};
+                                      delete labels[key];
+                                      updated[idx] = {
+                                        ...constraint,
+                                        labelSelector: { ...constraint.labelSelector, matchLabels: Object.keys(labels).length > 0 ? labels : undefined },
+                                      };
+                                      onConfigChange("topologySpreadConstraints", updated);
+                                    }}
+                                    className="px-3 py-2 text-destructive hover:bg-destructive/10 rounded"
+                                  >
+                                    ×
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Match Expressions */}
+                          <div>
+                            <div className="flex items-center justify-between mb-2">
+                              <label className="block text-xs font-medium text-foreground">Match Expressions</label>
+                              <button
+                                onClick={() => {
+                                  const updated = [...(config.topologySpreadConstraints || [])];
+                                  const expressions = [...(constraint.labelSelector?.matchExpressions || [])];
+                                  expressions.push({ key: "", operator: "In", values: [] });
+                                  updated[idx] = {
+                                    ...constraint,
+                                    labelSelector: { ...constraint.labelSelector, matchExpressions: expressions },
+                                  };
+                                  onConfigChange("topologySpreadConstraints", updated);
+                                }}
+                                className="text-primary hover:opacity-70 text-xs"
+                              >
+                                + Add
+                              </button>
+                            </div>
+                            <div className="space-y-2">
+                              {(constraint.labelSelector?.matchExpressions || []).map((expr, eIdx) => (
+                                <div key={eIdx} className="p-2 bg-muted/30 border border-border/50 rounded space-y-2">
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <div>
+                                      <label className="block text-xs font-medium text-foreground mb-1">Key</label>
+                                      <input
+                                        type="text"
+                                        value={expr.key}
+                                        onChange={(e) => {
+                                          const updated = [...(config.topologySpreadConstraints || [])];
+                                          const expressions = [...(constraint.labelSelector?.matchExpressions || [])];
+                                          expressions[eIdx] = { ...expr, key: e.target.value };
+                                          updated[idx] = {
+                                            ...constraint,
+                                            labelSelector: { ...constraint.labelSelector, matchExpressions: expressions },
+                                          };
+                                          onConfigChange("topologySpreadConstraints", updated);
+                                        }}
+                                        placeholder="key"
+                                        className="input-field text-xs"
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="block text-xs font-medium text-foreground mb-1">Operator</label>
+                                      <select
+                                        value={expr.operator}
+                                        onChange={(e) => {
+                                          const updated = [...(config.topologySpreadConstraints || [])];
+                                          const expressions = [...(constraint.labelSelector?.matchExpressions || [])];
+                                          expressions[eIdx] = { ...expr, operator: e.target.value };
+                                          updated[idx] = {
+                                            ...constraint,
+                                            labelSelector: { ...constraint.labelSelector, matchExpressions: expressions },
+                                          };
+                                          onConfigChange("topologySpreadConstraints", updated);
+                                        }}
+                                        className="input-field text-xs"
+                                      >
+                                        <option value="In">In</option>
+                                        <option value="NotIn">NotIn</option>
+                                        <option value="Exists">Exists</option>
+                                        <option value="DoesNotExist">DoesNotExist</option>
+                                        <option value="Gt">Gt</option>
+                                        <option value="Lt">Lt</option>
+                                      </select>
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <div className="flex items-center justify-between mb-1">
+                                      <label className="block text-xs font-medium text-foreground">Values</label>
+                                      <button
+                                        onClick={() => {
+                                          const updated = [...(config.topologySpreadConstraints || [])];
+                                          const expressions = [...(constraint.labelSelector?.matchExpressions || [])];
+                                          expressions[eIdx] = { ...expr, values: [...(expr.values || []), ""] };
+                                          updated[idx] = {
+                                            ...constraint,
+                                            labelSelector: { ...constraint.labelSelector, matchExpressions: expressions },
+                                          };
+                                          onConfigChange("topologySpreadConstraints", updated);
+                                        }}
+                                        className="text-primary hover:opacity-70 text-xs"
+                                      >
+                                        + Add
+                                      </button>
+                                    </div>
+                                    <div className="space-y-1">
+                                      {(expr.values || []).map((val, vIdx) => (
+                                        <div key={vIdx} className="flex gap-2">
+                                          <input
+                                            type="text"
+                                            value={val}
+                                            onChange={(e) => {
+                                              const updated = [...(config.topologySpreadConstraints || [])];
+                                              const expressions = [...(constraint.labelSelector?.matchExpressions || [])];
+                                              const values = [...(expr.values || [])];
+                                              values[vIdx] = e.target.value;
+                                              expressions[eIdx] = { ...expr, values };
+                                              updated[idx] = {
+                                                ...constraint,
+                                                labelSelector: { ...constraint.labelSelector, matchExpressions: expressions },
+                                              };
+                                              onConfigChange("topologySpreadConstraints", updated);
+                                            }}
+                                            placeholder="value"
+                                            className="input-field text-xs flex-1"
+                                          />
+                                          <button
+                                            onClick={() => {
+                                              const updated = [...(config.topologySpreadConstraints || [])];
+                                              const expressions = [...(constraint.labelSelector?.matchExpressions || [])];
+                                              const values = (expr.values || []).filter((_, i) => i !== vIdx);
+                                              expressions[eIdx] = { ...expr, values: values.length > 0 ? values : undefined };
+                                              updated[idx] = {
+                                                ...constraint,
+                                                labelSelector: { ...constraint.labelSelector, matchExpressions: expressions },
+                                              };
+                                              onConfigChange("topologySpreadConstraints", updated);
+                                            }}
+                                            className="px-2 py-1 text-destructive hover:bg-destructive/10 rounded"
+                                          >
+                                            ×
+                                          </button>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                  <button
+                                    onClick={() => {
+                                      const updated = [...(config.topologySpreadConstraints || [])];
+                                      const expressions = (constraint.labelSelector?.matchExpressions || []).filter((_, i) => i !== eIdx);
+                                      updated[idx] = {
+                                        ...constraint,
+                                        labelSelector: { ...constraint.labelSelector, matchExpressions: expressions.length > 0 ? expressions : undefined },
+                                      };
+                                      onConfigChange("topologySpreadConstraints", updated);
+                                    }}
+                                    className="w-full text-xs text-destructive hover:bg-destructive/10 py-1 rounded transition-colors"
+                                  >
+                                    Remove Expression
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={() => {
+                            onConfigChange(
+                              "topologySpreadConstraints",
+                              config.topologySpreadConstraints?.filter((_, i) => i !== idx)
+                            );
+                          }}
+                          className="w-full text-xs text-destructive hover:bg-destructive/10 py-1.5 rounded transition-colors"
+                        >
+                          Remove Constraint
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               ) : section.id === "resourceClaims" ? (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between mb-4">
