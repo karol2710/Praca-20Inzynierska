@@ -81,12 +81,14 @@ export interface ContainerConfig {
 interface ProbeConfig {
   exec?: { command: string[] };
   httpGet?: { path: string; port: number; scheme?: string };
-  tcpSocket?: { port: number };
+  tcpSocket?: { host?: string; port: number };
+  grpc?: { port: number; service?: string };
   initialDelaySeconds?: number;
   timeoutSeconds?: number;
   periodSeconds?: number;
   successThreshold?: number;
   failureThreshold?: number;
+  terminationGracePeriodSeconds?: number;
 }
 
 interface LifecycleHook {
