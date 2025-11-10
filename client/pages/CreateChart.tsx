@@ -78,6 +78,33 @@ interface PodConfig {
   runtimeClassName?: string;
 }
 
+interface DeploymentSpecSelector {
+  matchLabels?: Record<string, string>;
+  matchExpressions?: {
+    key: string;
+    operator: string;
+    values?: string[];
+  }[];
+}
+
+interface RollingUpdateStrategy {
+  maxSurge?: string;
+  maxUnavailable?: string;
+}
+
+interface DeploymentStrategy {
+  type?: string;
+  rollingUpdate?: RollingUpdateStrategy;
+}
+
+interface DeploymentSpec {
+  minReadySeconds?: number;
+  progressDeadlineSeconds?: number;
+  revisionHistoryLimit?: number;
+  selector?: DeploymentSpecSelector;
+  strategy?: DeploymentStrategy;
+}
+
 interface WorkloadConfig extends PodConfig {
   replicas?: number;
   serviceName?: string;
@@ -92,6 +119,8 @@ interface WorkloadConfig extends PodConfig {
   deploymentAnnotations?: Record<string, string>;
   deploymentDeletionGracePeriodSeconds?: number;
   deploymentOwnerReferences?: OwnerReference[];
+  // Deployment Spec
+  deploymentSpec?: DeploymentSpec;
 }
 
 interface Workload {
