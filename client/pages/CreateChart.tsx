@@ -803,7 +803,7 @@ export default function CreateChart() {
 
                     {activeWorkload.type === "Deployment" && (
                       <div className="space-y-4">
-                        <p className="text-foreground/60 text-sm font-medium mb-4">Deployment Metadata</p>
+                        <p className="text-foreground/60 text-sm font-medium mb-4">Deployment Configuration</p>
                         <DeploymentConfiguration
                           config={{
                             namespace: activeWorkload.config.deploymentNamespace,
@@ -811,10 +811,15 @@ export default function CreateChart() {
                             annotations: activeWorkload.config.deploymentAnnotations,
                             deletionGracePeriodSeconds: activeWorkload.config.deploymentDeletionGracePeriodSeconds,
                             ownerReferences: activeWorkload.config.deploymentOwnerReferences,
+                            spec: activeWorkload.config.deploymentSpec,
                           }}
                           onConfigChange={(key, value) => {
-                            const configKey: keyof WorkloadConfig = `deployment${key.charAt(0).toUpperCase() + key.slice(1)}` as any;
-                            updateWorkloadConfig(activeWorkload.id, configKey, value);
+                            if (key === "spec") {
+                              updateWorkloadConfig(activeWorkload.id, "deploymentSpec", value);
+                            } else {
+                              const configKey: keyof WorkloadConfig = `deployment${key.charAt(0).toUpperCase() + key.slice(1)}` as any;
+                              updateWorkloadConfig(activeWorkload.id, configKey, value);
+                            }
                           }}
                         />
                       </div>
