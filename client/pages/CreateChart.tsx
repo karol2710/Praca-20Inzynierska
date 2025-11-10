@@ -223,6 +223,13 @@ export default function CreateChart() {
 
   const activeWorkload = workloads.find((w) => w.id === activeWorkloadId);
 
+  const isContainerConfigValid = (container: Container): boolean => {
+    const hasName = !!container.name?.trim();
+    const hasImage = !!container.image?.trim();
+    const hasPort = container.ports && container.ports.length > 0 && container.ports.some((p) => p.containerPort);
+    return hasName && hasImage && hasPort;
+  };
+
   return (
     <Layout>
       <div className="container mx-auto px-4 py-12">
