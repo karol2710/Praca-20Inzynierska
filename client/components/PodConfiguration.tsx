@@ -134,6 +134,12 @@ const configSections: ConfigSection[] = [
     ],
   },
   {
+    id: "dns",
+    title: "DNS Config",
+    description: "DNS configuration for the Pod",
+    fields: [],
+  },
+  {
     id: "storage",
     title: "Storage & Images",
     description: "Volumes and image pull settings",
