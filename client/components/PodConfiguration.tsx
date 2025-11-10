@@ -29,6 +29,13 @@ interface PodConfig {
     ip: string;
     hostnames: string[];
   }[];
+  resourceClaims?: {
+    name: string;
+    source?: {
+      resourceClaimName?: string;
+      resourceClaimTemplateName?: string;
+    };
+  }[];
   enableServiceLinks?: boolean;
   hostNetwork?: boolean;
   hostIPC?: boolean;
