@@ -147,6 +147,12 @@ const configSections: ConfigSection[] = [
     ],
   },
   {
+    id: "securityContext",
+    title: "Security Context",
+    description: "Pod-level security policies",
+    fields: [],
+  },
+  {
     id: "networking",
     title: "Networking",
     description: "DNS, hostname, and network settings",
