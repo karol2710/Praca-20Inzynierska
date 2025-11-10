@@ -86,6 +86,12 @@ interface WorkloadConfig extends PodConfig {
   completions?: number;
   backoffLimit?: number;
   selector?: Record<string, string>;
+  // Deployment Metadata
+  deploymentNamespace?: string;
+  deploymentLabels?: Record<string, string>;
+  deploymentAnnotations?: Record<string, string>;
+  deploymentDeletionGracePeriodSeconds?: number;
+  deploymentOwnerReferences?: OwnerReference[];
 }
 
 interface Workload {
