@@ -89,10 +89,17 @@ interface ProbeConfig {
   failureThreshold?: number;
 }
 
-interface LifecycleHandler {
+interface LifecycleHook {
   exec?: { command: string[] };
-  httpGet?: { path: string; port: number; scheme?: string };
-  tcpSocket?: { port: number };
+  httpGet?: {
+    host?: string;
+    httpHeaders?: { name: string; value: string }[];
+    path: string;
+    port: number;
+    scheme?: string;
+  };
+  tcpSocket?: { host?: string; port: number };
+  sleep?: { seconds: number };
 }
 
 interface ContainerConfigurationProps {
