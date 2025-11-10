@@ -814,10 +814,13 @@ export default function CreateChart() {
                             deletionGracePeriodSeconds: activeWorkload.config.deploymentDeletionGracePeriodSeconds,
                             ownerReferences: activeWorkload.config.deploymentOwnerReferences,
                             spec: activeWorkload.config.deploymentSpec,
+                            template: activeWorkload.config.deploymentTemplate,
                           }}
                           onConfigChange={(key, value) => {
                             if (key === "spec") {
                               updateWorkloadConfig(activeWorkload.id, "deploymentSpec", value);
+                            } else if (key === "template") {
+                              updateWorkloadConfig(activeWorkload.id, "deploymentTemplate", value);
                             } else {
                               const configKey: keyof WorkloadConfig = `deployment${key.charAt(0).toUpperCase() + key.slice(1)}` as any;
                               updateWorkloadConfig(activeWorkload.id, configKey, value);
