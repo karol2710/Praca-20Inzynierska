@@ -1757,6 +1757,388 @@ export default function ContainerConfiguration({
           </div>
         );
 
+      case "security":
+        return (
+          <div className="space-y-6">
+            {/* Allow Privilege Escalation */}
+            <div>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={container.securityContext?.allowPrivilegeEscalation || false}
+                  onChange={(e) =>
+                    onConfigChange("securityContext", {
+                      ...container.securityContext,
+                      allowPrivilegeEscalation: e.target.checked ? true : undefined,
+                    })
+                  }
+                  className="w-4 h-4 rounded border-border bg-input cursor-pointer"
+                />
+                <span className="text-foreground font-medium">Allow Privilege Escalation</span>
+              </label>
+            </div>
+
+            {/* Run as User */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">Run as User</label>
+              <input
+                type="number"
+                value={container.securityContext?.runAsUser || ""}
+                onChange={(e) =>
+                  onConfigChange("securityContext", {
+                    ...container.securityContext,
+                    runAsUser: e.target.value ? parseInt(e.target.value) : undefined,
+                  })
+                }
+                placeholder="e.g., 1000"
+                className="input-field"
+              />
+            </div>
+
+            {/* Run as Group */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">Run as Group</label>
+              <input
+                type="number"
+                value={container.securityContext?.runAsGroup || ""}
+                onChange={(e) =>
+                  onConfigChange("securityContext", {
+                    ...container.securityContext,
+                    runAsGroup: e.target.value ? parseInt(e.target.value) : undefined,
+                  })
+                }
+                placeholder="e.g., 3000"
+                className="input-field"
+              />
+            </div>
+
+            {/* Run as Non Root */}
+            <div>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={container.securityContext?.runAsNonRoot || false}
+                  onChange={(e) =>
+                    onConfigChange("securityContext", {
+                      ...container.securityContext,
+                      runAsNonRoot: e.target.checked ? true : undefined,
+                    })
+                  }
+                  className="w-4 h-4 rounded border-border bg-input cursor-pointer"
+                />
+                <span className="text-foreground font-medium">Run as Non-Root</span>
+              </label>
+            </div>
+
+            {/* Process Mount */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">Process Mount</label>
+              <select
+                value={container.securityContext?.procMount || ""}
+                onChange={(e) =>
+                  onConfigChange("securityContext", {
+                    ...container.securityContext,
+                    procMount: e.target.value || undefined,
+                  })
+                }
+                className="input-field"
+              >
+                <option value="">Select Process Mount</option>
+                <option value="Default">Default</option>
+                <option value="Unmasked">Unmasked</option>
+              </select>
+            </div>
+
+            {/* Capabilities */}
+            <div className="border-t border-border pt-4">
+              <h4 className="font-semibold text-foreground mb-4">Capabilities</h4>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">Add Capabilities</label>
+                  <div className="space-y-2">
+                    {(container.securityContext?.capabilities?.add || []).map((cap, idx) => (
+                      <div key={idx} className="flex gap-2">
+                        <input
+                          type="text"
+                          value={cap}
+                          onChange={(e) => {
+                            const updated = [...(container.securityContext?.capabilities?.add || [])];
+                            updated[idx] = e.target.value;
+                            onConfigChange("securityContext", {
+                              ...container.securityContext,
+                              capabilities: {
+                                ...container.securityContext?.capabilities,
+                                add: updated,
+                              },
+                            });
+                          }}
+                          placeholder="e.g., NET_ADMIN, SYS_ADMIN"
+                          className="input-field flex-1"
+                        />
+                        <button
+                          onClick={() => {
+                            onConfigChange("securityContext", {
+                              ...container.securityContext,
+                              capabilities: {
+                                ...container.securityContext?.capabilities,
+                                add: (container.securityContext?.capabilities?.add || []).filter((_, i) => i !== idx),
+                              },
+                            });
+                          }}
+                          className="px-3 py-2 text-destructive hover:bg-destructive/10 rounded"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => {
+                      onConfigChange("securityContext", {
+                        ...container.securityContext,
+                        capabilities: {
+                          ...container.securityContext?.capabilities,
+                          add: [...(container.securityContext?.capabilities?.add || []), ""],
+                        },
+                      });
+                    }}
+                    className="text-primary hover:opacity-70 text-sm mt-2"
+                  >
+                    + Add Capability
+                  </button>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">Drop Capabilities</label>
+                  <div className="space-y-2">
+                    {(container.securityContext?.capabilities?.drop || []).map((cap, idx) => (
+                      <div key={idx} className="flex gap-2">
+                        <input
+                          type="text"
+                          value={cap}
+                          onChange={(e) => {
+                            const updated = [...(container.securityContext?.capabilities?.drop || [])];
+                            updated[idx] = e.target.value;
+                            onConfigChange("securityContext", {
+                              ...container.securityContext,
+                              capabilities: {
+                                ...container.securityContext?.capabilities,
+                                drop: updated,
+                              },
+                            });
+                          }}
+                          placeholder="e.g., ALL, NET_RAW"
+                          className="input-field flex-1"
+                        />
+                        <button
+                          onClick={() => {
+                            onConfigChange("securityContext", {
+                              ...container.securityContext,
+                              capabilities: {
+                                ...container.securityContext?.capabilities,
+                                drop: (container.securityContext?.capabilities?.drop || []).filter((_, i) => i !== idx),
+                              },
+                            });
+                          }}
+                          className="px-3 py-2 text-destructive hover:bg-destructive/10 rounded"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => {
+                      onConfigChange("securityContext", {
+                        ...container.securityContext,
+                        capabilities: {
+                          ...container.securityContext?.capabilities,
+                          drop: [...(container.securityContext?.capabilities?.drop || []), ""],
+                        },
+                      });
+                    }}
+                    className="text-primary hover:opacity-70 text-sm mt-2"
+                  >
+                    + Add Drop Capability
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* SELinux Options */}
+            <div className="border-t border-border pt-4">
+              <h4 className="font-semibold text-foreground mb-4">SELinux Options</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">User</label>
+                  <input
+                    type="text"
+                    value={container.securityContext?.seLinuxOptions?.user || ""}
+                    onChange={(e) =>
+                      onConfigChange("securityContext", {
+                        ...container.securityContext,
+                        seLinuxOptions: {
+                          ...container.securityContext?.seLinuxOptions,
+                          user: e.target.value || undefined,
+                        },
+                      })
+                    }
+                    placeholder="system_u"
+                    className="input-field text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">Role</label>
+                  <input
+                    type="text"
+                    value={container.securityContext?.seLinuxOptions?.role || ""}
+                    onChange={(e) =>
+                      onConfigChange("securityContext", {
+                        ...container.securityContext,
+                        seLinuxOptions: {
+                          ...container.securityContext?.seLinuxOptions,
+                          role: e.target.value || undefined,
+                        },
+                      })
+                    }
+                    placeholder="system_r"
+                    className="input-field text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">Type</label>
+                  <input
+                    type="text"
+                    value={container.securityContext?.seLinuxOptions?.type || ""}
+                    onChange={(e) =>
+                      onConfigChange("securityContext", {
+                        ...container.securityContext,
+                        seLinuxOptions: {
+                          ...container.securityContext?.seLinuxOptions,
+                          type: e.target.value || undefined,
+                        },
+                      })
+                    }
+                    placeholder="container_t"
+                    className="input-field text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">Level</label>
+                  <input
+                    type="text"
+                    value={container.securityContext?.seLinuxOptions?.level || ""}
+                    onChange={(e) =>
+                      onConfigChange("securityContext", {
+                        ...container.securityContext,
+                        seLinuxOptions: {
+                          ...container.securityContext?.seLinuxOptions,
+                          level: e.target.value || undefined,
+                        },
+                      })
+                    }
+                    placeholder="s0:c123,c456"
+                    className="input-field text-sm"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* AppArmor Profile */}
+            <div className="border-t border-border pt-4">
+              <h4 className="font-semibold text-foreground mb-4">AppArmor Profile</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">Type</label>
+                  <select
+                    value={container.securityContext?.appArmor?.type || ""}
+                    onChange={(e) =>
+                      onConfigChange("securityContext", {
+                        ...container.securityContext,
+                        appArmor: {
+                          ...container.securityContext?.appArmor,
+                          type: e.target.value || undefined,
+                        },
+                      })
+                    }
+                    className="input-field text-sm"
+                  >
+                    <option value="">Select Type</option>
+                    <option value="runtime/default">runtime/default</option>
+                    <option value="localhost">localhost</option>
+                    <option value="unconfined">unconfined</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">LocalHost Profile</label>
+                  <input
+                    type="text"
+                    value={container.securityContext?.appArmor?.localhostProfile || ""}
+                    onChange={(e) =>
+                      onConfigChange("securityContext", {
+                        ...container.securityContext,
+                        appArmor: {
+                          ...container.securityContext?.appArmor,
+                          localhostProfile: e.target.value || undefined,
+                        },
+                      })
+                    }
+                    placeholder="my-profile"
+                    className="input-field text-sm"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Seccomp Profile */}
+            <div className="border-t border-border pt-4">
+              <h4 className="font-semibold text-foreground mb-4">Seccomp Profile</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">Type</label>
+                  <select
+                    value={container.securityContext?.seccompProfile?.type || ""}
+                    onChange={(e) =>
+                      onConfigChange("securityContext", {
+                        ...container.securityContext,
+                        seccompProfile: {
+                          ...container.securityContext?.seccompProfile,
+                          type: e.target.value || undefined,
+                        },
+                      })
+                    }
+                    className="input-field text-sm"
+                  >
+                    <option value="">Select Type</option>
+                    <option value="RuntimeDefault">RuntimeDefault</option>
+                    <option value="Unconfined">Unconfined</option>
+                    <option value="Localhost">Localhost</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">LocalHost Profile</label>
+                  <input
+                    type="text"
+                    value={container.securityContext?.seccompProfile?.localhostProfile || ""}
+                    onChange={(e) =>
+                      onConfigChange("securityContext", {
+                        ...container.securityContext,
+                        seccompProfile: {
+                          ...container.securityContext?.seccompProfile,
+                          localhostProfile: e.target.value || undefined,
+                        },
+                      })
+                    }
+                    placeholder="my-seccomp.json"
+                    className="input-field text-sm"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
       case "termination":
         return (
           <div className="space-y-4">
