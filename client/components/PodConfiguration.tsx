@@ -72,6 +72,7 @@ interface PodConfig {
     };
   }[];
   securityContext?: PodSecurityContext;
+  tolerations?: Toleration[];
   enableServiceLinks?: boolean;
   hostNetwork?: boolean;
   hostIPC?: boolean;
