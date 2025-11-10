@@ -14,6 +14,11 @@ interface Container extends ContainerConfig {
   id: string;
 }
 
+interface EphemeralContainer extends ContainerConfig {
+  id: string;
+  targetContainerName?: string;
+}
+
 interface PodConfig {
   // Metadata
   labels?: Record<string, string>;
@@ -47,6 +52,9 @@ interface PodConfig {
 
   // Storage
   imagePullSecrets?: string[];
+
+  // Ephemeral Containers
+  ephemeralContainers?: EphemeralContainer[];
 
   // Advanced
   restartPolicy?: RestartPolicy;
