@@ -282,6 +282,70 @@ export default function CreateChart() {
     }
   };
 
+  const addInitContainer = () => {
+    if (!activeWorkloadId) return;
+
+    const newInitContainer: InitContainer = {
+      id: Date.now().toString(),
+      name: "",
+      image: "",
+      imagePullPolicy: "IfNotPresent",
+    };
+
+    setWorkloads(
+      workloads.map((w) =>
+        w.id === activeWorkloadId
+          ? { ...w, config: { ...w.config, initContainers: [...(w.config.initContainers || []), newInitContainer] } }
+          : w
+      )
+    );
+    setEditingInitContainerId(newInitContainer.id);
+    setEditingInitWorkloadId(activeWorkloadId);
+  };
+
+  const updateInitContainerConfig = (
+    workloadId: string,
+    containerId: string,
+    key: keyof ContainerConfig,
+    value: any
+  ) => {
+    setWorkloads(
+      workloads.map((w) =>
+        w.id === workloadId
+          ? {
+              ...w,
+              config: {
+                ...w.config,
+                initContainers: (w.config.initContainers || []).map((c) =>
+                  c.id === containerId ? { ...c, [key]: value } : c
+                ),
+              },
+            }
+          : w
+      )
+    );
+  };
+
+  const deleteInitContainer = (workloadId: string, containerId: string) => {
+    setWorkloads(
+      workloads.map((w) =>
+        w.id === workloadId
+          ? {
+              ...w,
+              config: {
+                ...w.config,
+                initContainers: (w.config.initContainers || []).filter((c) => c.id !== containerId),
+              },
+            }
+          : w
+      )
+    );
+    if (editingInitContainerId === containerId) {
+      setEditingInitContainerId("");
+      setEditingInitWorkloadId("");
+    }
+  };
+
   const updateWorkloadConfig = (workloadId: string, key: keyof WorkloadConfig, value: any) => {
     setWorkloads(
       workloads.map((w) =>
