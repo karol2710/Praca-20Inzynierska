@@ -73,7 +73,7 @@ const configSections: ConfigSection[] = [
 ];
 
 export default function DeploymentConfiguration({ config, onConfigChange }: DeploymentConfigurationProps) {
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(["metadata"]));
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(["metadata", "spec"]));
 
   const toggleSection = (sectionId: string) => {
     const newExpanded = new Set(expandedSections);
