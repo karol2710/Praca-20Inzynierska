@@ -242,6 +242,12 @@ const configSections: ConfigSection[] = [
     fields: [],
   },
   {
+    id: "topologySpreadConstraints",
+    title: "Topology Spread Constraints",
+    description: "Pod topology spread constraints",
+    fields: [],
+  },
+  {
     id: "affinity",
     title: "Pod Affinity",
     description: "Node and pod affinity/anti-affinity rules",
