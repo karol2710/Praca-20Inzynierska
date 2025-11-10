@@ -10,12 +10,42 @@ interface OwnerReference {
   uid?: string;
 }
 
+interface LabelSelectorRequirement {
+  key: string;
+  operator: string;
+  values?: string[];
+}
+
+interface LabelSelector {
+  matchLabels?: Record<string, string>;
+  matchExpressions?: LabelSelectorRequirement[];
+}
+
+interface RollingUpdateStrategy {
+  maxSurge?: string;
+  maxUnavailable?: string;
+}
+
+interface DeploymentStrategy {
+  type?: string;
+  rollingUpdate?: RollingUpdateStrategy;
+}
+
+interface DeploymentSpec {
+  minReadySeconds?: number;
+  progressDeadlineSeconds?: number;
+  revisionHistoryLimit?: number;
+  selector?: LabelSelector;
+  strategy?: DeploymentStrategy;
+}
+
 interface DeploymentConfig {
   annotations?: Record<string, string>;
   deletionGracePeriodSeconds?: number;
   labels?: Record<string, string>;
   namespace?: string;
   ownerReferences?: OwnerReference[];
+  spec?: DeploymentSpec;
 }
 
 interface DeploymentConfigurationProps {
@@ -34,6 +64,11 @@ const configSections: ConfigSection[] = [
     id: "metadata",
     title: "Metadata",
     description: "Configure deployment metadata including labels, annotations, and namespace",
+  },
+  {
+    id: "spec",
+    title: "Spec",
+    description: "Configure deployment specification including strategy, selector, and timing parameters",
   },
 ];
 
