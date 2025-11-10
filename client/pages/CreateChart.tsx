@@ -3,6 +3,7 @@ import Layout from "@/components/Layout";
 import PodConfiguration from "@/components/PodConfiguration";
 import ContainerConfiguration, { ContainerConfig } from "@/components/ContainerConfiguration";
 import DeploymentConfiguration from "@/components/DeploymentConfiguration";
+import ReplicaSetConfiguration from "@/components/ReplicaSetConfiguration";
 import { Upload, Plus, X, Zap } from "lucide-react";
 
 type ChartMode = "standard" | "advanced";
