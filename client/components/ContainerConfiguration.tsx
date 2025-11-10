@@ -2251,6 +2251,146 @@ export default function ContainerConfiguration({
           </div>
         );
 
+      case "volumeMounts":
+        return (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between mb-4">
+              <h5 className="font-medium text-foreground text-sm">Volume Mounts</h5>
+              <button
+                onClick={() => {
+                  const mounts = container.volumeMounts || [];
+                  onConfigChange("volumeMounts", [...mounts, { mountPath: "", name: "" }]);
+                }}
+                className="text-primary hover:opacity-70 text-sm"
+              >
+                + Add Mount
+              </button>
+            </div>
+            <div className="space-y-3">
+              {container.volumeMounts?.map((mount, idx) => (
+                <div key={idx} className="p-4 bg-muted/20 border border-border rounded-lg space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-foreground mb-1">Name*</label>
+                      <input
+                        type="text"
+                        value={mount.name}
+                        onChange={(e) => {
+                          const updated = [...(container.volumeMounts || [])];
+                          updated[idx] = { ...mount, name: e.target.value };
+                          onConfigChange("volumeMounts", updated);
+                        }}
+                        placeholder="volume-name"
+                        className="input-field text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-foreground mb-1">Mount Path*</label>
+                      <input
+                        type="text"
+                        value={mount.mountPath}
+                        onChange={(e) => {
+                          const updated = [...(container.volumeMounts || [])];
+                          updated[idx] = { ...mount, mountPath: e.target.value };
+                          onConfigChange("volumeMounts", updated);
+                        }}
+                        placeholder="/mnt/data"
+                        className="input-field text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-foreground mb-1">SubPath</label>
+                      <input
+                        type="text"
+                        value={mount.subPath || ""}
+                        onChange={(e) => {
+                          const updated = [...(container.volumeMounts || [])];
+                          updated[idx] = { ...mount, subPath: e.target.value || undefined };
+                          onConfigChange("volumeMounts", updated);
+                        }}
+                        placeholder="logs"
+                        className="input-field text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-foreground mb-1">SubPath Expr</label>
+                      <input
+                        type="text"
+                        value={mount.subPathExpr || ""}
+                        onChange={(e) => {
+                          const updated = [...(container.volumeMounts || [])];
+                          updated[idx] = { ...mount, subPathExpr: e.target.value || undefined };
+                          onConfigChange("volumeMounts", updated);
+                        }}
+                        placeholder="$(POD_NAME)"
+                        className="input-field text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-foreground mb-1">Mount Propagation</label>
+                      <select
+                        value={mount.mountPropagation || ""}
+                        onChange={(e) => {
+                          const updated = [...(container.volumeMounts || [])];
+                          updated[idx] = { ...mount, mountPropagation: e.target.value || undefined };
+                          onConfigChange("volumeMounts", updated);
+                        }}
+                        className="input-field text-sm"
+                      >
+                        <option value="">None</option>
+                        <option value="HostToContainer">HostToContainer</option>
+                        <option value="Bidirectional">Bidirectional</option>
+                      </select>
+                    </div>
+                    <div></div>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <label className="flex items-center gap-2 cursor-pointer flex-1">
+                      <input
+                        type="checkbox"
+                        checked={mount.readOnly || false}
+                        onChange={(e) => {
+                          const updated = [...(container.volumeMounts || [])];
+                          updated[idx] = { ...mount, readOnly: e.target.checked ? true : undefined };
+                          onConfigChange("volumeMounts", updated);
+                        }}
+                        className="w-4 h-4 rounded border-border bg-input cursor-pointer"
+                      />
+                      <span className="text-sm text-foreground">Read Only</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer flex-1">
+                      <input
+                        type="checkbox"
+                        checked={mount.recursiveReadOnly || false}
+                        onChange={(e) => {
+                          const updated = [...(container.volumeMounts || [])];
+                          updated[idx] = { ...mount, recursiveReadOnly: e.target.checked ? true : undefined };
+                          onConfigChange("volumeMounts", updated);
+                        }}
+                        className="w-4 h-4 rounded border-border bg-input cursor-pointer"
+                      />
+                      <span className="text-sm text-foreground">Recursive Read Only</span>
+                    </label>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      onConfigChange(
+                        "volumeMounts",
+                        container.volumeMounts?.filter((_, i) => i !== idx)
+                      );
+                    }}
+                    className="w-full text-xs text-destructive hover:bg-destructive/10 py-1.5 rounded transition-colors"
+                  >
+                    Remove Mount
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
       case "advanced":
         return (
           <div className="space-y-6">
