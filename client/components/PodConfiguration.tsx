@@ -37,6 +37,27 @@ interface Toleration {
   tolerationSeconds?: number;
 }
 
+interface LabelSelectorRequirement {
+  key: string;
+  operator: string;
+  values?: string[];
+}
+
+interface LabelSelector {
+  matchLabels?: Record<string, string>;
+  matchExpressions?: LabelSelectorRequirement[];
+}
+
+interface TopologySpreadConstraint {
+  maxSkew: number;
+  topologyKey: string;
+  whenUnsatisfiable?: string;
+  labelSelector?: LabelSelector;
+  minDomains?: number;
+  nodeAffinityPolicy?: string;
+  nodeTaintsPolicy?: string;
+}
+
 interface PodConfig {
   labels?: Record<string, string>;
   annotations?: Record<string, string>;
