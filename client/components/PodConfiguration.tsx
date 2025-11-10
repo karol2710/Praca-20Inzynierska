@@ -2,6 +2,33 @@ import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import AffinityConfiguration from "./AffinityConfiguration";
 
+interface PodSecurityContext {
+  runAsUser?: number;
+  runAsGroup?: number;
+  runAsNonRoot?: boolean;
+  fsGroup?: number;
+  fsGroupChangePolicy?: string;
+  supplementalGroups?: number[];
+  seLinuxOptions?: {
+    level?: string;
+    role?: string;
+    type?: string;
+    user?: string;
+  };
+  seccompProfile?: {
+    type?: string;
+    localhostProfile?: string;
+  };
+  appArmor?: {
+    type?: string;
+    localhostProfile?: string;
+  };
+  sysctls?: {
+    name: string;
+    value: string;
+  }[];
+}
+
 interface PodConfig {
   labels?: Record<string, string>;
   annotations?: Record<string, string>;
@@ -36,6 +63,7 @@ interface PodConfig {
       resourceClaimTemplateName?: string;
     };
   }[];
+  securityContext?: PodSecurityContext;
   enableServiceLinks?: boolean;
   hostNetwork?: boolean;
   hostIPC?: boolean;
