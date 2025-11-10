@@ -31,7 +31,11 @@ export interface ContainerConfig {
       secretKeyRef?: { name: string; key: string };
     };
   }[];
-  envFrom?: { configMapRef?: string; secretRef?: string }[];
+  envFrom?: {
+    configMapRef?: { name: string };
+    secretRef?: { name: string };
+    prefix?: string;
+  }[];
   
   // Resources
   resources?: {
