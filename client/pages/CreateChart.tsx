@@ -19,6 +19,10 @@ interface EphemeralContainer extends ContainerConfig {
   targetContainerName?: string;
 }
 
+interface InitContainer extends ContainerConfig {
+  id: string;
+}
+
 interface PodConfig {
   // Metadata
   labels?: Record<string, string>;
@@ -52,6 +56,9 @@ interface PodConfig {
 
   // Storage
   imagePullSecrets?: string[];
+
+  // Init Containers
+  initContainers?: InitContainer[];
 
   // Ephemeral Containers
   ephemeralContainers?: EphemeralContainer[];
