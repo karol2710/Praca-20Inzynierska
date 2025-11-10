@@ -91,6 +91,8 @@ export default function CreateChart() {
   const [activeWorkloadId, setActiveWorkloadId] = useState<string>("");
   const [editingContainerId, setEditingContainerId] = useState<string>("");
   const [editingWorkloadId, setEditingWorkloadId] = useState<string>("");
+  const [editingEphemeralContainerId, setEditingEphemeralContainerId] = useState<string>("");
+  const [editingEphemeralWorkloadId, setEditingEphemeralWorkloadId] = useState<string>("");
   const [isCreating, setIsCreating] = useState(false);
 
   const workloadTypes: WorkloadType[] = ["Pod", "Deployment", "ReplicaSet", "StatefulSet", "DaemonSet", "Job", "CronJob"];
