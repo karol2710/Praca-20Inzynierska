@@ -770,6 +770,135 @@ export default function CreateChart() {
                       />
                     </div>
                   )}
+
+                  {/* Ephemeral Containers Section */}
+                  <div className="mb-8">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-semibold text-foreground">Ephemeral Containers</h3>
+                      <button
+                        onClick={addEphemeralContainer}
+                        className="text-primary hover:opacity-70 text-sm flex items-center gap-1"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Add Ephemeral Container
+                      </button>
+                    </div>
+
+                    {(activeWorkload.config.ephemeralContainers || []).length > 0 ? (
+                      <div className="space-y-3">
+                        {(activeWorkload.config.ephemeralContainers || []).map((container) => {
+                          const isValid = isContainerConfigValid(container);
+                          return (
+                            <div
+                              key={container.id}
+                              className={`p-4 bg-muted/20 border-2 rounded-lg transition-all cursor-pointer ${
+                                editingEphemeralContainerId === container.id && editingEphemeralWorkloadId === activeWorkload.id
+                                  ? "border-primary bg-primary/5"
+                                  : "border-border hover:border-primary/30"
+                              }`}
+                            >
+                              <div
+                                onClick={() => {
+                                  setEditingEphemeralContainerId(container.id);
+                                  setEditingEphemeralWorkloadId(activeWorkload.id);
+                                }}
+                                className="flex items-center justify-between"
+                              >
+                                <div>
+                                  <p className="font-semibold text-foreground">
+                                    {container.name || "(unnamed)"}
+                                  </p>
+                                  <p className="text-sm text-foreground/60">{container.image || "No image"}</p>
+                                  {container.targetContainerName && (
+                                    <p className="text-xs text-foreground/50 mt-1">Target: {container.targetContainerName}</p>
+                                  )}
+                                  {!isValid && (
+                                    <p className="text-sm text-destructive font-medium mt-1">Minimal config not set</p>
+                                  )}
+                                </div>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    deleteEphemeralContainer(activeWorkload.id, container.id);
+                                  }}
+                                  className="text-destructive hover:bg-destructive/10 p-1 rounded hover:opacity-75 transition-opacity"
+                                >
+                                  <X className="w-5 h-5" />
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-foreground/60 text-sm py-4">No ephemeral containers added yet</p>
+                    )}
+                  </div>
+
+                  {/* Ephemeral Container Configuration */}
+                  {editingEphemeralContainerId && editingEphemeralWorkloadId === activeWorkload.id && (
+                    <div className="mb-8 p-6 bg-muted/30 rounded-lg border border-border">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-semibold text-foreground">
+                          Configure Ephemeral Container: {(activeWorkload.config.ephemeralContainers || []).find((c) => c.id === editingEphemeralContainerId)?.name || "(unnamed)"}
+                        </h3>
+                        <button
+                          onClick={() => {
+                            setEditingEphemeralContainerId("");
+                            setEditingEphemeralWorkloadId("");
+                          }}
+                          className="text-foreground/60 hover:text-foreground"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      </div>
+
+                      <div className="space-y-6">
+                        {/* Target Container Name */}
+                        <div>
+                          <label className="block text-sm font-medium text-foreground mb-2">Target Container Name</label>
+                          <select
+                            value={(
+                              (activeWorkload.config.ephemeralContainers || []).find(
+                                (c) => c.id === editingEphemeralContainerId
+                              )?.targetContainerName || ""
+                            )}
+                            onChange={(e) =>
+                              updateEphemeralContainerConfig(
+                                activeWorkload.id,
+                                editingEphemeralContainerId,
+                                "targetContainerName",
+                                e.target.value || undefined
+                              )
+                            }
+                            className="input-field"
+                          >
+                            <option value="">Select Target Container</option>
+                            {activeWorkload.containers.map((c) => (
+                              <option key={c.id} value={c.name || "(unnamed)"}>
+                                {c.name || "(unnamed)"}
+                              </option>
+                            ))}
+                          </select>
+                          <p className="text-xs text-foreground/50 mt-1">
+                            The name of the container this ephemeral container targets for debugging
+                          </p>
+                        </div>
+
+                        {/* Container Configuration */}
+                        <ContainerConfiguration
+                          container={
+                            (activeWorkload.config.ephemeralContainers || []).find(
+                              (c) => c.id === editingEphemeralContainerId
+                            ) || {}
+                          }
+                          onConfigChange={(key, value) =>
+                            updateEphemeralContainerConfig(activeWorkload.id, editingEphemeralContainerId, key, value)
+                          }
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
