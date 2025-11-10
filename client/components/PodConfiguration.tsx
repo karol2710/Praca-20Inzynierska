@@ -379,6 +379,115 @@ export default function PodConfiguration({ config, onConfigChange }: PodConfigur
                   affinity={config.affinity || {}}
                   onAffinityChange={(affinity) => onConfigChange("affinity", affinity)}
                 />
+              ) : section.id === "tolerations" ? (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h5 className="font-medium text-foreground text-sm">Tolerations</h5>
+                    <button
+                      onClick={() => {
+                        const tolerations = config.tolerations || [];
+                        onConfigChange("tolerations", [...tolerations, { key: "", operator: "Equal", value: "" }]);
+                      }}
+                      className="text-primary hover:opacity-70 text-sm"
+                    >
+                      + Add Toleration
+                    </button>
+                  </div>
+                  <div className="space-y-3">
+                    {(config.tolerations || []).map((toleration, idx) => (
+                      <div key={idx} className="p-4 bg-muted/20 border border-border rounded-lg space-y-3">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs font-medium text-foreground mb-1">Key</label>
+                            <input
+                              type="text"
+                              value={toleration.key || ""}
+                              onChange={(e) => {
+                                const updated = [...(config.tolerations || [])];
+                                updated[idx] = { ...toleration, key: e.target.value || undefined };
+                                onConfigChange("tolerations", updated);
+                              }}
+                              placeholder="node.kubernetes.io/not-ready"
+                              className="input-field text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-foreground mb-1">Operator</label>
+                            <select
+                              value={toleration.operator || "Equal"}
+                              onChange={(e) => {
+                                const updated = [...(config.tolerations || [])];
+                                updated[idx] = { ...toleration, operator: e.target.value };
+                                onConfigChange("tolerations", updated);
+                              }}
+                              className="input-field text-sm"
+                            >
+                              <option value="Equal">Equal</option>
+                              <option value="Exists">Exists</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-foreground mb-1">Value</label>
+                            <input
+                              type="text"
+                              value={toleration.value || ""}
+                              onChange={(e) => {
+                                const updated = [...(config.tolerations || [])];
+                                updated[idx] = { ...toleration, value: e.target.value || undefined };
+                                onConfigChange("tolerations", updated);
+                              }}
+                              placeholder="true"
+                              className="input-field text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-foreground mb-1">Effect</label>
+                            <select
+                              value={toleration.effect || ""}
+                              onChange={(e) => {
+                                const updated = [...(config.tolerations || [])];
+                                updated[idx] = { ...toleration, effect: e.target.value || undefined };
+                                onConfigChange("tolerations", updated);
+                              }}
+                              className="input-field text-sm"
+                            >
+                              <option value="">Select Effect</option>
+                              <option value="NoSchedule">NoSchedule</option>
+                              <option value="NoExecute">NoExecute</option>
+                              <option value="PreferNoSchedule">PreferNoSchedule</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-foreground mb-1">Toleration Seconds</label>
+                          <input
+                            type="number"
+                            value={toleration.tolerationSeconds || ""}
+                            onChange={(e) => {
+                              const updated = [...(config.tolerations || [])];
+                              updated[idx] = { ...toleration, tolerationSeconds: e.target.value ? parseInt(e.target.value) : undefined };
+                              onConfigChange("tolerations", updated);
+                            }}
+                            placeholder="300"
+                            className="input-field text-sm"
+                          />
+                          <p className="text-xs text-foreground/50 mt-1">For NoExecute effect only</p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            onConfigChange(
+                              "tolerations",
+                              config.tolerations?.filter((_, i) => i !== idx)
+                            );
+                          }}
+                          className="w-full text-xs text-destructive hover:bg-destructive/10 py-1.5 rounded transition-colors"
+                        >
+                          Remove Toleration
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               ) : section.id === "resourceClaims" ? (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between mb-4">
