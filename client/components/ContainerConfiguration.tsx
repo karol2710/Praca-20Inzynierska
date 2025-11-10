@@ -113,6 +113,303 @@ interface ConfigSection {
   description: string;
 }
 
+interface LifecycleHookEditorProps {
+  title: string;
+  hook?: LifecycleHook;
+  onHookChange: (hook?: LifecycleHook) => void;
+}
+
+function LifecycleHookEditor({ title, hook, onHookChange }: LifecycleHookEditorProps) {
+  const [hookType, setHookType] = useState<"exec" | "httpGet" | "tcpSocket" | "sleep" | undefined>(
+    hook?.exec ? "exec" : hook?.httpGet ? "httpGet" : hook?.tcpSocket ? "tcpSocket" : hook?.sleep ? "sleep" : undefined
+  );
+
+  return (
+    <div className="p-4 bg-muted/20 border border-border rounded-lg space-y-3">
+      <h4 className="font-semibold text-foreground">{title}</h4>
+
+      {/* Hook Type Selection */}
+      <div className="flex flex-wrap gap-2">
+        <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <input
+            type="radio"
+            checked={!hookType}
+            onChange={() => {
+              setHookType(undefined);
+              onHookChange(undefined);
+            }}
+            className="w-3 h-3 cursor-pointer"
+          />
+          <span className="text-foreground">None</span>
+        </label>
+        <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <input
+            type="radio"
+            checked={hookType === "exec"}
+            onChange={() => setHookType("exec")}
+            className="w-3 h-3 cursor-pointer"
+          />
+          <span className="text-foreground">Exec</span>
+        </label>
+        <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <input
+            type="radio"
+            checked={hookType === "httpGet"}
+            onChange={() => setHookType("httpGet")}
+            className="w-3 h-3 cursor-pointer"
+          />
+          <span className="text-foreground">HTTP Get</span>
+        </label>
+        <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <input
+            type="radio"
+            checked={hookType === "tcpSocket"}
+            onChange={() => setHookType("tcpSocket")}
+            className="w-3 h-3 cursor-pointer"
+          />
+          <span className="text-foreground">TCP Socket</span>
+        </label>
+        <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <input
+            type="radio"
+            checked={hookType === "sleep"}
+            onChange={() => setHookType("sleep")}
+            className="w-3 h-3 cursor-pointer"
+          />
+          <span className="text-foreground">Sleep</span>
+        </label>
+      </div>
+
+      {/* Exec */}
+      {hookType === "exec" && (
+        <div className="space-y-2 pt-2">
+          <label className="block text-xs font-medium text-foreground">Command</label>
+          <div className="space-y-1">
+            {(hook?.exec?.command || []).map((cmd, idx) => (
+              <div key={idx} className="flex gap-2 items-center">
+                <input
+                  type="text"
+                  value={cmd}
+                  onChange={(e) => {
+                    const updated = [...(hook?.exec?.command || [])];
+                    updated[idx] = e.target.value;
+                    onHookChange({ exec: { command: updated } });
+                  }}
+                  className="input-field text-sm flex-1"
+                />
+                <button
+                  onClick={() => {
+                    onHookChange({
+                      exec: {
+                        command: (hook?.exec?.command || []).filter((_, i) => i !== idx),
+                      },
+                    });
+                  }}
+                  className="text-destructive hover:opacity-70"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+          <button
+            onClick={() => {
+              onHookChange({
+                exec: { command: [...(hook?.exec?.command || []), ""] },
+              });
+            }}
+            className="text-primary hover:opacity-70 text-xs"
+          >
+            + Add Command
+          </button>
+        </div>
+      )}
+
+      {/* HTTP Get */}
+      {hookType === "httpGet" && (
+        <div className="space-y-2 pt-2">
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs font-medium text-foreground mb-1">Host</label>
+              <input
+                type="text"
+                value={hook?.httpGet?.host || ""}
+                onChange={(e) => {
+                  onHookChange({
+                    httpGet: { ...hook?.httpGet, host: e.target.value || undefined, path: hook?.httpGet?.path || "", port: hook?.httpGet?.port || 80 },
+                  });
+                }}
+                placeholder="localhost"
+                className="input-field text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-foreground mb-1">Port</label>
+              <input
+                type="number"
+                value={hook?.httpGet?.port || 80}
+                onChange={(e) => {
+                  onHookChange({
+                    httpGet: { ...hook?.httpGet, port: parseInt(e.target.value) || 80, path: hook?.httpGet?.path || "" },
+                  });
+                }}
+                className="input-field text-sm"
+              />
+            </div>
+            <div className="col-span-2">
+              <label className="block text-xs font-medium text-foreground mb-1">Path</label>
+              <input
+                type="text"
+                value={hook?.httpGet?.path || ""}
+                onChange={(e) => {
+                  onHookChange({
+                    httpGet: { ...hook?.httpGet, path: e.target.value, port: hook?.httpGet?.port || 80 },
+                  });
+                }}
+                placeholder="/healthz"
+                className="input-field text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-foreground mb-1">Scheme</label>
+              <select
+                value={hook?.httpGet?.scheme || "HTTP"}
+                onChange={(e) => {
+                  onHookChange({
+                    httpGet: { ...hook?.httpGet, scheme: e.target.value, path: hook?.httpGet?.path || "", port: hook?.httpGet?.port || 80 },
+                  });
+                }}
+                className="input-field text-sm"
+              >
+                <option value="HTTP">HTTP</option>
+                <option value="HTTPS">HTTPS</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-foreground mb-2">HTTP Headers</label>
+            <div className="space-y-1">
+              {(hook?.httpGet?.httpHeaders || []).map((header, idx) => (
+                <div key={idx} className="flex gap-2 items-center">
+                  <input
+                    type="text"
+                    value={header.name}
+                    onChange={(e) => {
+                      const updated = [...(hook?.httpGet?.httpHeaders || [])];
+                      updated[idx] = { ...header, name: e.target.value };
+                      onHookChange({
+                        httpGet: { ...hook?.httpGet, httpHeaders: updated, path: hook?.httpGet?.path || "", port: hook?.httpGet?.port || 80 },
+                      });
+                    }}
+                    placeholder="Header Name"
+                    className="input-field text-sm flex-1"
+                  />
+                  <input
+                    type="text"
+                    value={header.value}
+                    onChange={(e) => {
+                      const updated = [...(hook?.httpGet?.httpHeaders || [])];
+                      updated[idx] = { ...header, value: e.target.value };
+                      onHookChange({
+                        httpGet: { ...hook?.httpGet, httpHeaders: updated, path: hook?.httpGet?.path || "", port: hook?.httpGet?.port || 80 },
+                      });
+                    }}
+                    placeholder="Header Value"
+                    className="input-field text-sm flex-1"
+                  />
+                  <button
+                    onClick={() => {
+                      onHookChange({
+                        httpGet: {
+                          ...hook?.httpGet,
+                          httpHeaders: (hook?.httpGet?.httpHeaders || []).filter((_, i) => i !== idx),
+                          path: hook?.httpGet?.path || "",
+                          port: hook?.httpGet?.port || 80,
+                        },
+                      });
+                    }}
+                    className="text-destructive hover:opacity-70"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={() => {
+                onHookChange({
+                  httpGet: {
+                    ...hook?.httpGet,
+                    httpHeaders: [...(hook?.httpGet?.httpHeaders || []), { name: "", value: "" }],
+                    path: hook?.httpGet?.path || "",
+                    port: hook?.httpGet?.port || 80,
+                  },
+                });
+              }}
+              className="text-primary hover:opacity-70 text-xs"
+            >
+              + Add Header
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* TCP Socket */}
+      {hookType === "tcpSocket" && (
+        <div className="space-y-2 pt-2">
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs font-medium text-foreground mb-1">Host</label>
+              <input
+                type="text"
+                value={hook?.tcpSocket?.host || ""}
+                onChange={(e) => {
+                  onHookChange({
+                    tcpSocket: { ...hook?.tcpSocket, host: e.target.value || undefined, port: hook?.tcpSocket?.port || 8080 },
+                  });
+                }}
+                placeholder="localhost"
+                className="input-field text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-foreground mb-1">Port*</label>
+              <input
+                type="number"
+                value={hook?.tcpSocket?.port || 8080}
+                onChange={(e) => {
+                  onHookChange({
+                    tcpSocket: { ...hook?.tcpSocket, port: parseInt(e.target.value) || 8080 },
+                  });
+                }}
+                className="input-field text-sm"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sleep */}
+      {hookType === "sleep" && (
+        <div className="space-y-2 pt-2">
+          <label className="block text-xs font-medium text-foreground mb-1">Sleep Duration (seconds)</label>
+          <input
+            type="number"
+            value={hook?.sleep?.seconds || 5}
+            onChange={(e) => {
+              onHookChange({
+                sleep: { seconds: parseInt(e.target.value) || 5 },
+              });
+            }}
+            min="1"
+            className="input-field text-sm"
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
 const sections: ConfigSection[] = [
   { id: "basic", title: "Basic", description: "Name, image, and working directory" },
   { id: "ports", title: "Ports", description: "Exposed ports and protocols" },
