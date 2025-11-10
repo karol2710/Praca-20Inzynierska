@@ -602,61 +602,84 @@ export default function CreateChart() {
                     )}
                   </div>
 
-                  {/* Add Container */}
-                  <div className="mb-8 p-6 bg-muted/30 rounded-lg border border-border">
-                    <h3 className="font-semibold text-foreground mb-4">Add Container</h3>
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-foreground mb-2">Image</label>
-                        <input
-                          type="text"
-                          value={newContainerImage}
-                          onChange={(e) => setNewContainerImage(e.target.value)}
-                          placeholder="nginx:latest"
-                          className="input-field"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-foreground mb-2">Port</label>
-                        <input
-                          type="number"
-                          value={newContainerPort}
-                          onChange={(e) => setNewContainerPort(e.target.value)}
-                          placeholder="8080"
-                          className="input-field"
-                        />
-                      </div>
+                  {/* Containers Section */}
+                  <div className="mb-8">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-semibold text-foreground">Containers</h3>
                       <button
                         onClick={addContainer}
-                        className="btn-primary w-full"
+                        className="text-primary hover:opacity-70 text-sm flex items-center gap-1"
                       >
-                        <Plus className="w-5 h-5 inline mr-2" />
+                        <Plus className="w-4 h-4" />
                         Add Container
                       </button>
                     </div>
+
+                    {activeWorkload.containers.length > 0 ? (
+                      <div className="space-y-3">
+                        {activeWorkload.containers.map((container) => (
+                          <div
+                            key={container.id}
+                            className={`p-4 bg-muted/20 border-2 rounded-lg transition-all cursor-pointer ${
+                              editingContainerId === container.id && editingWorkloadId === activeWorkload.id
+                                ? "border-primary bg-primary/5"
+                                : "border-border hover:border-primary/30"
+                            }`}
+                          >
+                            <div
+                              onClick={() => {
+                                setEditingContainerId(container.id);
+                                setEditingWorkloadId(activeWorkload.id);
+                              }}
+                              className="flex items-center justify-between"
+                            >
+                              <div>
+                                <p className="font-semibold text-foreground">
+                                  {container.name || "(unnamed)"}
+                                </p>
+                                <p className="text-sm text-foreground/60">{container.image || "No image"}</p>
+                              </div>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteContainer(activeWorkload.id, container.id);
+                                }}
+                                className="text-destructive hover:bg-destructive/10 p-1 rounded hover:opacity-75 transition-opacity"
+                              >
+                                <X className="w-5 h-5" />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-foreground/60 text-sm py-4">No containers added yet</p>
+                    )}
                   </div>
 
-                  {/* Containers List */}
-                  {activeWorkload.containers.length > 0 && (
-                    <div className="space-y-3">
-                      <h3 className="font-semibold text-foreground">Containers</h3>
-                      {activeWorkload.containers.map((container) => (
-                        <div
-                          key={container.id}
-                          className="p-4 bg-muted/20 border border-border rounded-lg flex items-center justify-between"
+                  {/* Container Configuration */}
+                  {editingContainerId && editingWorkloadId === activeWorkload.id && (
+                    <div className="mb-8 p-6 bg-muted/30 rounded-lg border border-border">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-semibold text-foreground">
+                          Configure Container: {activeWorkload.containers.find((c) => c.id === editingContainerId)?.name || "(unnamed)"}
+                        </h3>
+                        <button
+                          onClick={() => {
+                            setEditingContainerId("");
+                            setEditingWorkloadId("");
+                          }}
+                          className="text-foreground/60 hover:text-foreground"
                         >
-                          <div>
-                            <p className="font-semibold text-foreground">{container.image}</p>
-                            <p className="text-sm text-foreground/60">Port: {container.port}</p>
-                          </div>
-                          <button
-                            onClick={() => deleteContainer(activeWorkload.id, container.id)}
-                            className="text-destructive hover:bg-destructive/10 p-1 rounded"
-                          >
-                            <X className="w-5 h-5" />
-                          </button>
-                        </div>
-                      ))}
+                          <X className="w-5 h-5" />
+                        </button>
+                      </div>
+                      <ContainerConfiguration
+                        container={activeWorkload.containers.find((c) => c.id === editingContainerId) || {}}
+                        onConfigChange={(key, value) =>
+                          updateContainerConfig(activeWorkload.id, editingContainerId, key, value)
+                        }
+                      />
                     </div>
                   )}
                 </div>
