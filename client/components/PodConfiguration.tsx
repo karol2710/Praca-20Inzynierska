@@ -214,6 +214,12 @@ const configSections: ConfigSection[] = [
     ],
   },
   {
+    id: "tolerations",
+    title: "Tolerations",
+    description: "Pod tolerations for node taints",
+    fields: [],
+  },
+  {
     id: "affinity",
     title: "Pod Affinity",
     description: "Node and pod affinity/anti-affinity rules",
