@@ -121,6 +121,12 @@ interface LifecycleHookEditorProps {
   onHookChange: (hook?: LifecycleHook) => void;
 }
 
+interface ProbeEditorProps {
+  title: string;
+  probe?: ProbeConfig;
+  onProbeChange: (probe?: ProbeConfig) => void;
+}
+
 function LifecycleHookEditor({ title, hook, onHookChange }: LifecycleHookEditorProps) {
   const [hookType, setHookType] = useState<"exec" | "httpGet" | "sleep" | undefined>(
     hook?.exec ? "exec" : hook?.httpGet ? "httpGet" : hook?.sleep ? "sleep" : undefined
