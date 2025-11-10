@@ -323,12 +323,6 @@ const configSections: ConfigSection[] = [
     fields: [],
   },
   {
-    id: "storage",
-    title: "Storage & Images",
-    description: "Volumes configuration",
-    fields: [],
-  },
-  {
     id: "tolerations",
     title: "Tolerations",
     description: "Pod tolerations for node taints",
