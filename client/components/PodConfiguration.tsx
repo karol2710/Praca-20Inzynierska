@@ -58,6 +58,94 @@ interface TopologySpreadConstraint {
   nodeTaintsPolicy?: string;
 }
 
+interface VolumeItem {
+  key?: string;
+  mode?: number;
+  path?: string;
+}
+
+interface OwnerReference {
+  apiVersion?: string;
+  blockOwnerDeletion?: boolean;
+  controller?: boolean;
+  kind?: string;
+  name?: string;
+  uid?: string;
+}
+
+interface VolumeMetadata {
+  annotations?: Record<string, string>;
+  creationTimestamp?: string;
+  deletionGracePeriodSeconds?: number;
+  labels?: Record<string, string>;
+  name?: string;
+  namespace?: string;
+  ownerReferences?: OwnerReference[];
+  uid?: string;
+}
+
+interface DataSource {
+  apiGroup?: string;
+  kind?: string;
+  name?: string;
+}
+
+interface ResourceRequirements {
+  limits?: Record<string, string>;
+  requests?: Record<string, string>;
+}
+
+interface VolumeClaimSpec {
+  accessModes?: string[];
+  dataSource?: DataSource;
+  dataSourceRef?: {
+    apiGroup?: string;
+    kind?: string;
+    name?: string;
+    namespace?: string;
+  };
+  resources?: ResourceRequirements;
+  selector?: LabelSelector;
+  storageClassName?: string;
+  volumeAttributesClassName?: string;
+  volumeMode?: string;
+  volumeName?: string;
+}
+
+interface VolumeClaimTemplate {
+  metadata?: VolumeMetadata;
+  spec?: VolumeClaimSpec;
+}
+
+interface Volume {
+  name: string;
+  configMap?: {
+    defaultMode?: number;
+    name?: string;
+    items?: VolumeItem[];
+  };
+  emptyDir?: {
+    medium?: string;
+    sizeLimit?: string;
+  };
+  ephemeral?: {
+    volumeClaimTemplate?: VolumeClaimTemplate;
+  };
+  hostPath?: {
+    path?: string;
+    type?: string;
+  };
+  persistentVolumeClaim?: {
+    claimName?: string;
+    readOnly?: boolean;
+  };
+  secret?: {
+    defaultMode?: number;
+    items?: VolumeItem[];
+    secretName?: string;
+  };
+}
+
 interface PodConfig {
   labels?: Record<string, string>;
   annotations?: Record<string, string>;
