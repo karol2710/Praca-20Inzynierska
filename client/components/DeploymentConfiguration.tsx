@@ -157,8 +157,8 @@ export default function DeploymentConfiguration({ config, onConfigChange }: Depl
             />
           </button>
 
-          {/* Section Content */}
-          {expandedSections.has(section.id) && (
+          {/* Metadata Section Content */}
+          {expandedSections.has(section.id) && section.id === "metadata" && (
             <div className="px-4 py-4 border-t border-border bg-muted/10 space-y-4">
               {/* Labels */}
               <div>
@@ -361,8 +361,8 @@ export default function DeploymentConfiguration({ config, onConfigChange }: Depl
             </div>
           )}
 
-          {/* Spec Section */}
-          {section.id === "spec" && (
+          {/* Spec Section Content */}
+          {expandedSections.has(section.id) && section.id === "spec" && (
             <div className="px-4 py-4 border-t border-border bg-muted/10 space-y-4">
               {/* Min Ready Seconds */}
               <div>
