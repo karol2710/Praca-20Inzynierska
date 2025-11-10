@@ -325,10 +325,8 @@ const configSections: ConfigSection[] = [
   {
     id: "storage",
     title: "Storage & Images",
-    description: "Volumes and image pull settings",
-    fields: [
-      { key: "imagePullSecrets", label: "Image Pull Secrets", type: "tags", description: "Names of image pull secrets" },
-    ],
+    description: "Volumes configuration",
+    fields: [],
   },
   {
     id: "tolerations",
