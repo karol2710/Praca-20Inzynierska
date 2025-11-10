@@ -317,6 +317,99 @@ export default function PodConfiguration({ config, onConfigChange }: PodConfigur
                   affinity={config.affinity || {}}
                   onAffinityChange={(affinity) => onConfigChange("affinity", affinity)}
                 />
+              ) : section.id === "hostAliases" ? (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h5 className="font-medium text-foreground text-sm">Host Aliases</h5>
+                    <button
+                      onClick={() => {
+                        const aliases = config.hostAliases || [];
+                        onConfigChange("hostAliases", [...aliases, { ip: "", hostnames: [] }]);
+                      }}
+                      className="text-primary hover:opacity-70 text-sm"
+                    >
+                      + Add Alias
+                    </button>
+                  </div>
+                  <div className="space-y-3">
+                    {(config.hostAliases || []).map((alias, idx) => (
+                      <div key={idx} className="p-4 bg-muted/20 border border-border rounded-lg space-y-3">
+                        <div>
+                          <label className="block text-xs font-medium text-foreground mb-1">IP Address*</label>
+                          <input
+                            type="text"
+                            value={alias.ip}
+                            onChange={(e) => {
+                              const updated = [...(config.hostAliases || [])];
+                              updated[idx] = { ...alias, ip: e.target.value };
+                              onConfigChange("hostAliases", updated);
+                            }}
+                            placeholder="127.0.0.1"
+                            className="input-field text-sm"
+                          />
+                        </div>
+
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <label className="block text-xs font-medium text-foreground">Hostnames</label>
+                            <button
+                              onClick={() => {
+                                const updated = [...(config.hostAliases || [])];
+                                updated[idx] = { ...alias, hostnames: [...(alias.hostnames || []), ""] };
+                                onConfigChange("hostAliases", updated);
+                              }}
+                              className="text-primary hover:opacity-70 text-xs"
+                            >
+                              + Add Hostname
+                            </button>
+                          </div>
+                          <div className="space-y-2">
+                            {(alias.hostnames || []).map((hostname, hIdx) => (
+                              <div key={hIdx} className="flex gap-2">
+                                <input
+                                  type="text"
+                                  value={hostname}
+                                  onChange={(e) => {
+                                    const updated = [...(config.hostAliases || [])];
+                                    const hostnames = [...(alias.hostnames || [])];
+                                    hostnames[hIdx] = e.target.value;
+                                    updated[idx] = { ...alias, hostnames };
+                                    onConfigChange("hostAliases", updated);
+                                  }}
+                                  placeholder="localhost.example.com"
+                                  className="input-field text-sm flex-1"
+                                />
+                                <button
+                                  onClick={() => {
+                                    const updated = [...(config.hostAliases || [])];
+                                    const hostnames = (alias.hostnames || []).filter((_, i) => i !== hIdx);
+                                    updated[idx] = { ...alias, hostnames };
+                                    onConfigChange("hostAliases", updated);
+                                  }}
+                                  className="px-3 py-2 text-destructive hover:bg-destructive/10 rounded"
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={() => {
+                            onConfigChange(
+                              "hostAliases",
+                              config.hostAliases?.filter((_, i) => i !== idx)
+                            );
+                          }}
+                          className="w-full text-xs text-destructive hover:bg-destructive/10 py-1.5 rounded transition-colors"
+                        >
+                          Remove Alias
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               ) : section.id === "dns" ? (
                 <div className="space-y-6">
                   {/* Name Servers */}
