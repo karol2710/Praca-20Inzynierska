@@ -1010,8 +1010,30 @@ export default function ContainerConfiguration({
 
       case "lifecycle":
         return (
-          <div className="space-y-4 text-sm">
-            <p className="text-foreground/60">Lifecycle hooks (PostStart, PreStop) configuration coming in depth</p>
+          <div className="space-y-6">
+            {/* PostStart Hook */}
+            <LifecycleHookEditor
+              title="PostStart"
+              hook={container.lifecycle?.postStart}
+              onHookChange={(hook) => {
+                onConfigChange("lifecycle", {
+                  ...container.lifecycle,
+                  postStart: hook,
+                });
+              }}
+            />
+
+            {/* PreStop Hook */}
+            <LifecycleHookEditor
+              title="PreStop"
+              hook={container.lifecycle?.preStop}
+              onHookChange={(hook) => {
+                onConfigChange("lifecycle", {
+                  ...container.lifecycle,
+                  preStop: hook,
+                });
+              }}
+            />
           </div>
         );
 
