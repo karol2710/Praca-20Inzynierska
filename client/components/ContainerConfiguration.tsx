@@ -21,7 +21,16 @@ export interface ContainerConfig {
   args?: string[];
   
   // Environment
-  env?: { name: string; value: string }[];
+  env?: {
+    name: string;
+    value?: string;
+    valueFrom?: {
+      configMapKeyRef?: { name: string; key: string };
+      fieldRef?: { apiVersion: string; fieldPath: string };
+      resourceFieldRef?: { containerName?: string; divisor?: string; resource: string };
+      secretKeyRef?: { name: string; key: string };
+    };
+  }[];
   envFrom?: { configMapRef?: string; secretRef?: string }[];
   
   // Resources
