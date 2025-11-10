@@ -17,6 +17,14 @@ interface PodConfig {
   hostname?: string;
   subdomain?: string;
   dnsPolicy?: string;
+  dnsConfig?: {
+    nameServers?: string[];
+    searches?: string[];
+    options?: {
+      name: string;
+      value?: string;
+    }[];
+  };
   enableServiceLinks?: boolean;
   hostNetwork?: boolean;
   hostIPC?: boolean;
