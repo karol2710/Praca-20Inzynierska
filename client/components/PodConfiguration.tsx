@@ -2500,7 +2500,489 @@ export default function PodConfiguration({ config, onConfigChange }: PodConfigur
                                 </div>
                               </div>
 
-                              <p className="text-xs text-foreground/40">Note: Data Source, Data Source Reference, Resources, and Selector configuration is available but requires advanced YAML editing for full functionality.</p>
+                              {/* Data Source */}
+                              <div className="border-t border-border/50 pt-3">
+                                <h6 className="text-xs font-medium text-foreground mb-2">Data Source</h6>
+                                <div className="grid grid-cols-3 gap-2">
+                                  <div>
+                                    <label className="block text-xs font-medium text-foreground mb-1">API Group</label>
+                                    <input
+                                      type="text"
+                                      value={volume.ephemeral?.volumeClaimTemplate?.spec?.dataSource?.apiGroup || ""}
+                                      onChange={(e) => {
+                                        const updated = [...(config.volumes || [])];
+                                        const spec = { ...volume.ephemeral?.volumeClaimTemplate?.spec };
+                                        spec.dataSource = { ...spec.dataSource, apiGroup: e.target.value || undefined };
+                                        updated[idx] = { ...volume, ephemeral: { volumeClaimTemplate: { ...volume.ephemeral?.volumeClaimTemplate, spec } } };
+                                        onConfigChange("volumes", updated);
+                                      }}
+                                      placeholder="snapshot.storage.k8s.io"
+                                      className="input-field text-xs"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-xs font-medium text-foreground mb-1">Kind</label>
+                                    <input
+                                      type="text"
+                                      value={volume.ephemeral?.volumeClaimTemplate?.spec?.dataSource?.kind || ""}
+                                      onChange={(e) => {
+                                        const updated = [...(config.volumes || [])];
+                                        const spec = { ...volume.ephemeral?.volumeClaimTemplate?.spec };
+                                        spec.dataSource = { ...spec.dataSource, kind: e.target.value || undefined };
+                                        updated[idx] = { ...volume, ephemeral: { volumeClaimTemplate: { ...volume.ephemeral?.volumeClaimTemplate, spec } } };
+                                        onConfigChange("volumes", updated);
+                                      }}
+                                      placeholder="VolumeSnapshot"
+                                      className="input-field text-xs"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-xs font-medium text-foreground mb-1">Name</label>
+                                    <input
+                                      type="text"
+                                      value={volume.ephemeral?.volumeClaimTemplate?.spec?.dataSource?.name || ""}
+                                      onChange={(e) => {
+                                        const updated = [...(config.volumes || [])];
+                                        const spec = { ...volume.ephemeral?.volumeClaimTemplate?.spec };
+                                        spec.dataSource = { ...spec.dataSource, name: e.target.value || undefined };
+                                        updated[idx] = { ...volume, ephemeral: { volumeClaimTemplate: { ...volume.ephemeral?.volumeClaimTemplate, spec } } };
+                                        onConfigChange("volumes", updated);
+                                      }}
+                                      placeholder="my-snapshot"
+                                      className="input-field text-xs"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Data Source Reference */}
+                              <div className="border-t border-border/50 pt-3">
+                                <h6 className="text-xs font-medium text-foreground mb-2">Data Source Reference</h6>
+                                <div className="grid grid-cols-4 gap-2">
+                                  <div>
+                                    <label className="block text-xs font-medium text-foreground mb-1">API Group</label>
+                                    <input
+                                      type="text"
+                                      value={volume.ephemeral?.volumeClaimTemplate?.spec?.dataSourceRef?.apiGroup || ""}
+                                      onChange={(e) => {
+                                        const updated = [...(config.volumes || [])];
+                                        const spec = { ...volume.ephemeral?.volumeClaimTemplate?.spec };
+                                        spec.dataSourceRef = { ...spec.dataSourceRef, apiGroup: e.target.value || undefined };
+                                        updated[idx] = { ...volume, ephemeral: { volumeClaimTemplate: { ...volume.ephemeral?.volumeClaimTemplate, spec } } };
+                                        onConfigChange("volumes", updated);
+                                      }}
+                                      placeholder="snapshot.storage.k8s.io"
+                                      className="input-field text-xs"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-xs font-medium text-foreground mb-1">Kind</label>
+                                    <input
+                                      type="text"
+                                      value={volume.ephemeral?.volumeClaimTemplate?.spec?.dataSourceRef?.kind || ""}
+                                      onChange={(e) => {
+                                        const updated = [...(config.volumes || [])];
+                                        const spec = { ...volume.ephemeral?.volumeClaimTemplate?.spec };
+                                        spec.dataSourceRef = { ...spec.dataSourceRef, kind: e.target.value || undefined };
+                                        updated[idx] = { ...volume, ephemeral: { volumeClaimTemplate: { ...volume.ephemeral?.volumeClaimTemplate, spec } } };
+                                        onConfigChange("volumes", updated);
+                                      }}
+                                      placeholder="VolumeSnapshot"
+                                      className="input-field text-xs"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-xs font-medium text-foreground mb-1">Name</label>
+                                    <input
+                                      type="text"
+                                      value={volume.ephemeral?.volumeClaimTemplate?.spec?.dataSourceRef?.name || ""}
+                                      onChange={(e) => {
+                                        const updated = [...(config.volumes || [])];
+                                        const spec = { ...volume.ephemeral?.volumeClaimTemplate?.spec };
+                                        spec.dataSourceRef = { ...spec.dataSourceRef, name: e.target.value || undefined };
+                                        updated[idx] = { ...volume, ephemeral: { volumeClaimTemplate: { ...volume.ephemeral?.volumeClaimTemplate, spec } } };
+                                        onConfigChange("volumes", updated);
+                                      }}
+                                      placeholder="my-snapshot"
+                                      className="input-field text-xs"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-xs font-medium text-foreground mb-1">Namespace</label>
+                                    <input
+                                      type="text"
+                                      value={volume.ephemeral?.volumeClaimTemplate?.spec?.dataSourceRef?.namespace || ""}
+                                      onChange={(e) => {
+                                        const updated = [...(config.volumes || [])];
+                                        const spec = { ...volume.ephemeral?.volumeClaimTemplate?.spec };
+                                        spec.dataSourceRef = { ...spec.dataSourceRef, namespace: e.target.value || undefined };
+                                        updated[idx] = { ...volume, ephemeral: { volumeClaimTemplate: { ...volume.ephemeral?.volumeClaimTemplate, spec } } };
+                                        onConfigChange("volumes", updated);
+                                      }}
+                                      placeholder="default"
+                                      className="input-field text-xs"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Resources */}
+                              <div className="border-t border-border/50 pt-3">
+                                <h6 className="text-xs font-medium text-foreground mb-2">Resources</h6>
+                                <div className="space-y-2">
+                                  {/* Limits */}
+                                  <div>
+                                    <label className="block text-xs font-medium text-foreground mb-1">Limits</label>
+                                    <div className="space-y-1">
+                                      {Object.entries(volume.ephemeral?.volumeClaimTemplate?.spec?.resources?.limits || {}).map(([key, val], lIdx) => (
+                                        <div key={lIdx} className="flex gap-1">
+                                          <input
+                                            type="text"
+                                            value={key}
+                                            onChange={(e) => {
+                                              const updated = [...(config.volumes || [])];
+                                              const spec = { ...volume.ephemeral?.volumeClaimTemplate?.spec };
+                                              const limits = { ...spec.resources?.limits };
+                                              delete limits[key];
+                                              limits[e.target.value] = val;
+                                              spec.resources = { ...spec.resources, limits };
+                                              updated[idx] = { ...volume, ephemeral: { volumeClaimTemplate: { ...volume.ephemeral?.volumeClaimTemplate, spec } } };
+                                              onConfigChange("volumes", updated);
+                                            }}
+                                            placeholder="storage"
+                                            className="input-field text-xs flex-1"
+                                          />
+                                          <input
+                                            type="text"
+                                            value={val}
+                                            onChange={(e) => {
+                                              const updated = [...(config.volumes || [])];
+                                              const spec = { ...volume.ephemeral?.volumeClaimTemplate?.spec };
+                                              const limits = { ...spec.resources?.limits };
+                                              limits[key] = e.target.value;
+                                              spec.resources = { ...spec.resources, limits };
+                                              updated[idx] = { ...volume, ephemeral: { volumeClaimTemplate: { ...volume.ephemeral?.volumeClaimTemplate, spec } } };
+                                              onConfigChange("volumes", updated);
+                                            }}
+                                            placeholder="10Gi"
+                                            className="input-field text-xs flex-1"
+                                          />
+                                          <button
+                                            onClick={() => {
+                                              const updated = [...(config.volumes || [])];
+                                              const spec = { ...volume.ephemeral?.volumeClaimTemplate?.spec };
+                                              const limits = { ...spec.resources?.limits };
+                                              delete limits[key];
+                                              spec.resources = { ...spec.resources, limits: Object.keys(limits).length > 0 ? limits : undefined };
+                                              updated[idx] = { ...volume, ephemeral: { volumeClaimTemplate: { ...volume.ephemeral?.volumeClaimTemplate, spec } } };
+                                              onConfigChange("volumes", updated);
+                                            }}
+                                            className="px-2 py-1 text-destructive hover:bg-destructive/10 rounded text-xs"
+                                          >
+                                            ×
+                                          </button>
+                                        </div>
+                                      ))}
+                                      <button
+                                        onClick={() => {
+                                          const updated = [...(config.volumes || [])];
+                                          const spec = { ...volume.ephemeral?.volumeClaimTemplate?.spec };
+                                          const limits = { ...spec.resources?.limits, "": "" };
+                                          spec.resources = { ...spec.resources, limits };
+                                          updated[idx] = { ...volume, ephemeral: { volumeClaimTemplate: { ...volume.ephemeral?.volumeClaimTemplate, spec } } };
+                                          onConfigChange("volumes", updated);
+                                        }}
+                                        className="text-primary hover:opacity-70 text-xs"
+                                      >
+                                        + Add Limit
+                                      </button>
+                                    </div>
+                                  </div>
+
+                                  {/* Requests */}
+                                  <div>
+                                    <label className="block text-xs font-medium text-foreground mb-1">Requests</label>
+                                    <div className="space-y-1">
+                                      {Object.entries(volume.ephemeral?.volumeClaimTemplate?.spec?.resources?.requests || {}).map(([key, val], rIdx) => (
+                                        <div key={rIdx} className="flex gap-1">
+                                          <input
+                                            type="text"
+                                            value={key}
+                                            onChange={(e) => {
+                                              const updated = [...(config.volumes || [])];
+                                              const spec = { ...volume.ephemeral?.volumeClaimTemplate?.spec };
+                                              const requests = { ...spec.resources?.requests };
+                                              delete requests[key];
+                                              requests[e.target.value] = val;
+                                              spec.resources = { ...spec.resources, requests };
+                                              updated[idx] = { ...volume, ephemeral: { volumeClaimTemplate: { ...volume.ephemeral?.volumeClaimTemplate, spec } } };
+                                              onConfigChange("volumes", updated);
+                                            }}
+                                            placeholder="storage"
+                                            className="input-field text-xs flex-1"
+                                          />
+                                          <input
+                                            type="text"
+                                            value={val}
+                                            onChange={(e) => {
+                                              const updated = [...(config.volumes || [])];
+                                              const spec = { ...volume.ephemeral?.volumeClaimTemplate?.spec };
+                                              const requests = { ...spec.resources?.requests };
+                                              requests[key] = e.target.value;
+                                              spec.resources = { ...spec.resources, requests };
+                                              updated[idx] = { ...volume, ephemeral: { volumeClaimTemplate: { ...volume.ephemeral?.volumeClaimTemplate, spec } } };
+                                              onConfigChange("volumes", updated);
+                                            }}
+                                            placeholder="5Gi"
+                                            className="input-field text-xs flex-1"
+                                          />
+                                          <button
+                                            onClick={() => {
+                                              const updated = [...(config.volumes || [])];
+                                              const spec = { ...volume.ephemeral?.volumeClaimTemplate?.spec };
+                                              const requests = { ...spec.resources?.requests };
+                                              delete requests[key];
+                                              spec.resources = { ...spec.resources, requests: Object.keys(requests).length > 0 ? requests : undefined };
+                                              updated[idx] = { ...volume, ephemeral: { volumeClaimTemplate: { ...volume.ephemeral?.volumeClaimTemplate, spec } } };
+                                              onConfigChange("volumes", updated);
+                                            }}
+                                            className="px-2 py-1 text-destructive hover:bg-destructive/10 rounded text-xs"
+                                          >
+                                            ×
+                                          </button>
+                                        </div>
+                                      ))}
+                                      <button
+                                        onClick={() => {
+                                          const updated = [...(config.volumes || [])];
+                                          const spec = { ...volume.ephemeral?.volumeClaimTemplate?.spec };
+                                          const requests = { ...spec.resources?.requests, "": "" };
+                                          spec.resources = { ...spec.resources, requests };
+                                          updated[idx] = { ...volume, ephemeral: { volumeClaimTemplate: { ...volume.ephemeral?.volumeClaimTemplate, spec } } };
+                                          onConfigChange("volumes", updated);
+                                        }}
+                                        className="text-primary hover:opacity-70 text-xs"
+                                      >
+                                        + Add Request
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Selector */}
+                              <div className="border-t border-border/50 pt-3">
+                                <h6 className="text-xs font-medium text-foreground mb-2">Selector</h6>
+
+                                {/* Match Labels */}
+                                <div className="mb-3">
+                                  <div className="flex items-center justify-between mb-1">
+                                    <label className="block text-xs font-medium text-foreground">Match Labels</label>
+                                    <button
+                                      onClick={() => {
+                                        const updated = [...(config.volumes || [])];
+                                        const spec = { ...volume.ephemeral?.volumeClaimTemplate?.spec };
+                                        const labels = { ...spec.selector?.matchLabels, "": "" };
+                                        spec.selector = { ...spec.selector, matchLabels: labels };
+                                        updated[idx] = { ...volume, ephemeral: { volumeClaimTemplate: { ...volume.ephemeral?.volumeClaimTemplate, spec } } };
+                                        onConfigChange("volumes", updated);
+                                      }}
+                                      className="text-primary hover:opacity-70 text-xs"
+                                    >
+                                      + Add
+                                    </button>
+                                  </div>
+                                  <div className="space-y-1">
+                                    {Object.entries(volume.ephemeral?.volumeClaimTemplate?.spec?.selector?.matchLabels || {}).map(([key, val], lIdx) => (
+                                      <div key={lIdx} className="flex gap-1">
+                                        <input
+                                          type="text"
+                                          value={key}
+                                          onChange={(e) => {
+                                            const updated = [...(config.volumes || [])];
+                                            const spec = { ...volume.ephemeral?.volumeClaimTemplate?.spec };
+                                            const labels = { ...spec.selector?.matchLabels };
+                                            delete labels[key];
+                                            labels[e.target.value] = val;
+                                            spec.selector = { ...spec.selector, matchLabels: labels };
+                                            updated[idx] = { ...volume, ephemeral: { volumeClaimTemplate: { ...volume.ephemeral?.volumeClaimTemplate, spec } } };
+                                            onConfigChange("volumes", updated);
+                                          }}
+                                          placeholder="key"
+                                          className="input-field text-xs flex-1"
+                                        />
+                                        <input
+                                          type="text"
+                                          value={val}
+                                          onChange={(e) => {
+                                            const updated = [...(config.volumes || [])];
+                                            const spec = { ...volume.ephemeral?.volumeClaimTemplate?.spec };
+                                            const labels = { ...spec.selector?.matchLabels };
+                                            labels[key] = e.target.value;
+                                            spec.selector = { ...spec.selector, matchLabels: labels };
+                                            updated[idx] = { ...volume, ephemeral: { volumeClaimTemplate: { ...volume.ephemeral?.volumeClaimTemplate, spec } } };
+                                            onConfigChange("volumes", updated);
+                                          }}
+                                          placeholder="value"
+                                          className="input-field text-xs flex-1"
+                                        />
+                                        <button
+                                          onClick={() => {
+                                            const updated = [...(config.volumes || [])];
+                                            const spec = { ...volume.ephemeral?.volumeClaimTemplate?.spec };
+                                            const labels = { ...spec.selector?.matchLabels };
+                                            delete labels[key];
+                                            spec.selector = { ...spec.selector, matchLabels: Object.keys(labels).length > 0 ? labels : undefined };
+                                            updated[idx] = { ...volume, ephemeral: { volumeClaimTemplate: { ...volume.ephemeral?.volumeClaimTemplate, spec } } };
+                                            onConfigChange("volumes", updated);
+                                          }}
+                                          className="px-2 py-1 text-destructive hover:bg-destructive/10 rounded text-xs"
+                                        >
+                                          ×
+                                        </button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+
+                                {/* Match Expressions */}
+                                <div>
+                                  <div className="flex items-center justify-between mb-1">
+                                    <label className="block text-xs font-medium text-foreground">Match Expressions</label>
+                                    <button
+                                      onClick={() => {
+                                        const updated = [...(config.volumes || [])];
+                                        const spec = { ...volume.ephemeral?.volumeClaimTemplate?.spec };
+                                        const expressions = [...(spec.selector?.matchExpressions || []), { key: "", operator: "In", values: [] }];
+                                        spec.selector = { ...spec.selector, matchExpressions: expressions };
+                                        updated[idx] = { ...volume, ephemeral: { volumeClaimTemplate: { ...volume.ephemeral?.volumeClaimTemplate, spec } } };
+                                        onConfigChange("volumes", updated);
+                                      }}
+                                      className="text-primary hover:opacity-70 text-xs"
+                                    >
+                                      + Add
+                                    </button>
+                                  </div>
+                                  <div className="space-y-2">
+                                    {(volume.ephemeral?.volumeClaimTemplate?.spec?.selector?.matchExpressions || []).map((expr, eIdx) => (
+                                      <div key={eIdx} className="p-2 bg-muted/5 rounded border border-border/30 space-y-1">
+                                        <div className="grid grid-cols-2 gap-1">
+                                          <div>
+                                            <label className="block text-xs font-medium text-foreground mb-0.5">Key</label>
+                                            <input
+                                              type="text"
+                                              value={expr.key}
+                                              onChange={(e) => {
+                                                const updated = [...(config.volumes || [])];
+                                                const spec = { ...volume.ephemeral?.volumeClaimTemplate?.spec };
+                                                const expressions = [...(spec.selector?.matchExpressions || [])];
+                                                expressions[eIdx] = { ...expr, key: e.target.value };
+                                                spec.selector = { ...spec.selector, matchExpressions: expressions };
+                                                updated[idx] = { ...volume, ephemeral: { volumeClaimTemplate: { ...volume.ephemeral?.volumeClaimTemplate, spec } } };
+                                                onConfigChange("volumes", updated);
+                                              }}
+                                              placeholder="app"
+                                              className="input-field text-xs"
+                                            />
+                                          </div>
+                                          <div>
+                                            <label className="block text-xs font-medium text-foreground mb-0.5">Operator</label>
+                                            <select
+                                              value={expr.operator}
+                                              onChange={(e) => {
+                                                const updated = [...(config.volumes || [])];
+                                                const spec = { ...volume.ephemeral?.volumeClaimTemplate?.spec };
+                                                const expressions = [...(spec.selector?.matchExpressions || [])];
+                                                expressions[eIdx] = { ...expr, operator: e.target.value };
+                                                spec.selector = { ...spec.selector, matchExpressions: expressions };
+                                                updated[idx] = { ...volume, ephemeral: { volumeClaimTemplate: { ...volume.ephemeral?.volumeClaimTemplate, spec } } };
+                                                onConfigChange("volumes", updated);
+                                              }}
+                                              className="input-field text-xs"
+                                            >
+                                              <option value="In">In</option>
+                                              <option value="NotIn">NotIn</option>
+                                              <option value="Exists">Exists</option>
+                                              <option value="DoesNotExist">DoesNotExist</option>
+                                              <option value="Gt">Gt</option>
+                                              <option value="Lt">Lt</option>
+                                            </select>
+                                          </div>
+                                        </div>
+                                        <div>
+                                          <label className="block text-xs font-medium text-foreground mb-0.5">Values</label>
+                                          <div className="space-y-1">
+                                            {(expr.values || []).map((val, vIdx) => (
+                                              <div key={vIdx} className="flex gap-1">
+                                                <input
+                                                  type="text"
+                                                  value={val}
+                                                  onChange={(e) => {
+                                                    const updated = [...(config.volumes || [])];
+                                                    const spec = { ...volume.ephemeral?.volumeClaimTemplate?.spec };
+                                                    const expressions = [...(spec.selector?.matchExpressions || [])];
+                                                    const values = [...(expr.values || [])];
+                                                    values[vIdx] = e.target.value;
+                                                    expressions[eIdx] = { ...expr, values };
+                                                    spec.selector = { ...spec.selector, matchExpressions: expressions };
+                                                    updated[idx] = { ...volume, ephemeral: { volumeClaimTemplate: { ...volume.ephemeral?.volumeClaimTemplate, spec } } };
+                                                    onConfigChange("volumes", updated);
+                                                  }}
+                                                  placeholder="value"
+                                                  className="input-field text-xs flex-1"
+                                                />
+                                                <button
+                                                  onClick={() => {
+                                                    const updated = [...(config.volumes || [])];
+                                                    const spec = { ...volume.ephemeral?.volumeClaimTemplate?.spec };
+                                                    const expressions = [...(spec.selector?.matchExpressions || [])];
+                                                    const values = (expr.values || []).filter((_, i) => i !== vIdx);
+                                                    expressions[eIdx] = { ...expr, values };
+                                                    spec.selector = { ...spec.selector, matchExpressions: expressions };
+                                                    updated[idx] = { ...volume, ephemeral: { volumeClaimTemplate: { ...volume.ephemeral?.volumeClaimTemplate, spec } } };
+                                                    onConfigChange("volumes", updated);
+                                                  }}
+                                                  className="px-2 py-1 text-destructive hover:bg-destructive/10 rounded text-xs"
+                                                >
+                                                  ×
+                                                </button>
+                                              </div>
+                                            ))}
+                                            <button
+                                              onClick={() => {
+                                                const updated = [...(config.volumes || [])];
+                                                const spec = { ...volume.ephemeral?.volumeClaimTemplate?.spec };
+                                                const expressions = [...(spec.selector?.matchExpressions || [])];
+                                                const values = [...(expr.values || []), ""];
+                                                expressions[eIdx] = { ...expr, values };
+                                                spec.selector = { ...spec.selector, matchExpressions: expressions };
+                                                updated[idx] = { ...volume, ephemeral: { volumeClaimTemplate: { ...volume.ephemeral?.volumeClaimTemplate, spec } } };
+                                                onConfigChange("volumes", updated);
+                                              }}
+                                              className="text-primary hover:opacity-70 text-xs"
+                                            >
+                                              + Add Value
+                                            </button>
+                                          </div>
+                                        </div>
+                                        <button
+                                          onClick={() => {
+                                            const updated = [...(config.volumes || [])];
+                                            const spec = { ...volume.ephemeral?.volumeClaimTemplate?.spec };
+                                            const expressions = (spec.selector?.matchExpressions || []).filter((_, i) => i !== eIdx);
+                                            spec.selector = { ...spec.selector, matchExpressions: expressions.length > 0 ? expressions : undefined };
+                                            updated[idx] = { ...volume, ephemeral: { volumeClaimTemplate: { ...volume.ephemeral?.volumeClaimTemplate, spec } } };
+                                            onConfigChange("volumes", updated);
+                                          }}
+                                          className="w-full text-xs text-destructive hover:bg-destructive/10 py-0.5 rounded"
+                                        >
+                                          Remove Expression
+                                        </button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         )}
