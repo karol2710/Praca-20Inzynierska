@@ -409,6 +409,342 @@ function LifecycleHookEditor({ title, hook, onHookChange }: LifecycleHookEditorP
   );
 }
 
+function ProbeEditor({ title, probe, onProbeChange }: ProbeEditorProps) {
+  const [probeType, setProbeType] = useState<"exec" | "httpGet" | "tcpSocket" | "grpc" | undefined>(
+    probe?.exec ? "exec" : probe?.httpGet ? "httpGet" : probe?.tcpSocket ? "tcpSocket" : probe?.grpc ? "grpc" : undefined
+  );
+
+  return (
+    <div className="p-4 bg-muted/20 border border-border rounded-lg space-y-3">
+      <h4 className="font-semibold text-foreground">{title}</h4>
+
+      {/* Probe Type Selection */}
+      <div className="flex flex-wrap gap-2">
+        <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <input
+            type="radio"
+            checked={!probeType}
+            onChange={() => {
+              setProbeType(undefined);
+              onProbeChange(undefined);
+            }}
+            className="w-3 h-3 cursor-pointer"
+          />
+          <span className="text-foreground">None</span>
+        </label>
+        <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <input
+            type="radio"
+            checked={probeType === "exec"}
+            onChange={() => setProbeType("exec")}
+            className="w-3 h-3 cursor-pointer"
+          />
+          <span className="text-foreground">Exec</span>
+        </label>
+        <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <input
+            type="radio"
+            checked={probeType === "httpGet"}
+            onChange={() => setProbeType("httpGet")}
+            className="w-3 h-3 cursor-pointer"
+          />
+          <span className="text-foreground">HTTP Get</span>
+        </label>
+        <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <input
+            type="radio"
+            checked={probeType === "tcpSocket"}
+            onChange={() => setProbeType("tcpSocket")}
+            className="w-3 h-3 cursor-pointer"
+          />
+          <span className="text-foreground">TCP Socket</span>
+        </label>
+        <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <input
+            type="radio"
+            checked={probeType === "grpc"}
+            onChange={() => setProbeType("grpc")}
+            className="w-3 h-3 cursor-pointer"
+          />
+          <span className="text-foreground">gRPC</span>
+        </label>
+      </div>
+
+      {/* Exec */}
+      {probeType === "exec" && (
+        <div className="space-y-2 pt-2">
+          <label className="block text-xs font-medium text-foreground">Commands</label>
+          <div className="space-y-1">
+            {(probe?.exec?.command || []).map((cmd, idx) => (
+              <div key={idx} className="flex gap-2 items-center">
+                <input
+                  type="text"
+                  value={cmd}
+                  onChange={(e) => {
+                    const updated = [...(probe?.exec?.command || [])];
+                    updated[idx] = e.target.value;
+                    onProbeChange({ ...probe, exec: { command: updated } });
+                  }}
+                  className="input-field text-sm flex-1"
+                />
+                <button
+                  onClick={() => {
+                    onProbeChange({
+                      ...probe,
+                      exec: {
+                        command: (probe?.exec?.command || []).filter((_, i) => i !== idx),
+                      },
+                    });
+                  }}
+                  className="text-destructive hover:opacity-70"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+          <button
+            onClick={() => {
+              onProbeChange({
+                ...probe,
+                exec: { command: [...(probe?.exec?.command || []), ""] },
+              });
+            }}
+            className="text-primary hover:opacity-70 text-xs"
+          >
+            + Add Command
+          </button>
+        </div>
+      )}
+
+      {/* HTTP Get */}
+      {probeType === "httpGet" && (
+        <div className="space-y-2 pt-2">
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs font-medium text-foreground mb-1">Port</label>
+              <input
+                type="number"
+                value={probe?.httpGet?.port || 80}
+                onChange={(e) => {
+                  onProbeChange({
+                    ...probe,
+                    httpGet: { ...probe?.httpGet, port: parseInt(e.target.value) || 80, path: probe?.httpGet?.path || "/" },
+                  });
+                }}
+                className="input-field text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-foreground mb-1">Scheme</label>
+              <select
+                value={probe?.httpGet?.scheme || "HTTP"}
+                onChange={(e) => {
+                  onProbeChange({
+                    ...probe,
+                    httpGet: { ...probe?.httpGet, scheme: e.target.value, path: probe?.httpGet?.path || "/", port: probe?.httpGet?.port || 80 },
+                  });
+                }}
+                className="input-field text-sm"
+              >
+                <option value="HTTP">HTTP</option>
+                <option value="HTTPS">HTTPS</option>
+              </select>
+            </div>
+            <div className="col-span-2">
+              <label className="block text-xs font-medium text-foreground mb-1">Path</label>
+              <input
+                type="text"
+                value={probe?.httpGet?.path || ""}
+                onChange={(e) => {
+                  onProbeChange({
+                    ...probe,
+                    httpGet: { ...probe?.httpGet, path: e.target.value, port: probe?.httpGet?.port || 80 },
+                  });
+                }}
+                placeholder="/healthz"
+                className="input-field text-sm"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TCP Socket */}
+      {probeType === "tcpSocket" && (
+        <div className="space-y-2 pt-2">
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs font-medium text-foreground mb-1">Host</label>
+              <input
+                type="text"
+                value={probe?.tcpSocket?.host || ""}
+                onChange={(e) => {
+                  onProbeChange({
+                    ...probe,
+                    tcpSocket: { ...probe?.tcpSocket, host: e.target.value || undefined, port: probe?.tcpSocket?.port || 8080 },
+                  });
+                }}
+                placeholder="localhost"
+                className="input-field text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-foreground mb-1">Port*</label>
+              <input
+                type="number"
+                value={probe?.tcpSocket?.port || 8080}
+                onChange={(e) => {
+                  onProbeChange({
+                    ...probe,
+                    tcpSocket: { ...probe?.tcpSocket, port: parseInt(e.target.value) || 8080 },
+                  });
+                }}
+                className="input-field text-sm"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* gRPC */}
+      {probeType === "grpc" && (
+        <div className="space-y-2 pt-2">
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs font-medium text-foreground mb-1">Port*</label>
+              <input
+                type="number"
+                value={probe?.grpc?.port || 50051}
+                onChange={(e) => {
+                  onProbeChange({
+                    ...probe,
+                    grpc: { ...probe?.grpc, port: parseInt(e.target.value) || 50051 },
+                  });
+                }}
+                className="input-field text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-foreground mb-1">Service</label>
+              <input
+                type="text"
+                value={probe?.grpc?.service || ""}
+                onChange={(e) => {
+                  onProbeChange({
+                    ...probe,
+                    grpc: { ...probe?.grpc, service: e.target.value || undefined, port: probe?.grpc?.port || 50051 },
+                  });
+                }}
+                placeholder="service name"
+                className="input-field text-sm"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Common Probe Settings */}
+      {probeType && (
+        <div className="border-t border-border pt-3 space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-foreground mb-1">Initial Delay (seconds)</label>
+              <input
+                type="number"
+                value={probe?.initialDelaySeconds || 0}
+                onChange={(e) => {
+                  onProbeChange({
+                    ...probe,
+                    initialDelaySeconds: parseInt(e.target.value) || undefined,
+                  });
+                }}
+                min="0"
+                className="input-field text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-foreground mb-1">Timeout (seconds)</label>
+              <input
+                type="number"
+                value={probe?.timeoutSeconds || 1}
+                onChange={(e) => {
+                  onProbeChange({
+                    ...probe,
+                    timeoutSeconds: parseInt(e.target.value) || undefined,
+                  });
+                }}
+                min="1"
+                className="input-field text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-foreground mb-1">Period (seconds)</label>
+              <input
+                type="number"
+                value={probe?.periodSeconds || 10}
+                onChange={(e) => {
+                  onProbeChange({
+                    ...probe,
+                    periodSeconds: parseInt(e.target.value) || undefined,
+                  });
+                }}
+                min="1"
+                className="input-field text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-foreground mb-1">Success Threshold</label>
+              <input
+                type="number"
+                value={probe?.successThreshold || 1}
+                onChange={(e) => {
+                  onProbeChange({
+                    ...probe,
+                    successThreshold: parseInt(e.target.value) || undefined,
+                  });
+                }}
+                min="1"
+                className="input-field text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-foreground mb-1">Failure Threshold</label>
+              <input
+                type="number"
+                value={probe?.failureThreshold || 3}
+                onChange={(e) => {
+                  onProbeChange({
+                    ...probe,
+                    failureThreshold: parseInt(e.target.value) || undefined,
+                  });
+                }}
+                min="1"
+                className="input-field text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-foreground mb-1">Termination Grace Period (seconds)</label>
+              <input
+                type="number"
+                value={probe?.terminationGracePeriodSeconds || ""}
+                onChange={(e) => {
+                  onProbeChange({
+                    ...probe,
+                    terminationGracePeriodSeconds: e.target.value ? parseInt(e.target.value) : undefined,
+                  });
+                }}
+                min="0"
+                className="input-field text-sm"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const sections: ConfigSection[] = [
   { id: "basic", title: "Basic", description: "Name, image, and working directory" },
   { id: "ports", title: "Ports", description: "Exposed ports and protocols" },
