@@ -94,6 +94,7 @@ interface PodConfig {
   }[];
   securityContext?: PodSecurityContext;
   tolerations?: Toleration[];
+  topologySpreadConstraints?: TopologySpreadConstraint[];
   enableServiceLinks?: boolean;
   hostNetwork?: boolean;
   hostIPC?: boolean;
