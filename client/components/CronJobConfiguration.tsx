@@ -529,13 +529,23 @@ export default function CronJobConfiguration({ config, onConfigChange, jobConfig
           {expandedSections.has(section.id) && section.id === "jobTemplate" && (
             <div className="px-4 py-4 border-t border-border bg-muted/10 space-y-4">
               <p className="text-xs text-foreground/60 mb-4">Configure the Job template that will be created by this CronJob</p>
-              <div className="bg-muted/20 border border-border rounded-lg p-4">
-                <p className="text-sm font-medium text-foreground mb-3">Job Spec</p>
-                <div className="text-xs text-foreground/60 space-y-2">
-                  <p>The Job template configuration is managed through the advanced Job configuration panel below.</p>
-                  <p>All Job spec fields (Parallelism, Completions, Backoff Limit, etc.) can be configured there.</p>
+              {jobConfig && onJobConfigChange ? (
+                <JobConfiguration
+                  config={jobConfig}
+                  onConfigChange={(key, value) => {
+                    if (onJobConfigChange) {
+                      onJobConfigChange(key, value);
+                    }
+                  }}
+                />
+              ) : (
+                <div className="bg-muted/20 border border-border rounded-lg p-4">
+                  <p className="text-sm font-medium text-foreground mb-3">Job Template Configuration</p>
+                  <div className="text-xs text-foreground/60 space-y-2">
+                    <p>Job template configuration will appear here when initialized.</p>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
         </div>
