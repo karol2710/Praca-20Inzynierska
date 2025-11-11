@@ -155,6 +155,16 @@ interface WorkloadConfig extends PodConfig {
   daemonSetSpec?: any;
   // DaemonSet Template (Pod)
   daemonSetTemplate?: PodConfig;
+  // Job Metadata
+  jobNamespace?: string;
+  jobLabels?: Record<string, string>;
+  jobAnnotations?: Record<string, string>;
+  jobDeletionGracePeriodSeconds?: number;
+  jobOwnerReferences?: OwnerReference[];
+  // Job Spec
+  jobSpec?: any;
+  // Job Template (Pod)
+  jobTemplate?: PodConfig;
 }
 
 interface Workload {
