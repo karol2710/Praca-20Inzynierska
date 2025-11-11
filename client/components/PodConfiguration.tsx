@@ -223,8 +223,9 @@ const configSections: ConfigSection[] = [
   {
     id: "metadata",
     title: "Metadata",
-    description: "Labels, annotations, and namespace for the Pod",
+    description: "Name, labels, annotations, and namespace for the Pod",
     fields: [
+      { key: "name", label: "Name", type: "text", placeholder: "my-pod", description: "The name of the Pod" },
       { key: "labels", label: "Labels", type: "tags", description: "Key-value labels for Pod selection" },
       { key: "annotations", label: "Annotations", type: "tags", description: "Metadata annotations" },
       { key: "namespace", label: "Namespace", type: "text", placeholder: "default", description: "The namespace where the Pod will be created" },
