@@ -150,6 +150,7 @@ interface PodConfig {
   labels?: Record<string, string>;
   annotations?: Record<string, string>;
   namespace?: string;
+  name?: string;
   podDeathTime?: number;
   terminationGracePeriodSeconds?: number;
   nodeName?: string;
