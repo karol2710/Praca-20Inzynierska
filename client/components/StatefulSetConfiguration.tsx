@@ -1316,6 +1316,60 @@ export default function StatefulSetConfiguration({ config, onConfigChange }: Sta
                             />
                           </div>
 
+                          {/* Resources */}
+                          <div>
+                            <h6 className="text-xs font-medium text-foreground mb-2">Resources</h6>
+                            <div className="space-y-2">
+                              <div>
+                                <label className="block text-xs font-medium text-foreground mb-1">Limits</label>
+                                {renderTagsField(
+                                  template.spec?.resources?.limits,
+                                  (value) => {
+                                    const updated = [...(config.spec?.volumeClaimTemplates || [])];
+                                    updated[idx] = {
+                                      ...template,
+                                      spec: {
+                                        ...template.spec,
+                                        resources: {
+                                          ...template.spec?.resources,
+                                          limits: value,
+                                        },
+                                      },
+                                    };
+                                    onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
+                                  },
+                                  "Limits",
+                                  "Add limit (key=value)"
+                                )}
+                                <p className="text-xs text-foreground/50 mt-1">e.g., storage=10Gi</p>
+                              </div>
+
+                              <div>
+                                <label className="block text-xs font-medium text-foreground mb-1">Requests</label>
+                                {renderTagsField(
+                                  template.spec?.resources?.requests,
+                                  (value) => {
+                                    const updated = [...(config.spec?.volumeClaimTemplates || [])];
+                                    updated[idx] = {
+                                      ...template,
+                                      spec: {
+                                        ...template.spec,
+                                        resources: {
+                                          ...template.spec?.resources,
+                                          requests: value,
+                                        },
+                                      },
+                                    };
+                                    onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
+                                  },
+                                  "Requests",
+                                  "Add request (key=value)"
+                                )}
+                                <p className="text-xs text-foreground/50 mt-1">e.g., storage=10Gi</p>
+                              </div>
+                            </div>
+                          </div>
+
                           {/* Data Source */}
                           <div>
                             <h6 className="text-xs font-medium text-foreground mb-2">Data Source</h6>
