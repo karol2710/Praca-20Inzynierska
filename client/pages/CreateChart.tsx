@@ -931,6 +931,25 @@ export default function CreateChart() {
                               updateWorkloadConfig(activeWorkload.id, configKey, value);
                             }
                           }}
+                          jobConfig={{
+                            namespace: activeWorkload.config.jobNamespace,
+                            labels: activeWorkload.config.jobLabels,
+                            annotations: activeWorkload.config.jobAnnotations,
+                            deletionGracePeriodSeconds: activeWorkload.config.jobDeletionGracePeriodSeconds,
+                            ownerReferences: activeWorkload.config.jobOwnerReferences,
+                            spec: activeWorkload.config.jobSpec,
+                            template: activeWorkload.config.jobTemplate,
+                          }}
+                          onJobConfigChange={(key, value) => {
+                            if (key === "spec") {
+                              updateWorkloadConfig(activeWorkload.id, "jobSpec", value);
+                            } else if (key === "template") {
+                              updateWorkloadConfig(activeWorkload.id, "jobTemplate", value);
+                            } else {
+                              const configKey: keyof WorkloadConfig = `job${key.charAt(0).toUpperCase() + key.slice(1)}` as any;
+                              updateWorkloadConfig(activeWorkload.id, configKey, value);
+                            }
+                          }}
                         />
                       </div>
                     )}
