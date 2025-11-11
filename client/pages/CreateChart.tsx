@@ -501,7 +501,7 @@ export default function CreateChart() {
               </div>
             </div>
             <ul className="space-y-2 text-sm text-foreground/70">
-              <li>✓ Upload existing chart file</li>
+              <li>�� Upload existing chart file</li>
               <li>✓ Provide repository link</li>
               <li>✓ Add kubectl install command</li>
               <li>✓ Deploy in minutes</li>
@@ -911,6 +911,33 @@ export default function CreateChart() {
                               updateWorkloadConfig(activeWorkload.id, "daemonSetTemplate", value);
                             } else {
                               const configKey: keyof WorkloadConfig = `daemonSet${key.charAt(0).toUpperCase() + key.slice(1)}` as any;
+                              updateWorkloadConfig(activeWorkload.id, configKey, value);
+                            }
+                          }}
+                        />
+                      </div>
+                    )}
+
+                    {activeWorkload.type === "Job" && (
+                      <div className="space-y-4">
+                        <p className="text-foreground/60 text-sm font-medium mb-4">Job Configuration</p>
+                        <JobConfiguration
+                          config={{
+                            namespace: activeWorkload.config.jobNamespace,
+                            labels: activeWorkload.config.jobLabels,
+                            annotations: activeWorkload.config.jobAnnotations,
+                            deletionGracePeriodSeconds: activeWorkload.config.jobDeletionGracePeriodSeconds,
+                            ownerReferences: activeWorkload.config.jobOwnerReferences,
+                            spec: activeWorkload.config.jobSpec,
+                            template: activeWorkload.config.jobTemplate,
+                          }}
+                          onConfigChange={(key, value) => {
+                            if (key === "spec") {
+                              updateWorkloadConfig(activeWorkload.id, "jobSpec", value);
+                            } else if (key === "template") {
+                              updateWorkloadConfig(activeWorkload.id, "jobTemplate", value);
+                            } else {
+                              const configKey: keyof WorkloadConfig = `job${key.charAt(0).toUpperCase() + key.slice(1)}` as any;
                               updateWorkloadConfig(activeWorkload.id, configKey, value);
                             }
                           }}
