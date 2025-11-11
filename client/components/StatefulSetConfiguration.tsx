@@ -890,148 +890,515 @@ export default function StatefulSetConfiguration({ config, onConfigChange }: Sta
                 {(config.spec?.volumeClaimTemplates || []).length > 0 ? (
                   <div className="space-y-4">
                     {(config.spec?.volumeClaimTemplates || []).map((template, idx) => (
-                      <div key={idx} className="p-4 bg-muted/20 border border-border rounded-lg space-y-3">
-                        <div>
-                          <label className="block text-xs font-medium text-foreground mb-1">Name</label>
-                          <input
-                            type="text"
-                            value={template.metadata?.name || ""}
-                            onChange={(e) => {
-                              const updated = [...(config.spec?.volumeClaimTemplates || [])];
-                              updated[idx] = {
-                                ...template,
-                                metadata: { ...template.metadata, name: e.target.value || undefined },
-                              };
-                              onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
-                            }}
-                            placeholder="data"
-                            className="input-field text-sm"
-                          />
-                        </div>
+                      <div key={idx} className="p-4 bg-muted/20 border border-border rounded-lg space-y-4">
+                        {/* Metadata Section */}
+                        <div className="bg-muted/10 rounded-lg p-3 space-y-3">
+                          <h6 className="text-sm font-medium text-foreground">Metadata</h6>
 
-                        <div>
-                          <label className="block text-xs font-medium text-foreground mb-1">Access Modes</label>
-                          <div className="space-y-1">
-                            {(template.spec?.accessModes || []).map((mode, mIdx) => (
-                              <div key={mIdx} className="flex gap-1">
-                                <select
-                                  value={mode}
-                                  onChange={(e) => {
-                                    const updated = [...(config.spec?.volumeClaimTemplates || [])];
-                                    const modes = [...(template.spec?.accessModes || [])];
-                                    modes[mIdx] = e.target.value;
-                                    updated[idx] = { ...template, spec: { ...template.spec, accessModes: modes } };
-                                    onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
-                                  }}
-                                  className="input-field text-xs flex-1"
-                                >
-                                  <option value="">Select</option>
-                                  <option value="ReadWriteOnce">ReadWriteOnce</option>
-                                  <option value="ReadOnlyMany">ReadOnlyMany</option>
-                                  <option value="ReadWriteMany">ReadWriteMany</option>
-                                </select>
-                                <button
-                                  onClick={() => {
-                                    const updated = [...(config.spec?.volumeClaimTemplates || [])];
-                                    const modes = (template.spec?.accessModes || []).filter((_, i) => i !== mIdx);
-                                    updated[idx] = { ...template, spec: { ...template.spec, accessModes: modes } };
-                                    onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
-                                  }}
-                                  className="px-2 py-1 text-destructive hover:bg-destructive/10 rounded text-xs"
-                                >
-                                  ×
-                                </button>
-                              </div>
-                            ))}
-                            <button
-                              onClick={() => {
+                          <div>
+                            <label className="block text-xs font-medium text-foreground mb-1">Name</label>
+                            <input
+                              type="text"
+                              value={template.metadata?.name || ""}
+                              onChange={(e) => {
                                 const updated = [...(config.spec?.volumeClaimTemplates || [])];
-                                const modes = [...(template.spec?.accessModes || []), ""];
-                                updated[idx] = { ...template, spec: { ...template.spec, accessModes: modes } };
+                                updated[idx] = {
+                                  ...template,
+                                  metadata: { ...template.metadata, name: e.target.value || undefined },
+                                };
                                 onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
                               }}
-                              className="text-primary hover:opacity-70 text-xs"
-                            >
-                              + Add Access Mode
-                            </button>
+                              placeholder="data"
+                              className="input-field text-xs"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-medium text-foreground mb-1">Namespace</label>
+                            <input
+                              type="text"
+                              value={template.metadata?.namespace || ""}
+                              onChange={(e) => {
+                                const updated = [...(config.spec?.volumeClaimTemplates || [])];
+                                updated[idx] = {
+                                  ...template,
+                                  metadata: { ...template.metadata, namespace: e.target.value || undefined },
+                                };
+                                onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
+                              }}
+                              placeholder="default"
+                              className="input-field text-xs"
+                            />
                           </div>
                         </div>
 
-                        <div>
-                          <label className="block text-xs font-medium text-foreground mb-1">Storage Class Name</label>
-                          <input
-                            type="text"
-                            value={template.spec?.storageClassName || ""}
-                            onChange={(e) => {
-                              const updated = [...(config.spec?.volumeClaimTemplates || [])];
-                              updated[idx] = {
-                                ...template,
-                                spec: { ...template.spec, storageClassName: e.target.value || undefined },
-                              };
-                              onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
-                            }}
-                            placeholder="standard"
-                            className="input-field text-xs"
-                          />
-                        </div>
+                        {/* Spec Section */}
+                        <div className="bg-muted/10 rounded-lg p-3 space-y-3">
+                          <h6 className="text-sm font-medium text-foreground">Spec</h6>
 
-                        <div>
-                          <label className="block text-xs font-medium text-foreground mb-1">Storage Requests</label>
-                          <div className="space-y-1">
-                            {Object.entries(template.spec?.resources?.requests || {}).map(([key, val], rIdx) => (
-                              <div key={rIdx} className="flex gap-1">
+                          {/* Access Modes */}
+                          <div>
+                            <div className="flex items-center justify-between mb-1">
+                              <label className="block text-xs font-medium text-foreground">Access Modes</label>
+                              <button
+                                onClick={() => {
+                                  const updated = [...(config.spec?.volumeClaimTemplates || [])];
+                                  const modes = [...(template.spec?.accessModes || []), ""];
+                                  updated[idx] = { ...template, spec: { ...template.spec, accessModes: modes } };
+                                  onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
+                                }}
+                                className="text-primary hover:opacity-70 text-xs"
+                              >
+                                + Add
+                              </button>
+                            </div>
+                            <div className="space-y-1">
+                              {(template.spec?.accessModes || []).map((mode, mIdx) => (
+                                <div key={mIdx} className="flex gap-1">
+                                  <select
+                                    value={mode}
+                                    onChange={(e) => {
+                                      const updated = [...(config.spec?.volumeClaimTemplates || [])];
+                                      const modes = [...(template.spec?.accessModes || [])];
+                                      modes[mIdx] = e.target.value;
+                                      updated[idx] = { ...template, spec: { ...template.spec, accessModes: modes } };
+                                      onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
+                                    }}
+                                    className="input-field text-xs flex-1"
+                                  >
+                                    <option value="">Select</option>
+                                    <option value="ReadWriteOnce">ReadWriteOnce</option>
+                                    <option value="ReadOnlyMany">ReadOnlyMany</option>
+                                    <option value="ReadWriteMany">ReadWriteMany</option>
+                                  </select>
+                                  <button
+                                    onClick={() => {
+                                      const updated = [...(config.spec?.volumeClaimTemplates || [])];
+                                      const modes = (template.spec?.accessModes || []).filter((_, i) => i !== mIdx);
+                                      updated[idx] = { ...template, spec: { ...template.spec, accessModes: modes } };
+                                      onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
+                                    }}
+                                    className="px-2 py-1 text-destructive hover:bg-destructive/10 rounded text-xs"
+                                  >
+                                    ×
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Volume Name */}
+                          <div>
+                            <label className="block text-xs font-medium text-foreground mb-1">Volume Name</label>
+                            <input
+                              type="text"
+                              value={template.spec?.volumeName || ""}
+                              onChange={(e) => {
+                                const updated = [...(config.spec?.volumeClaimTemplates || [])];
+                                updated[idx] = {
+                                  ...template,
+                                  spec: { ...template.spec, volumeName: e.target.value || undefined },
+                                };
+                                onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
+                              }}
+                              placeholder="pv-name"
+                              className="input-field text-xs"
+                            />
+                          </div>
+
+                          {/* Storage Class Name */}
+                          <div>
+                            <label className="block text-xs font-medium text-foreground mb-1">Storage Class Name</label>
+                            <input
+                              type="text"
+                              value={template.spec?.storageClassName || ""}
+                              onChange={(e) => {
+                                const updated = [...(config.spec?.volumeClaimTemplates || [])];
+                                updated[idx] = {
+                                  ...template,
+                                  spec: { ...template.spec, storageClassName: e.target.value || undefined },
+                                };
+                                onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
+                              }}
+                              placeholder="standard"
+                              className="input-field text-xs"
+                            />
+                          </div>
+
+                          {/* Volume Mode */}
+                          <div>
+                            <label className="block text-xs font-medium text-foreground mb-1">Volume Mode</label>
+                            <select
+                              value={template.spec?.volumeMode || ""}
+                              onChange={(e) => {
+                                const updated = [...(config.spec?.volumeClaimTemplates || [])];
+                                updated[idx] = {
+                                  ...template,
+                                  spec: { ...template.spec, volumeMode: e.target.value || undefined },
+                                };
+                                onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
+                              }}
+                              className="input-field text-xs"
+                            >
+                              <option value="">Select</option>
+                              <option value="Filesystem">Filesystem</option>
+                              <option value="Block">Block</option>
+                            </select>
+                          </div>
+
+                          {/* Volume Attributes Class Name */}
+                          <div>
+                            <label className="block text-xs font-medium text-foreground mb-1">Volume Attributes Class Name</label>
+                            <input
+                              type="text"
+                              value={template.spec?.volumeAttributesClassName || ""}
+                              onChange={(e) => {
+                                const updated = [...(config.spec?.volumeClaimTemplates || [])];
+                                updated[idx] = {
+                                  ...template,
+                                  spec: { ...template.spec, volumeAttributesClassName: e.target.value || undefined },
+                                };
+                                onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
+                              }}
+                              placeholder="custom-attributes"
+                              className="input-field text-xs"
+                            />
+                          </div>
+
+                          {/* Data Source */}
+                          <div>
+                            <h6 className="text-xs font-medium text-foreground mb-2">Data Source</h6>
+                            <div className="grid grid-cols-3 gap-2">
+                              <div>
+                                <label className="block text-xs font-medium text-foreground mb-1">API Group</label>
                                 <input
                                   type="text"
-                                  value={key}
+                                  value={template.spec?.dataSource?.apiGroup || ""}
                                   onChange={(e) => {
                                     const updated = [...(config.spec?.volumeClaimTemplates || [])];
-                                    const requests = { ...template.spec?.resources?.requests };
-                                    delete requests[key];
-                                    requests[e.target.value] = val;
-                                    updated[idx] = { ...template, spec: { ...template.spec, resources: { requests } } };
+                                    updated[idx] = {
+                                      ...template,
+                                      spec: { ...template.spec, dataSource: { ...template.spec?.dataSource, apiGroup: e.target.value || undefined } },
+                                    };
                                     onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
                                   }}
-                                  placeholder="storage"
-                                  className="input-field text-xs flex-1"
+                                  placeholder="snapshot.storage.k8s.io"
+                                  className="input-field text-xs"
                                 />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-foreground mb-1">Kind</label>
                                 <input
                                   type="text"
-                                  value={val}
+                                  value={template.spec?.dataSource?.kind || ""}
                                   onChange={(e) => {
                                     const updated = [...(config.spec?.volumeClaimTemplates || [])];
-                                    const requests = { ...template.spec?.resources?.requests };
-                                    requests[key] = e.target.value;
-                                    updated[idx] = { ...template, spec: { ...template.spec, resources: { requests } } };
+                                    updated[idx] = {
+                                      ...template,
+                                      spec: { ...template.spec, dataSource: { ...template.spec?.dataSource, kind: e.target.value || undefined } },
+                                    };
                                     onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
                                   }}
-                                  placeholder="10Gi"
-                                  className="input-field text-xs flex-1"
+                                  placeholder="VolumeSnapshot"
+                                  className="input-field text-xs"
                                 />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-foreground mb-1">Name</label>
+                                <input
+                                  type="text"
+                                  value={template.spec?.dataSource?.name || ""}
+                                  onChange={(e) => {
+                                    const updated = [...(config.spec?.volumeClaimTemplates || [])];
+                                    updated[idx] = {
+                                      ...template,
+                                      spec: { ...template.spec, dataSource: { ...template.spec?.dataSource, name: e.target.value || undefined } },
+                                    };
+                                    onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
+                                  }}
+                                  placeholder="my-snapshot"
+                                  className="input-field text-xs"
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Data Source Reference */}
+                          <div>
+                            <h6 className="text-xs font-medium text-foreground mb-2">Data Source Reference</h6>
+                            <div className="grid grid-cols-4 gap-2">
+                              <div>
+                                <label className="block text-xs font-medium text-foreground mb-1">API Group</label>
+                                <input
+                                  type="text"
+                                  value={template.spec?.dataSourceRef?.apiGroup || ""}
+                                  onChange={(e) => {
+                                    const updated = [...(config.spec?.volumeClaimTemplates || [])];
+                                    updated[idx] = {
+                                      ...template,
+                                      spec: { ...template.spec, dataSourceRef: { ...template.spec?.dataSourceRef, apiGroup: e.target.value || undefined } },
+                                    };
+                                    onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
+                                  }}
+                                  placeholder="snapshot.storage.k8s.io"
+                                  className="input-field text-xs"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-foreground mb-1">Kind</label>
+                                <input
+                                  type="text"
+                                  value={template.spec?.dataSourceRef?.kind || ""}
+                                  onChange={(e) => {
+                                    const updated = [...(config.spec?.volumeClaimTemplates || [])];
+                                    updated[idx] = {
+                                      ...template,
+                                      spec: { ...template.spec, dataSourceRef: { ...template.spec?.dataSourceRef, kind: e.target.value || undefined } },
+                                    };
+                                    onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
+                                  }}
+                                  placeholder="VolumeSnapshot"
+                                  className="input-field text-xs"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-foreground mb-1">Name</label>
+                                <input
+                                  type="text"
+                                  value={template.spec?.dataSourceRef?.name || ""}
+                                  onChange={(e) => {
+                                    const updated = [...(config.spec?.volumeClaimTemplates || [])];
+                                    updated[idx] = {
+                                      ...template,
+                                      spec: { ...template.spec, dataSourceRef: { ...template.spec?.dataSourceRef, name: e.target.value || undefined } },
+                                    };
+                                    onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
+                                  }}
+                                  placeholder="my-snapshot"
+                                  className="input-field text-xs"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-foreground mb-1">Namespace</label>
+                                <input
+                                  type="text"
+                                  value={template.spec?.dataSourceRef?.namespace || ""}
+                                  onChange={(e) => {
+                                    const updated = [...(config.spec?.volumeClaimTemplates || [])];
+                                    updated[idx] = {
+                                      ...template,
+                                      spec: { ...template.spec, dataSourceRef: { ...template.spec?.dataSourceRef, namespace: e.target.value || undefined } },
+                                    };
+                                    onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
+                                  }}
+                                  placeholder="default"
+                                  className="input-field text-xs"
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Selector */}
+                          <div>
+                            <h6 className="text-xs font-medium text-foreground mb-2">Selector</h6>
+
+                            {/* Match Labels */}
+                            <div className="mb-2">
+                              <div className="flex items-center justify-between mb-1">
+                                <label className="block text-xs font-medium text-foreground">Match Labels</label>
                                 <button
                                   onClick={() => {
                                     const updated = [...(config.spec?.volumeClaimTemplates || [])];
-                                    const requests = { ...template.spec?.resources?.requests };
-                                    delete requests[key];
-                                    updated[idx] = { ...template, spec: { ...template.spec, resources: { requests } } };
+                                    const selector = { ...template.spec?.selector };
+                                    const labels = { ...selector.matchLabels, "": "" };
+                                    updated[idx] = { ...template, spec: { ...template.spec, selector: { ...selector, matchLabels: labels } } };
                                     onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
                                   }}
-                                  className="px-2 py-1 text-destructive hover:bg-destructive/10 rounded text-xs"
+                                  className="text-primary hover:opacity-70 text-xs"
                                 >
-                                  ×
+                                  + Add
                                 </button>
                               </div>
-                            ))}
-                            <button
-                              onClick={() => {
-                                const updated = [...(config.spec?.volumeClaimTemplates || [])];
-                                const requests = { ...template.spec?.resources?.requests, "": "" };
-                                updated[idx] = { ...template, spec: { ...template.spec, resources: { requests } } };
-                                onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
-                              }}
-                              className="text-primary hover:opacity-70 text-xs"
-                            >
-                              + Add Request
-                            </button>
+                              <div className="space-y-1">
+                                {Object.entries(template.spec?.selector?.matchLabels || {}).map(([key, val], lIdx) => (
+                                  <div key={lIdx} className="flex gap-1">
+                                    <input
+                                      type="text"
+                                      value={key}
+                                      onChange={(e) => {
+                                        const updated = [...(config.spec?.volumeClaimTemplates || [])];
+                                        const selector = { ...template.spec?.selector };
+                                        const labels = { ...selector.matchLabels };
+                                        delete labels[key];
+                                        labels[e.target.value] = val;
+                                        updated[idx] = { ...template, spec: { ...template.spec, selector: { ...selector, matchLabels: labels } } };
+                                        onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
+                                      }}
+                                      placeholder="key"
+                                      className="input-field text-xs flex-1"
+                                    />
+                                    <input
+                                      type="text"
+                                      value={val}
+                                      onChange={(e) => {
+                                        const updated = [...(config.spec?.volumeClaimTemplates || [])];
+                                        const selector = { ...template.spec?.selector };
+                                        const labels = { ...selector.matchLabels };
+                                        labels[key] = e.target.value;
+                                        updated[idx] = { ...template, spec: { ...template.spec, selector: { ...selector, matchLabels: labels } } };
+                                        onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
+                                      }}
+                                      placeholder="value"
+                                      className="input-field text-xs flex-1"
+                                    />
+                                    <button
+                                      onClick={() => {
+                                        const updated = [...(config.spec?.volumeClaimTemplates || [])];
+                                        const selector = { ...template.spec?.selector };
+                                        const labels = { ...selector.matchLabels };
+                                        delete labels[key];
+                                        updated[idx] = { ...template, spec: { ...template.spec, selector: { ...selector, matchLabels: Object.keys(labels).length > 0 ? labels : undefined } } };
+                                        onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
+                                      }}
+                                      className="px-2 py-1 text-destructive hover:bg-destructive/10 rounded text-xs"
+                                    >
+                                      ×
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Match Expressions */}
+                            <div>
+                              <div className="flex items-center justify-between mb-1">
+                                <label className="block text-xs font-medium text-foreground">Match Expressions</label>
+                                <button
+                                  onClick={() => {
+                                    const updated = [...(config.spec?.volumeClaimTemplates || [])];
+                                    const selector = { ...template.spec?.selector };
+                                    const expressions = [...(selector.matchExpressions || []), { key: "", operator: "In", values: [] }];
+                                    updated[idx] = { ...template, spec: { ...template.spec, selector: { ...selector, matchExpressions: expressions } } };
+                                    onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
+                                  }}
+                                  className="text-primary hover:opacity-70 text-xs"
+                                >
+                                  + Add
+                                </button>
+                              </div>
+                              <div className="space-y-2">
+                                {(template.spec?.selector?.matchExpressions || []).map((expr, eIdx) => (
+                                  <div key={eIdx} className="p-2 bg-muted/10 rounded border border-border/30 space-y-1">
+                                    <div className="grid grid-cols-2 gap-1">
+                                      <div>
+                                        <label className="block text-xs font-medium text-foreground mb-0.5">Key</label>
+                                        <input
+                                          type="text"
+                                          value={expr.key}
+                                          onChange={(e) => {
+                                            const updated = [...(config.spec?.volumeClaimTemplates || [])];
+                                            const selector = { ...template.spec?.selector };
+                                            const expressions = [...(selector.matchExpressions || [])];
+                                            expressions[eIdx] = { ...expr, key: e.target.value };
+                                            updated[idx] = { ...template, spec: { ...template.spec, selector: { ...selector, matchExpressions: expressions } } };
+                                            onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
+                                          }}
+                                          placeholder="app"
+                                          className="input-field text-xs"
+                                        />
+                                      </div>
+                                      <div>
+                                        <label className="block text-xs font-medium text-foreground mb-0.5">Operator</label>
+                                        <select
+                                          value={expr.operator}
+                                          onChange={(e) => {
+                                            const updated = [...(config.spec?.volumeClaimTemplates || [])];
+                                            const selector = { ...template.spec?.selector };
+                                            const expressions = [...(selector.matchExpressions || [])];
+                                            expressions[eIdx] = { ...expr, operator: e.target.value };
+                                            updated[idx] = { ...template, spec: { ...template.spec, selector: { ...selector, matchExpressions: expressions } } };
+                                            onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
+                                          }}
+                                          className="input-field text-xs"
+                                        >
+                                          <option value="In">In</option>
+                                          <option value="NotIn">NotIn</option>
+                                          <option value="Exists">Exists</option>
+                                          <option value="DoesNotExist">DoesNotExist</option>
+                                          <option value="Gt">Gt</option>
+                                          <option value="Lt">Lt</option>
+                                        </select>
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <label className="block text-xs font-medium text-foreground mb-0.5">Values</label>
+                                      <div className="space-y-1">
+                                        {(expr.values || []).map((val, vIdx) => (
+                                          <div key={vIdx} className="flex gap-1">
+                                            <input
+                                              type="text"
+                                              value={val}
+                                              onChange={(e) => {
+                                                const updated = [...(config.spec?.volumeClaimTemplates || [])];
+                                                const selector = { ...template.spec?.selector };
+                                                const expressions = [...(selector.matchExpressions || [])];
+                                                const values = [...(expr.values || [])];
+                                                values[vIdx] = e.target.value;
+                                                expressions[eIdx] = { ...expr, values };
+                                                updated[idx] = { ...template, spec: { ...template.spec, selector: { ...selector, matchExpressions: expressions } } };
+                                                onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
+                                              }}
+                                              placeholder="value"
+                                              className="input-field text-xs flex-1"
+                                            />
+                                            <button
+                                              onClick={() => {
+                                                const updated = [...(config.spec?.volumeClaimTemplates || [])];
+                                                const selector = { ...template.spec?.selector };
+                                                const expressions = [...(selector.matchExpressions || [])];
+                                                const values = (expr.values || []).filter((_, i) => i !== vIdx);
+                                                expressions[eIdx] = { ...expr, values };
+                                                updated[idx] = { ...template, spec: { ...template.spec, selector: { ...selector, matchExpressions: expressions } } };
+                                                onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
+                                              }}
+                                              className="px-2 py-1 text-destructive hover:bg-destructive/10 rounded text-xs"
+                                            >
+                                              ×
+                                            </button>
+                                          </div>
+                                        ))}
+                                        <button
+                                          onClick={() => {
+                                            const updated = [...(config.spec?.volumeClaimTemplates || [])];
+                                            const selector = { ...template.spec?.selector };
+                                            const expressions = [...(selector.matchExpressions || [])];
+                                            const values = [...(expr.values || []), ""];
+                                            expressions[eIdx] = { ...expr, values };
+                                            updated[idx] = { ...template, spec: { ...template.spec, selector: { ...selector, matchExpressions: expressions } } };
+                                            onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
+                                          }}
+                                          className="text-primary hover:opacity-70 text-xs"
+                                        >
+                                          + Add Value
+                                        </button>
+                                      </div>
+                                    </div>
+                                    <button
+                                      onClick={() => {
+                                        const updated = [...(config.spec?.volumeClaimTemplates || [])];
+                                        const selector = { ...template.spec?.selector };
+                                        const expressions = (selector.matchExpressions || []).filter((_, i) => i !== eIdx);
+                                        updated[idx] = { ...template, spec: { ...template.spec, selector: { ...selector, matchExpressions: expressions.length > 0 ? expressions : undefined } } };
+                                        onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
+                                      }}
+                                      className="w-full text-xs text-destructive hover:bg-destructive/10 py-0.5 rounded"
+                                    >
+                                      Remove Expression
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
                           </div>
                         </div>
 
