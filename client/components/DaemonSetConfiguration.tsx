@@ -633,6 +633,32 @@ export default function DaemonSetConfiguration({ config, onConfigChange }: Daemo
                     <h6 className="text-xs font-medium text-foreground">Rolling Update</h6>
 
                     <div>
+                      <label htmlFor="maxSurge" className="block text-xs font-medium text-foreground mb-1">
+                        Max Surge
+                      </label>
+                      <input
+                        id="maxSurge"
+                        type="text"
+                        value={config.spec?.updateStrategy?.rollingUpdate?.maxSurge || ""}
+                        onChange={(e) =>
+                          onConfigChange("spec", {
+                            ...config.spec,
+                            updateStrategy: {
+                              ...config.spec?.updateStrategy,
+                              rollingUpdate: {
+                                ...config.spec?.updateStrategy?.rollingUpdate,
+                                maxSurge: e.target.value || undefined,
+                              },
+                            },
+                          })
+                        }
+                        placeholder="0"
+                        className="input-field text-xs"
+                      />
+                      <p className="text-xs text-foreground/50 mt-0.5">Maximum number/percentage of pods that can be created above the desired number</p>
+                    </div>
+
+                    <div>
                       <label htmlFor="maxUnavailable" className="block text-xs font-medium text-foreground mb-1">
                         Max Unavailable
                       </label>
