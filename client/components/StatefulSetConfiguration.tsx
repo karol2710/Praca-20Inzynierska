@@ -953,6 +953,234 @@ export default function StatefulSetConfiguration({ config, onConfigChange }: Sta
                               className="input-field text-xs"
                             />
                           </div>
+
+                          <div>
+                            <label className="block text-xs font-medium text-foreground mb-1">Annotations</label>
+                            {renderTagsField(
+                              template.metadata?.annotations,
+                              (value) => {
+                                const updated = [...(config.spec?.volumeClaimTemplates || [])];
+                                updated[idx] = {
+                                  ...template,
+                                  metadata: { ...template.metadata, annotations: value },
+                                };
+                                onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
+                              },
+                              "Annotations",
+                              "Add annotation (key=value)"
+                            )}
+                            <p className="text-xs text-foreground/50 mt-1">Metadata annotations for VolumeClaimTemplate</p>
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-medium text-foreground mb-1">Labels</label>
+                            {renderTagsField(
+                              template.metadata?.labels,
+                              (value) => {
+                                const updated = [...(config.spec?.volumeClaimTemplates || [])];
+                                updated[idx] = {
+                                  ...template,
+                                  metadata: { ...template.metadata, labels: value },
+                                };
+                                onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
+                              },
+                              "Labels",
+                              "Add label (key=value)"
+                            )}
+                            <p className="text-xs text-foreground/50 mt-1">Key-value labels for VolumeClaimTemplate selection</p>
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-medium text-foreground mb-1">Deletion Grace Period (seconds)</label>
+                            <input
+                              type="number"
+                              value={template.metadata?.deletionGracePeriodSeconds || ""}
+                              onChange={(e) => {
+                                const updated = [...(config.spec?.volumeClaimTemplates || [])];
+                                updated[idx] = {
+                                  ...template,
+                                  metadata: { ...template.metadata, deletionGracePeriodSeconds: e.target.value ? parseInt(e.target.value) : undefined },
+                                };
+                                onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
+                              }}
+                              placeholder="30"
+                              className="input-field text-xs"
+                              min="0"
+                            />
+                            <p className="text-xs text-foreground/50 mt-1">Grace period in seconds for PVC termination</p>
+                          </div>
+
+                          <div>
+                            <div className="flex items-center justify-between mb-2">
+                              <label className="block text-xs font-medium text-foreground">Owner References</label>
+                              <button
+                                onClick={() => {
+                                  const updated = [...(config.spec?.volumeClaimTemplates || [])];
+                                  const ownerReferences = [...(template.metadata?.ownerReferences || []), {
+                                    apiVersion: "",
+                                    kind: "",
+                                    name: "",
+                                    uid: "",
+                                    blockOwnerDeletion: false,
+                                    controller: false,
+                                  }];
+                                  updated[idx] = {
+                                    ...template,
+                                    metadata: { ...template.metadata, ownerReferences },
+                                  };
+                                  onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
+                                }}
+                                className="text-primary hover:opacity-70 text-xs"
+                              >
+                                + Add Owner Reference
+                              </button>
+                            </div>
+                            <p className="text-xs text-foreground/50 mb-2">Objects this VolumeClaimTemplate is owned by</p>
+
+                            {(template.metadata?.ownerReferences || []).length > 0 ? (
+                              <div className="space-y-2">
+                                {(template.metadata?.ownerReferences || []).map((owner, oIdx) => (
+                                  <div key={oIdx} className="p-2 bg-muted/20 border border-border rounded-lg space-y-2">
+                                    <div className="grid grid-cols-2 gap-1">
+                                      <div>
+                                        <label className="block text-xs font-medium text-foreground mb-0.5">API Version*</label>
+                                        <input
+                                          type="text"
+                                          value={owner.apiVersion || ""}
+                                          onChange={(e) => {
+                                            const updated = [...(config.spec?.volumeClaimTemplates || [])];
+                                            const ownerRefs = [...(template.metadata?.ownerReferences || [])];
+                                            ownerRefs[oIdx] = { ...owner, apiVersion: e.target.value || undefined };
+                                            updated[idx] = {
+                                              ...template,
+                                              metadata: { ...template.metadata, ownerReferences: ownerRefs },
+                                            };
+                                            onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
+                                          }}
+                                          placeholder="apps/v1"
+                                          className="input-field text-xs"
+                                        />
+                                      </div>
+                                      <div>
+                                        <label className="block text-xs font-medium text-foreground mb-0.5">Kind*</label>
+                                        <input
+                                          type="text"
+                                          value={owner.kind || ""}
+                                          onChange={(e) => {
+                                            const updated = [...(config.spec?.volumeClaimTemplates || [])];
+                                            const ownerRefs = [...(template.metadata?.ownerReferences || [])];
+                                            ownerRefs[oIdx] = { ...owner, kind: e.target.value || undefined };
+                                            updated[idx] = {
+                                              ...template,
+                                              metadata: { ...template.metadata, ownerReferences: ownerRefs },
+                                            };
+                                            onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
+                                          }}
+                                          placeholder="StatefulSet"
+                                          className="input-field text-xs"
+                                        />
+                                      </div>
+                                      <div>
+                                        <label className="block text-xs font-medium text-foreground mb-0.5">Name*</label>
+                                        <input
+                                          type="text"
+                                          value={owner.name || ""}
+                                          onChange={(e) => {
+                                            const updated = [...(config.spec?.volumeClaimTemplates || [])];
+                                            const ownerRefs = [...(template.metadata?.ownerReferences || [])];
+                                            ownerRefs[oIdx] = { ...owner, name: e.target.value || undefined };
+                                            updated[idx] = {
+                                              ...template,
+                                              metadata: { ...template.metadata, ownerReferences: ownerRefs },
+                                            };
+                                            onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
+                                          }}
+                                          placeholder="my-statefulset"
+                                          className="input-field text-xs"
+                                        />
+                                      </div>
+                                      <div>
+                                        <label className="block text-xs font-medium text-foreground mb-0.5">UID*</label>
+                                        <input
+                                          type="text"
+                                          value={owner.uid || ""}
+                                          onChange={(e) => {
+                                            const updated = [...(config.spec?.volumeClaimTemplates || [])];
+                                            const ownerRefs = [...(template.metadata?.ownerReferences || [])];
+                                            ownerRefs[oIdx] = { ...owner, uid: e.target.value || undefined };
+                                            updated[idx] = {
+                                              ...template,
+                                              metadata: { ...template.metadata, ownerReferences: ownerRefs },
+                                            };
+                                            onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
+                                          }}
+                                          placeholder="12345678-1234-1234-1234-123456789012"
+                                          className="input-field text-xs"
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-1">
+                                      <label className="flex items-center gap-2 cursor-pointer">
+                                        <input
+                                          type="checkbox"
+                                          checked={owner.blockOwnerDeletion || false}
+                                          onChange={(e) => {
+                                            const updated = [...(config.spec?.volumeClaimTemplates || [])];
+                                            const ownerRefs = [...(template.metadata?.ownerReferences || [])];
+                                            ownerRefs[oIdx] = { ...owner, blockOwnerDeletion: e.target.checked ? true : undefined };
+                                            updated[idx] = {
+                                              ...template,
+                                              metadata: { ...template.metadata, ownerReferences: ownerRefs },
+                                            };
+                                            onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
+                                          }}
+                                          className="w-3 h-3 rounded border-border bg-input cursor-pointer"
+                                        />
+                                        <span className="text-xs font-medium text-foreground">Block Owner Deletion</span>
+                                      </label>
+                                      <label className="flex items-center gap-2 cursor-pointer">
+                                        <input
+                                          type="checkbox"
+                                          checked={owner.controller || false}
+                                          onChange={(e) => {
+                                            const updated = [...(config.spec?.volumeClaimTemplates || [])];
+                                            const ownerRefs = [...(template.metadata?.ownerReferences || [])];
+                                            ownerRefs[oIdx] = { ...owner, controller: e.target.checked ? true : undefined };
+                                            updated[idx] = {
+                                              ...template,
+                                              metadata: { ...template.metadata, ownerReferences: ownerRefs },
+                                            };
+                                            onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
+                                          }}
+                                          className="w-3 h-3 rounded border-border bg-input cursor-pointer"
+                                        />
+                                        <span className="text-xs font-medium text-foreground">Controller</span>
+                                      </label>
+                                    </div>
+                                    <button
+                                      onClick={() => {
+                                        const updated = [...(config.spec?.volumeClaimTemplates || [])];
+                                        updated[idx] = {
+                                          ...template,
+                                          metadata: {
+                                            ...template.metadata,
+                                            ownerReferences: template.metadata?.ownerReferences?.filter((_, i) => i !== oIdx),
+                                          },
+                                        };
+                                        onConfigChange("spec", { ...config.spec, volumeClaimTemplates: updated });
+                                      }}
+                                      className="w-full text-xs text-destructive hover:bg-destructive/10 py-0.5 rounded transition-colors flex items-center justify-center gap-1"
+                                    >
+                                      <X className="w-3 h-3" />
+                                      Remove
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-foreground/60 text-xs py-1">No owner references added yet</p>
+                            )}
+                          </div>
                         </div>
 
                         {/* Spec Section */}
