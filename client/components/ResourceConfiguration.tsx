@@ -4097,14 +4097,602 @@ export default function ResourceConfiguration({ config, onConfigChange }: Resour
                                   </select>
                                 </div>
 
+                                {/* Request Header Modifier */}
                                 {filter.type === "RequestHeaderModifier" && (
-                                  <div className="text-xs text-foreground/60">Header modifier configuration (simplified for display)</div>
+                                  <div className="space-y-3 border-t border-border/30 pt-2">
+                                    <div>
+                                      <label className="block text-xs font-medium text-foreground mb-2">Set Headers</label>
+                                      {Object.entries(filter.requestHeaderModifier?.set || {}).map(([key, val], idx) => (
+                                        <div key={idx} className="flex gap-2 items-center mb-2">
+                                          <input
+                                            type="text"
+                                            value={key}
+                                            onChange={(e) => {
+                                              const updated = [...((config.spec as GRPCRouteSpec)?.rules || [])];
+                                              const filters = [...(updated[rIdx]?.filters || [])];
+                                              const set = { ...filters[fIdx]?.requestHeaderModifier?.set };
+                                              if (e.target.value !== key) {
+                                                delete set[key];
+                                                set[e.target.value] = val;
+                                              }
+                                              filters[fIdx] = { ...filter, requestHeaderModifier: { ...filter.requestHeaderModifier, set } };
+                                              updated[rIdx] = { ...rule, filters };
+                                              onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                            }}
+                                            placeholder="Header name"
+                                            className="input-field text-xs flex-1"
+                                          />
+                                          <input
+                                            type="text"
+                                            value={val}
+                                            onChange={(e) => {
+                                              const updated = [...((config.spec as GRPCRouteSpec)?.rules || [])];
+                                              const filters = [...(updated[rIdx]?.filters || [])];
+                                              const set = { ...filters[fIdx]?.requestHeaderModifier?.set };
+                                              set[key] = e.target.value;
+                                              filters[fIdx] = { ...filter, requestHeaderModifier: { ...filter.requestHeaderModifier, set } };
+                                              updated[rIdx] = { ...rule, filters };
+                                              onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                            }}
+                                            placeholder="Header value"
+                                            className="input-field text-xs flex-1"
+                                          />
+                                          <button
+                                            onClick={() => {
+                                              const updated = [...((config.spec as GRPCRouteSpec)?.rules || [])];
+                                              const filters = [...(updated[rIdx]?.filters || [])];
+                                              const set = { ...filters[fIdx]?.requestHeaderModifier?.set };
+                                              delete set[key];
+                                              filters[fIdx] = {
+                                                ...filter,
+                                                requestHeaderModifier: {
+                                                  ...filter.requestHeaderModifier,
+                                                  set: Object.keys(set).length > 0 ? set : undefined,
+                                                },
+                                              };
+                                              updated[rIdx] = { ...rule, filters };
+                                              onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                            }}
+                                            className="text-destructive hover:opacity-70 text-xs"
+                                          >
+                                            ×
+                                          </button>
+                                        </div>
+                                      ))}
+                                      <button
+                                        onClick={() => {
+                                          const updated = [...((config.spec as GRPCRouteSpec)?.rules || [])];
+                                          const filters = [...(updated[rIdx]?.filters || [])];
+                                          filters[fIdx] = {
+                                            ...filter,
+                                            requestHeaderModifier: {
+                                              ...filter.requestHeaderModifier,
+                                              set: { ...filter.requestHeaderModifier?.set, "": "" },
+                                            },
+                                          };
+                                          updated[rIdx] = { ...rule, filters };
+                                          onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                        }}
+                                        className="text-primary hover:opacity-70 text-xs"
+                                      >
+                                        + Add Set Header
+                                      </button>
+                                    </div>
+
+                                    <div className="border-t border-border/30 pt-2">
+                                      <label className="block text-xs font-medium text-foreground mb-2">Add Headers</label>
+                                      {Object.entries(filter.requestHeaderModifier?.add || {}).map(([key, val], idx) => (
+                                        <div key={idx} className="flex gap-2 items-center mb-2">
+                                          <input
+                                            type="text"
+                                            value={key}
+                                            onChange={(e) => {
+                                              const updated = [...((config.spec as GRPCRouteSpec)?.rules || [])];
+                                              const filters = [...(updated[rIdx]?.filters || [])];
+                                              const add = { ...filters[fIdx]?.requestHeaderModifier?.add };
+                                              if (e.target.value !== key) {
+                                                delete add[key];
+                                                add[e.target.value] = val;
+                                              }
+                                              filters[fIdx] = { ...filter, requestHeaderModifier: { ...filter.requestHeaderModifier, add } };
+                                              updated[rIdx] = { ...rule, filters };
+                                              onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                            }}
+                                            placeholder="Header name"
+                                            className="input-field text-xs flex-1"
+                                          />
+                                          <input
+                                            type="text"
+                                            value={val}
+                                            onChange={(e) => {
+                                              const updated = [...((config.spec as GRPCRouteSpec)?.rules || [])];
+                                              const filters = [...(updated[rIdx]?.filters || [])];
+                                              const add = { ...filters[fIdx]?.requestHeaderModifier?.add };
+                                              add[key] = e.target.value;
+                                              filters[fIdx] = { ...filter, requestHeaderModifier: { ...filter.requestHeaderModifier, add } };
+                                              updated[rIdx] = { ...rule, filters };
+                                              onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                            }}
+                                            placeholder="Header value"
+                                            className="input-field text-xs flex-1"
+                                          />
+                                          <button
+                                            onClick={() => {
+                                              const updated = [...((config.spec as GRPCRouteSpec)?.rules || [])];
+                                              const filters = [...(updated[rIdx]?.filters || [])];
+                                              const add = { ...filters[fIdx]?.requestHeaderModifier?.add };
+                                              delete add[key];
+                                              filters[fIdx] = {
+                                                ...filter,
+                                                requestHeaderModifier: {
+                                                  ...filter.requestHeaderModifier,
+                                                  add: Object.keys(add).length > 0 ? add : undefined,
+                                                },
+                                              };
+                                              updated[rIdx] = { ...rule, filters };
+                                              onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                            }}
+                                            className="text-destructive hover:opacity-70 text-xs"
+                                          >
+                                            ×
+                                          </button>
+                                        </div>
+                                      ))}
+                                      <button
+                                        onClick={() => {
+                                          const updated = [...((config.spec as GRPCRouteSpec)?.rules || [])];
+                                          const filters = [...(updated[rIdx]?.filters || [])];
+                                          filters[fIdx] = {
+                                            ...filter,
+                                            requestHeaderModifier: {
+                                              ...filter.requestHeaderModifier,
+                                              add: { ...filter.requestHeaderModifier?.add, "": "" },
+                                            },
+                                          };
+                                          updated[rIdx] = { ...rule, filters };
+                                          onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                        }}
+                                        className="text-primary hover:opacity-70 text-xs"
+                                      >
+                                        + Add Header
+                                      </button>
+                                    </div>
+
+                                    <div className="border-t border-border/30 pt-2">
+                                      <label className="block text-xs font-medium text-foreground mb-2">Remove Headers</label>
+                                      {(filter.requestHeaderModifier?.remove || []).map((header, idx) => (
+                                        <div key={idx} className="flex gap-2 items-center mb-2">
+                                          <input
+                                            type="text"
+                                            value={header}
+                                            onChange={(e) => {
+                                              const updated = [...((config.spec as GRPCRouteSpec)?.rules || [])];
+                                              const filters = [...(updated[rIdx]?.filters || [])];
+                                              const remove = [...(filters[fIdx]?.requestHeaderModifier?.remove || [])];
+                                              remove[idx] = e.target.value;
+                                              filters[fIdx] = { ...filter, requestHeaderModifier: { ...filter.requestHeaderModifier, remove } };
+                                              updated[rIdx] = { ...rule, filters };
+                                              onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                            }}
+                                            placeholder="Header name to remove"
+                                            className="input-field text-xs flex-1"
+                                          />
+                                          <button
+                                            onClick={() => {
+                                              const updated = [...((config.spec as GRPCRouteSpec)?.rules || [])];
+                                              const filters = [...(updated[rIdx]?.filters || [])];
+                                              const remove = (filters[fIdx]?.requestHeaderModifier?.remove || []).filter((_, i) => i !== idx);
+                                              filters[fIdx] = {
+                                                ...filter,
+                                                requestHeaderModifier: {
+                                                  ...filter.requestHeaderModifier,
+                                                  remove: remove.length > 0 ? remove : undefined,
+                                                },
+                                              };
+                                              updated[rIdx] = { ...rule, filters };
+                                              onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                            }}
+                                            className="text-destructive hover:opacity-70 text-xs"
+                                          >
+                                            ×
+                                          </button>
+                                        </div>
+                                      ))}
+                                      <button
+                                        onClick={() => {
+                                          const updated = [...((config.spec as GRPCRouteSpec)?.rules || [])];
+                                          const filters = [...(updated[rIdx]?.filters || [])];
+                                          filters[fIdx] = {
+                                            ...filter,
+                                            requestHeaderModifier: {
+                                              ...filter.requestHeaderModifier,
+                                              remove: [...(filter.requestHeaderModifier?.remove || []), ""],
+                                            },
+                                          };
+                                          updated[rIdx] = { ...rule, filters };
+                                          onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                        }}
+                                        className="text-primary hover:opacity-70 text-xs"
+                                      >
+                                        + Remove Header
+                                      </button>
+                                    </div>
+                                  </div>
                                 )}
+
+                                {/* Response Header Modifier */}
                                 {filter.type === "ResponseHeaderModifier" && (
-                                  <div className="text-xs text-foreground/60">Response header modifier configuration (simplified for display)</div>
+                                  <div className="space-y-3 border-t border-border/30 pt-2">
+                                    <div>
+                                      <label className="block text-xs font-medium text-foreground mb-2">Set Headers</label>
+                                      {Object.entries(filter.responseHeaderModifier?.set || {}).map(([key, val], idx) => (
+                                        <div key={idx} className="flex gap-2 items-center mb-2">
+                                          <input
+                                            type="text"
+                                            value={key}
+                                            onChange={(e) => {
+                                              const updated = [...((config.spec as GRPCRouteSpec)?.rules || [])];
+                                              const filters = [...(updated[rIdx]?.filters || [])];
+                                              const set = { ...filters[fIdx]?.responseHeaderModifier?.set };
+                                              if (e.target.value !== key) {
+                                                delete set[key];
+                                                set[e.target.value] = val;
+                                              }
+                                              filters[fIdx] = { ...filter, responseHeaderModifier: { ...filter.responseHeaderModifier, set } };
+                                              updated[rIdx] = { ...rule, filters };
+                                              onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                            }}
+                                            placeholder="Header name"
+                                            className="input-field text-xs flex-1"
+                                          />
+                                          <input
+                                            type="text"
+                                            value={val}
+                                            onChange={(e) => {
+                                              const updated = [...((config.spec as GRPCRouteSpec)?.rules || [])];
+                                              const filters = [...(updated[rIdx]?.filters || [])];
+                                              const set = { ...filters[fIdx]?.responseHeaderModifier?.set };
+                                              set[key] = e.target.value;
+                                              filters[fIdx] = { ...filter, responseHeaderModifier: { ...filter.responseHeaderModifier, set } };
+                                              updated[rIdx] = { ...rule, filters };
+                                              onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                            }}
+                                            placeholder="Header value"
+                                            className="input-field text-xs flex-1"
+                                          />
+                                          <button
+                                            onClick={() => {
+                                              const updated = [...((config.spec as GRPCRouteSpec)?.rules || [])];
+                                              const filters = [...(updated[rIdx]?.filters || [])];
+                                              const set = { ...filters[fIdx]?.responseHeaderModifier?.set };
+                                              delete set[key];
+                                              filters[fIdx] = {
+                                                ...filter,
+                                                responseHeaderModifier: {
+                                                  ...filter.responseHeaderModifier,
+                                                  set: Object.keys(set).length > 0 ? set : undefined,
+                                                },
+                                              };
+                                              updated[rIdx] = { ...rule, filters };
+                                              onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                            }}
+                                            className="text-destructive hover:opacity-70 text-xs"
+                                          >
+                                            ×
+                                          </button>
+                                        </div>
+                                      ))}
+                                      <button
+                                        onClick={() => {
+                                          const updated = [...((config.spec as GRPCRouteSpec)?.rules || [])];
+                                          const filters = [...(updated[rIdx]?.filters || [])];
+                                          filters[fIdx] = {
+                                            ...filter,
+                                            responseHeaderModifier: {
+                                              ...filter.responseHeaderModifier,
+                                              set: { ...filter.responseHeaderModifier?.set, "": "" },
+                                            },
+                                          };
+                                          updated[rIdx] = { ...rule, filters };
+                                          onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                        }}
+                                        className="text-primary hover:opacity-70 text-xs"
+                                      >
+                                        + Add Set Header
+                                      </button>
+                                    </div>
+
+                                    <div className="border-t border-border/30 pt-2">
+                                      <label className="block text-xs font-medium text-foreground mb-2">Add Headers</label>
+                                      {Object.entries(filter.responseHeaderModifier?.add || {}).map(([key, val], idx) => (
+                                        <div key={idx} className="flex gap-2 items-center mb-2">
+                                          <input
+                                            type="text"
+                                            value={key}
+                                            onChange={(e) => {
+                                              const updated = [...((config.spec as GRPCRouteSpec)?.rules || [])];
+                                              const filters = [...(updated[rIdx]?.filters || [])];
+                                              const add = { ...filters[fIdx]?.responseHeaderModifier?.add };
+                                              if (e.target.value !== key) {
+                                                delete add[key];
+                                                add[e.target.value] = val;
+                                              }
+                                              filters[fIdx] = { ...filter, responseHeaderModifier: { ...filter.responseHeaderModifier, add } };
+                                              updated[rIdx] = { ...rule, filters };
+                                              onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                            }}
+                                            placeholder="Header name"
+                                            className="input-field text-xs flex-1"
+                                          />
+                                          <input
+                                            type="text"
+                                            value={val}
+                                            onChange={(e) => {
+                                              const updated = [...((config.spec as GRPCRouteSpec)?.rules || [])];
+                                              const filters = [...(updated[rIdx]?.filters || [])];
+                                              const add = { ...filters[fIdx]?.responseHeaderModifier?.add };
+                                              add[key] = e.target.value;
+                                              filters[fIdx] = { ...filter, responseHeaderModifier: { ...filter.responseHeaderModifier, add } };
+                                              updated[rIdx] = { ...rule, filters };
+                                              onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                            }}
+                                            placeholder="Header value"
+                                            className="input-field text-xs flex-1"
+                                          />
+                                          <button
+                                            onClick={() => {
+                                              const updated = [...((config.spec as GRPCRouteSpec)?.rules || [])];
+                                              const filters = [...(updated[rIdx]?.filters || [])];
+                                              const add = { ...filters[fIdx]?.responseHeaderModifier?.add };
+                                              delete add[key];
+                                              filters[fIdx] = {
+                                                ...filter,
+                                                responseHeaderModifier: {
+                                                  ...filter.responseHeaderModifier,
+                                                  add: Object.keys(add).length > 0 ? add : undefined,
+                                                },
+                                              };
+                                              updated[rIdx] = { ...rule, filters };
+                                              onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                            }}
+                                            className="text-destructive hover:opacity-70 text-xs"
+                                          >
+                                            ×
+                                          </button>
+                                        </div>
+                                      ))}
+                                      <button
+                                        onClick={() => {
+                                          const updated = [...((config.spec as GRPCRouteSpec)?.rules || [])];
+                                          const filters = [...(updated[rIdx]?.filters || [])];
+                                          filters[fIdx] = {
+                                            ...filter,
+                                            responseHeaderModifier: {
+                                              ...filter.responseHeaderModifier,
+                                              add: { ...filter.responseHeaderModifier?.add, "": "" },
+                                            },
+                                          };
+                                          updated[rIdx] = { ...rule, filters };
+                                          onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                        }}
+                                        className="text-primary hover:opacity-70 text-xs"
+                                      >
+                                        + Add Header
+                                      </button>
+                                    </div>
+
+                                    <div className="border-t border-border/30 pt-2">
+                                      <label className="block text-xs font-medium text-foreground mb-2">Remove Headers</label>
+                                      {(filter.responseHeaderModifier?.remove || []).map((header, idx) => (
+                                        <div key={idx} className="flex gap-2 items-center mb-2">
+                                          <input
+                                            type="text"
+                                            value={header}
+                                            onChange={(e) => {
+                                              const updated = [...((config.spec as GRPCRouteSpec)?.rules || [])];
+                                              const filters = [...(updated[rIdx]?.filters || [])];
+                                              const remove = [...(filters[fIdx]?.responseHeaderModifier?.remove || [])];
+                                              remove[idx] = e.target.value;
+                                              filters[fIdx] = { ...filter, responseHeaderModifier: { ...filter.responseHeaderModifier, remove } };
+                                              updated[rIdx] = { ...rule, filters };
+                                              onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                            }}
+                                            placeholder="Header name to remove"
+                                            className="input-field text-xs flex-1"
+                                          />
+                                          <button
+                                            onClick={() => {
+                                              const updated = [...((config.spec as GRPCRouteSpec)?.rules || [])];
+                                              const filters = [...(updated[rIdx]?.filters || [])];
+                                              const remove = (filters[fIdx]?.responseHeaderModifier?.remove || []).filter((_, i) => i !== idx);
+                                              filters[fIdx] = {
+                                                ...filter,
+                                                responseHeaderModifier: {
+                                                  ...filter.responseHeaderModifier,
+                                                  remove: remove.length > 0 ? remove : undefined,
+                                                },
+                                              };
+                                              updated[rIdx] = { ...rule, filters };
+                                              onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                            }}
+                                            className="text-destructive hover:opacity-70 text-xs"
+                                          >
+                                            ×
+                                          </button>
+                                        </div>
+                                      ))}
+                                      <button
+                                        onClick={() => {
+                                          const updated = [...((config.spec as GRPCRouteSpec)?.rules || [])];
+                                          const filters = [...(updated[rIdx]?.filters || [])];
+                                          filters[fIdx] = {
+                                            ...filter,
+                                            responseHeaderModifier: {
+                                              ...filter.responseHeaderModifier,
+                                              remove: [...(filter.responseHeaderModifier?.remove || []), ""],
+                                            },
+                                          };
+                                          updated[rIdx] = { ...rule, filters };
+                                          onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                        }}
+                                        className="text-primary hover:opacity-70 text-xs"
+                                      >
+                                        + Remove Header
+                                      </button>
+                                    </div>
+                                  </div>
                                 )}
+
+                                {/* Request Mirror */}
                                 {filter.type === "RequestMirror" && (
-                                  <div className="text-xs text-foreground/60">Request mirror configuration (simplified for display)</div>
+                                  <div className="space-y-3 border-t border-border/30 pt-2">
+                                    <div>
+                                      <p className="text-xs text-foreground/60 mb-2">Backend Reference (required)</p>
+                                      <div className="grid grid-cols-3 gap-2 mb-3">
+                                        <input
+                                          type="text"
+                                          value={filter.requestMirror?.backendRef?.name || ""}
+                                          onChange={(e) => {
+                                            const updated = [...((config.spec as GRPCRouteSpec)?.rules || [])];
+                                            const filters = [...(updated[rIdx]?.filters || [])];
+                                            filters[fIdx] = {
+                                              ...filter,
+                                              requestMirror: {
+                                                ...filter.requestMirror,
+                                                backendRef: {
+                                                  ...filter.requestMirror?.backendRef,
+                                                  name: e.target.value || undefined,
+                                                },
+                                              },
+                                            };
+                                            updated[rIdx] = { ...rule, filters };
+                                            onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                          }}
+                                          placeholder="Service name"
+                                          className="input-field text-xs"
+                                        />
+                                        <input
+                                          type="text"
+                                          value={filter.requestMirror?.backendRef?.namespace || ""}
+                                          onChange={(e) => {
+                                            const updated = [...((config.spec as GRPCRouteSpec)?.rules || [])];
+                                            const filters = [...(updated[rIdx]?.filters || [])];
+                                            filters[fIdx] = {
+                                              ...filter,
+                                              requestMirror: {
+                                                ...filter.requestMirror,
+                                                backendRef: {
+                                                  ...filter.requestMirror?.backendRef,
+                                                  namespace: e.target.value || undefined,
+                                                },
+                                              },
+                                            };
+                                            updated[rIdx] = { ...rule, filters };
+                                            onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                          }}
+                                          placeholder="Namespace"
+                                          className="input-field text-xs"
+                                        />
+                                        <input
+                                          type="number"
+                                          value={filter.requestMirror?.backendRef?.port || ""}
+                                          onChange={(e) => {
+                                            const updated = [...((config.spec as GRPCRouteSpec)?.rules || [])];
+                                            const filters = [...(updated[rIdx]?.filters || [])];
+                                            filters[fIdx] = {
+                                              ...filter,
+                                              requestMirror: {
+                                                ...filter.requestMirror,
+                                                backendRef: {
+                                                  ...filter.requestMirror?.backendRef,
+                                                  port: e.target.value ? parseInt(e.target.value) : undefined,
+                                                },
+                                              },
+                                            };
+                                            updated[rIdx] = { ...rule, filters };
+                                            onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                          }}
+                                          placeholder="Port"
+                                          className="input-field text-xs"
+                                        />
+                                      </div>
+                                    </div>
+
+                                    <div className="border-t border-border/30 pt-2">
+                                      <p className="text-xs text-foreground/60 mb-2">Traffic Mirror Percentage (optional)</p>
+                                      <input
+                                        type="number"
+                                        value={filter.requestMirror?.percent || ""}
+                                        onChange={(e) => {
+                                          const updated = [...((config.spec as GRPCRouteSpec)?.rules || [])];
+                                          const filters = [...(updated[rIdx]?.filters || [])];
+                                          filters[fIdx] = {
+                                            ...filter,
+                                            requestMirror: {
+                                              ...filter.requestMirror,
+                                              percent: e.target.value ? parseInt(e.target.value) : undefined,
+                                            },
+                                          };
+                                          updated[rIdx] = { ...rule, filters };
+                                          onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                        }}
+                                        placeholder="Percent (0-100)"
+                                        min="0"
+                                        max="100"
+                                        className="input-field text-xs"
+                                      />
+                                    </div>
+
+                                    <div className="border-t border-border/30 pt-2">
+                                      <p className="text-xs text-foreground/60 mb-1">Fraction (optional)</p>
+                                      <div className="grid grid-cols-2 gap-2">
+                                        <input
+                                          type="number"
+                                          value={filter.requestMirror?.fraction?.numerator || ""}
+                                          onChange={(e) => {
+                                            const updated = [...((config.spec as GRPCRouteSpec)?.rules || [])];
+                                            const filters = [...(updated[rIdx]?.filters || [])];
+                                            filters[fIdx] = {
+                                              ...filter,
+                                              requestMirror: {
+                                                ...filter.requestMirror,
+                                                fraction: {
+                                                  ...filter.requestMirror?.fraction,
+                                                  numerator: e.target.value ? parseInt(e.target.value) : undefined,
+                                                },
+                                              },
+                                            };
+                                            updated[rIdx] = { ...rule, filters };
+                                            onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                          }}
+                                          placeholder="Numerator"
+                                          className="input-field text-xs"
+                                        />
+                                        <input
+                                          type="text"
+                                          value={filter.requestMirror?.fraction?.denominator || ""}
+                                          onChange={(e) => {
+                                            const updated = [...((config.spec as GRPCRouteSpec)?.rules || [])];
+                                            const filters = [...(updated[rIdx]?.filters || [])];
+                                            filters[fIdx] = {
+                                              ...filter,
+                                              requestMirror: {
+                                                ...filter.requestMirror,
+                                                fraction: {
+                                                  ...filter.requestMirror?.fraction,
+                                                  denominator: e.target.value || undefined,
+                                                },
+                                              },
+                                            };
+                                            updated[rIdx] = { ...rule, filters };
+                                            onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                          }}
+                                          placeholder="Denominator"
+                                          className="input-field text-xs"
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
                                 )}
 
                                 <button
