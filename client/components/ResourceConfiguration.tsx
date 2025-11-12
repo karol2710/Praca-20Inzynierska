@@ -809,54 +809,13 @@ export default function ResourceConfiguration({ config, onConfigChange }: Resour
               {/* Selector */}
               <div className="border-t border-border pt-4">
                 <label className="block text-sm font-medium text-foreground mb-2">Selector</label>
-                <div className="space-y-2">
-                  <div className="flex flex-wrap gap-2">
-                    {config.spec?.selector && Object.entries(config.spec.selector).map(([key, val], idx) => (
-                      <div
-                        key={idx}
-                        className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm flex items-center gap-2"
-                      >
-                        {key}={val}
-                        <button
-                          onClick={() => {
-                            const newSelector = { ...config.spec?.selector };
-                            delete newSelector[key];
-                            onConfigChange("spec", {
-                              ...(config.spec || {}),
-                              selector: Object.keys(newSelector).length > 0 ? newSelector : undefined,
-                            });
-                          }}
-                          className="text-primary hover:opacity-70"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                  <input
-                    type="text"
-                    placeholder="key=value (press Enter to add)"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        const input = e.currentTarget;
-                        const newValue = input.value.trim();
-                        if (newValue && newValue.includes("=")) {
-                          const [k, v] = newValue.split("=", 2);
-                          if (k && v) {
-                            const currentSelector = config.spec?.selector || {};
-                            onConfigChange("spec", {
-                              ...(config.spec || {}),
-                              selector: { ...currentSelector, [k]: v },
-                            });
-                            input.value = "";
-                          }
-                        }
-                      }
-                    }}
-                    className="input-field"
-                  />
-                  <p className="text-xs text-foreground/50">Labels to select pods for the service</p>
-                </div>
+                {renderTagsField(
+                  config.spec?.selector,
+                  (value) => onConfigChange("spec", { ...(config.spec || {}), selector: value }),
+                  "Selector",
+                  "Add selector (key=value)"
+                )}
+                <p className="text-xs text-foreground/50 mt-1">Labels to select pods for the service</p>
               </div>
 
               {/* Session Affinity */}
