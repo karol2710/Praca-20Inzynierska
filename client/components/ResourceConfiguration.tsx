@@ -68,7 +68,7 @@ interface ResourceConfig {
   deletionGracePeriodSeconds?: number;
   ownerReferences?: OwnerReference[];
   data?: Record<string, any>;
-  spec?: ServiceSpec | HTTPRouteSpec;
+  spec?: ServiceSpec | HTTPRouteSpec | Record<string, any>;
 }
 
 interface ResourceConfigurationProps {
