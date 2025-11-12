@@ -173,10 +173,24 @@ interface Workload {
   config: WorkloadConfig;
 }
 
+interface OwnerReference {
+  apiVersion?: string;
+  blockOwnerDeletion?: boolean;
+  controller?: boolean;
+  kind?: string;
+  name?: string;
+  uid?: string;
+}
+
 interface Resource {
   id: string;
   name: string;
   type: ResourceType;
+  namespace?: string;
+  labels?: Record<string, string>;
+  annotations?: Record<string, string>;
+  deletionGracePeriodSeconds?: number;
+  ownerReferences?: OwnerReference[];
   data?: Record<string, any>;
 }
 
