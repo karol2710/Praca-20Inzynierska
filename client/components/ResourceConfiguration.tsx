@@ -682,7 +682,7 @@ export default function ResourceConfiguration({ config, onConfigChange }: Resour
                             onChange={(e) => {
                               const updated = [...(config.spec?.ports || [])];
                               updated[idx] = { ...port, name: e.target.value || undefined };
-                              onConfigChange("spec", { ...config.spec, ports: updated });
+                              onConfigChange("spec", { ...(config.spec || {}), ports: updated });
                             }}
                             placeholder="http"
                             className="input-field text-sm"
@@ -696,7 +696,7 @@ export default function ResourceConfiguration({ config, onConfigChange }: Resour
                             onChange={(e) => {
                               const updated = [...(config.spec?.ports || [])];
                               updated[idx] = { ...port, port: parseInt(e.target.value) || 80 };
-                              onConfigChange("spec", { ...config.spec, ports: updated });
+                              onConfigChange("spec", { ...(config.spec || {}), ports: updated });
                             }}
                             placeholder="80"
                             className="input-field text-sm"
@@ -714,7 +714,7 @@ export default function ResourceConfiguration({ config, onConfigChange }: Resour
                                 ...port,
                                 targetPort: value ? (isNaN(Number(value)) ? value : parseInt(value)) : undefined,
                               };
-                              onConfigChange("spec", { ...config.spec, ports: updated });
+                              onConfigChange("spec", { ...(config.spec || {}), ports: updated });
                             }}
                             placeholder="8080"
                             className="input-field text-sm"
@@ -727,7 +727,7 @@ export default function ResourceConfiguration({ config, onConfigChange }: Resour
                             onChange={(e) => {
                               const updated = [...(config.spec?.ports || [])];
                               updated[idx] = { ...port, protocol: e.target.value as "TCP" | "UDP" | "SCTP" };
-                              onConfigChange("spec", { ...config.spec, ports: updated });
+                              onConfigChange("spec", { ...(config.spec || {}), ports: updated });
                             }}
                             className="input-field text-sm"
                           >
@@ -747,7 +747,7 @@ export default function ResourceConfiguration({ config, onConfigChange }: Resour
                                 ...port,
                                 nodePort: e.target.value ? parseInt(e.target.value) : undefined,
                               };
-                              onConfigChange("spec", { ...config.spec, ports: updated });
+                              onConfigChange("spec", { ...(config.spec || {}), ports: updated });
                             }}
                             placeholder="30000"
                             className="input-field text-sm"
