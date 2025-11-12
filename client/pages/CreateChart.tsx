@@ -281,7 +281,12 @@ export default function CreateChart() {
             return { ...r, [key]: value };
           }
 
-          // Handle spec and other fields in data
+          // Handle spec at top level for resources like Service
+          if (key === "spec") {
+            return { ...r, spec: value };
+          }
+
+          // Handle other fields in data
           return { ...r, data: { ...r.data, [key]: value } };
         })
       );
