@@ -186,6 +186,16 @@ interface Workload {
   config: WorkloadConfig;
 }
 
+interface Resource {
+  id: string;
+  name: string;
+  type: ResourceType;
+  namespace?: string;
+  labels?: Record<string, string>;
+  annotations?: Record<string, string>;
+  data?: Record<string, any>;
+}
+
 export default function CreateChart() {
   const [mode, setMode] = useState<ChartMode>("standard");
   const [inputType, setInputType] = useState<InputType>("file");
