@@ -3609,8 +3609,198 @@ export default function ResourceConfiguration({ config, onConfigChange }: Resour
             </div>
           )}
 
+          {/* GRPCRoute Spec Section */}
+          {expandedSections.has(section.id) && section.id === "spec" && config.type === "GRPCRoute" && (
+            <div className="px-4 py-4 border-t border-border bg-muted/10 space-y-4">
+              {/* Parent References */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <label className="block text-sm font-medium text-foreground">Parent References</label>
+                  <button
+                    onClick={() => {
+                      const parentRefs = (config.spec as GRPCRouteSpec)?.parentReferences || [];
+                      onConfigChange("spec", {
+                        ...(config.spec as GRPCRouteSpec || {}),
+                        parentReferences: [
+                          ...parentRefs,
+                          { name: "", namespace: "", kind: "", group: "" },
+                        ],
+                      });
+                    }}
+                    className="text-primary hover:opacity-70 text-sm"
+                  >
+                    + Add Reference
+                  </button>
+                </div>
+
+                {((config.spec as GRPCRouteSpec)?.parentReferences && (config.spec as GRPCRouteSpec).parentReferences.length > 0) ? (
+                  <div className="space-y-3">
+                    {((config.spec as GRPCRouteSpec)?.parentReferences || []).map((ref, idx) => (
+                      <div key={idx} className="p-4 bg-muted/20 border border-border rounded-lg space-y-3">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs font-medium text-foreground mb-1">Name*</label>
+                            <input
+                              type="text"
+                              value={ref.name || ""}
+                              onChange={(e) => {
+                                const updated = [...((config.spec as GRPCRouteSpec)?.parentReferences || [])];
+                                updated[idx] = { ...ref, name: e.target.value || undefined };
+                                onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), parentReferences: updated });
+                              }}
+                              placeholder="gateway-name"
+                              className="input-field text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-foreground mb-1">Namespace</label>
+                            <input
+                              type="text"
+                              value={ref.namespace || ""}
+                              onChange={(e) => {
+                                const updated = [...((config.spec as GRPCRouteSpec)?.parentReferences || [])];
+                                updated[idx] = { ...ref, namespace: e.target.value || undefined };
+                                onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), parentReferences: updated });
+                              }}
+                              placeholder="default"
+                              className="input-field text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-foreground mb-1">Kind</label>
+                            <input
+                              type="text"
+                              value={ref.kind || ""}
+                              onChange={(e) => {
+                                const updated = [...((config.spec as GRPCRouteSpec)?.parentReferences || [])];
+                                updated[idx] = { ...ref, kind: e.target.value || undefined };
+                                onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), parentReferences: updated });
+                              }}
+                              placeholder="Gateway"
+                              className="input-field text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-foreground mb-1">Group</label>
+                            <input
+                              type="text"
+                              value={ref.group || ""}
+                              onChange={(e) => {
+                                const updated = [...((config.spec as GRPCRouteSpec)?.parentReferences || [])];
+                                updated[idx] = { ...ref, group: e.target.value || undefined };
+                                onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), parentReferences: updated });
+                              }}
+                              placeholder="gateway.networking.k8s.io"
+                              className="input-field text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-foreground mb-1">Section Name</label>
+                            <input
+                              type="text"
+                              value={ref.sectionName || ""}
+                              onChange={(e) => {
+                                const updated = [...((config.spec as GRPCRouteSpec)?.parentReferences || [])];
+                                updated[idx] = { ...ref, sectionName: e.target.value || undefined };
+                                onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), parentReferences: updated });
+                              }}
+                              placeholder="grpc"
+                              className="input-field text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-foreground mb-1">Port</label>
+                            <input
+                              type="number"
+                              value={ref.port || ""}
+                              onChange={(e) => {
+                                const updated = [...((config.spec as GRPCRouteSpec)?.parentReferences || [])];
+                                updated[idx] = { ...ref, port: e.target.value ? parseInt(e.target.value) : undefined };
+                                onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), parentReferences: updated });
+                              }}
+                              placeholder="5000"
+                              className="input-field text-sm"
+                            />
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => {
+                            const updated = ((config.spec as GRPCRouteSpec)?.parentReferences || []).filter((_, i) => i !== idx);
+                            onConfigChange("spec", {
+                              ...(config.spec as GRPCRouteSpec || {}),
+                              parentReferences: updated.length > 0 ? updated : undefined,
+                            });
+                          }}
+                          className="w-full text-xs text-destructive hover:bg-destructive/10 py-1.5 rounded transition-colors"
+                        >
+                          Remove Reference
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-foreground/60 text-sm py-2">No parent references defined</p>
+                )}
+              </div>
+
+              {/* Hostnames */}
+              <div className="border-t border-border pt-4">
+                <label className="block text-sm font-medium text-foreground mb-3">Hostnames</label>
+                <div className="space-y-2">
+                  {((config.spec as GRPCRouteSpec)?.hostnames || []).map((hostname, idx) => (
+                    <div key={idx} className="flex gap-2 items-center">
+                      <input
+                        type="text"
+                        value={hostname}
+                        onChange={(e) => {
+                          const updated = [...((config.spec as GRPCRouteSpec)?.hostnames || [])];
+                          updated[idx] = e.target.value || "";
+                          onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), hostnames: updated });
+                        }}
+                        placeholder="api.example.com"
+                        className="input-field flex-1"
+                      />
+                      <button
+                        onClick={() => {
+                          const updated = ((config.spec as GRPCRouteSpec)?.hostnames || []).filter((_, i) => i !== idx);
+                          onConfigChange("spec", {
+                            ...(config.spec as GRPCRouteSpec || {}),
+                            hostnames: updated.length > 0 ? updated : undefined,
+                          });
+                        }}
+                        className="text-destructive hover:opacity-70"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => {
+                      const hostnames = (config.spec as GRPCRouteSpec)?.hostnames || [];
+                      onConfigChange("spec", {
+                        ...(config.spec as GRPCRouteSpec || {}),
+                        hostnames: [...hostnames, ""],
+                      });
+                    }}
+                    className="text-primary hover:opacity-70 text-sm"
+                  >
+                    + Add Hostname
+                  </button>
+                </div>
+              </div>
+
+              {/* Rules Placeholder */}
+              <div className="border-t border-border pt-4">
+                <label className="block text-sm font-medium text-foreground mb-3">Rules</label>
+                <div className="bg-muted/30 border border-border/50 rounded-lg p-4 text-center">
+                  <p className="text-sm text-foreground/60">Rules configuration for GRPCRoute (to be specified)</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Resource-specific sections will be rendered here based on type */}
-          {expandedSections.has(section.id) && section.id !== "metadata" && config.type !== "Service" && (
+          {expandedSections.has(section.id) && section.id !== "metadata" && config.type !== "Service" && config.type !== "HTTPRoute" && config.type !== "GRPCRoute" && (
             <div className="px-4 py-4 border-t border-border bg-muted/10 space-y-4">
               <div className="bg-muted/20 border border-border rounded-lg p-4">
                 <p className="text-sm font-medium text-foreground mb-3">{section.title}</p>
