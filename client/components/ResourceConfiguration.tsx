@@ -346,8 +346,360 @@ export default function ResourceConfiguration({ config, onConfigChange }: Resour
             </div>
           )}
 
+          {/* Service Spec Section */}
+          {expandedSections.has(section.id) && section.id === "spec" && config.type === "Service" && (
+            <div className="px-4 py-4 border-t border-border bg-muted/10 space-y-4">
+              {/* Service Type */}
+              <div>
+                <label htmlFor="serviceType" className="block text-sm font-medium text-foreground mb-2">
+                  Type
+                </label>
+                <select
+                  id="serviceType"
+                  value={config.spec?.type || "ClusterIP"}
+                  onChange={(e) => {
+                    const newType = e.target.value as "ClusterIP" | "NodePort" | "ExternalName";
+                    const updatedSpec = { ...config.spec, type: newType };
+                    if (newType === "ExternalName") {
+                      updatedSpec.clusterIP = undefined;
+                      updatedSpec.clusterIPs = undefined;
+                    }
+                    onConfigChange("spec", updatedSpec);
+                  }}
+                  className="input-field"
+                >
+                  <option value="ClusterIP">ClusterIP</option>
+                  <option value="NodePort">NodePort</option>
+                  <option value="ExternalName">ExternalName</option>
+                </select>
+                <p className="text-xs text-foreground/50 mt-1">Service type determines how the service is exposed</p>
+              </div>
+
+              {/* ClusterIP - Hidden when Type is ExternalName */}
+              {config.spec?.type !== "ExternalName" && (
+                <div className="border-t border-border pt-4">
+                  <label htmlFor="clusterIP" className="block text-sm font-medium text-foreground mb-2">
+                    Cluster IP
+                  </label>
+                  <input
+                    id="clusterIP"
+                    type="text"
+                    value={config.spec?.clusterIP || ""}
+                    onChange={(e) => {
+                      onConfigChange("spec", {
+                        ...config.spec,
+                        clusterIP: e.target.value || undefined,
+                      });
+                    }}
+                    placeholder="10.0.0.1"
+                    className="input-field"
+                  />
+                  <p className="text-xs text-foreground/50 mt-1">Virtual IP address assigned to the service</p>
+                </div>
+              )}
+
+              {/* ClusterIPs - Hidden when Type is ExternalName */}
+              {config.spec?.type !== "ExternalName" && (
+                <div className="border-t border-border pt-4">
+                  <label className="block text-sm font-medium text-foreground mb-3">Cluster IPs</label>
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {(config.spec?.clusterIPs || []).map((ip, idx) => (
+                      <div
+                        key={idx}
+                        className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm flex items-center gap-2"
+                      >
+                        {ip}
+                        <button
+                          onClick={() => {
+                            const updated = (config.spec?.clusterIPs || []).filter((_, i) => i !== idx);
+                            onConfigChange("spec", {
+                              ...config.spec,
+                              clusterIPs: updated.length > 0 ? updated : undefined,
+                            });
+                          }}
+                          className="text-primary hover:opacity-70"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Enter IP address and press Enter (max 2)"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        const input = e.currentTarget;
+                        const newIP = input.value.trim();
+                        if (newIP && (config.spec?.clusterIPs?.length ?? 0) < 2) {
+                          const updated = [...(config.spec?.clusterIPs || []), newIP];
+                          onConfigChange("spec", { ...config.spec, clusterIPs: updated });
+                          input.value = "";
+                        }
+                      }
+                    }}
+                    className="input-field"
+                  />
+                  <p className="text-xs text-foreground/50 mt-1">Cluster IPs (maximum 2 addresses)</p>
+                </div>
+              )}
+
+              {/* ExternalName - Only visible when Type is ExternalName */}
+              {config.spec?.type === "ExternalName" && (
+                <div className="border-t border-border pt-4">
+                  <label htmlFor="externalName" className="block text-sm font-medium text-foreground mb-2">
+                    External Name
+                  </label>
+                  <input
+                    id="externalName"
+                    type="text"
+                    value={config.spec?.externalName || ""}
+                    onChange={(e) => {
+                      onConfigChange("spec", {
+                        ...config.spec,
+                        externalName: e.target.value || undefined,
+                      });
+                    }}
+                    placeholder="example.com"
+                    className="input-field"
+                  />
+                  <p className="text-xs text-foreground/50 mt-1">CNAME hostname to point to</p>
+                </div>
+              )}
+
+              {/* IP Family Policy */}
+              <div className="border-t border-border pt-4">
+                <label htmlFor="ipFamilyPolicy" className="block text-sm font-medium text-foreground mb-2">
+                  IP Family Policy
+                </label>
+                <input
+                  id="ipFamilyPolicy"
+                  type="text"
+                  value={config.spec?.ipFamilyPolicy || ""}
+                  onChange={(e) => {
+                    onConfigChange("spec", {
+                      ...config.spec,
+                      ipFamilyPolicy: e.target.value || undefined,
+                    });
+                  }}
+                  placeholder="SingleStack, PreferDualStack, RequireDualStack"
+                  className="input-field"
+                />
+                <p className="text-xs text-foreground/50 mt-1">IP family policy for the service</p>
+              </div>
+
+              {/* Ports */}
+              <div className="border-t border-border pt-4">
+                <div className="flex items-center justify-between mb-3">
+                  <label className="block text-sm font-medium text-foreground">Ports</label>
+                  <button
+                    onClick={() => {
+                      const ports = config.spec?.ports || [];
+                      onConfigChange("spec", {
+                        ...config.spec,
+                        ports: [...ports, { port: 80, protocol: "TCP" }],
+                      });
+                    }}
+                    className="text-primary hover:opacity-70 text-sm"
+                  >
+                    + Add Port
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  {config.spec?.ports?.map((port, idx) => (
+                    <div key={idx} className="p-4 bg-muted/20 border border-border rounded-lg space-y-3">
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                        <div>
+                          <label className="block text-xs font-medium text-foreground mb-1">Name</label>
+                          <input
+                            type="text"
+                            value={port.name || ""}
+                            onChange={(e) => {
+                              const updated = [...(config.spec?.ports || [])];
+                              updated[idx] = { ...port, name: e.target.value || undefined };
+                              onConfigChange("spec", { ...config.spec, ports: updated });
+                            }}
+                            placeholder="http"
+                            className="input-field text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-foreground mb-1">Port*</label>
+                          <input
+                            type="number"
+                            value={port.port}
+                            onChange={(e) => {
+                              const updated = [...(config.spec?.ports || [])];
+                              updated[idx] = { ...port, port: parseInt(e.target.value) || 80 };
+                              onConfigChange("spec", { ...config.spec, ports: updated });
+                            }}
+                            placeholder="80"
+                            className="input-field text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-foreground mb-1">Target Port</label>
+                          <input
+                            type="text"
+                            value={port.targetPort || ""}
+                            onChange={(e) => {
+                              const updated = [...(config.spec?.ports || [])];
+                              const value = e.target.value;
+                              updated[idx] = {
+                                ...port,
+                                targetPort: value ? (isNaN(Number(value)) ? value : parseInt(value)) : undefined,
+                              };
+                              onConfigChange("spec", { ...config.spec, ports: updated });
+                            }}
+                            placeholder="8080"
+                            className="input-field text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-foreground mb-1">Protocol</label>
+                          <select
+                            value={port.protocol || "TCP"}
+                            onChange={(e) => {
+                              const updated = [...(config.spec?.ports || [])];
+                              updated[idx] = { ...port, protocol: e.target.value as "TCP" | "UDP" | "SCTP" };
+                              onConfigChange("spec", { ...config.spec, ports: updated });
+                            }}
+                            className="input-field text-sm"
+                          >
+                            <option value="TCP">TCP</option>
+                            <option value="UDP">UDP</option>
+                            <option value="SCTP">SCTP</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-foreground mb-1">Node Port</label>
+                          <input
+                            type="number"
+                            value={port.nodePort || ""}
+                            onChange={(e) => {
+                              const updated = [...(config.spec?.ports || [])];
+                              updated[idx] = {
+                                ...port,
+                                nodePort: e.target.value ? parseInt(e.target.value) : undefined,
+                              };
+                              onConfigChange("spec", { ...config.spec, ports: updated });
+                            }}
+                            placeholder="30000"
+                            className="input-field text-sm"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-foreground mb-1">App Protocol</label>
+                        <input
+                          type="text"
+                          value={port.appProtocol || ""}
+                          onChange={(e) => {
+                            const updated = [...(config.spec?.ports || [])];
+                            updated[idx] = { ...port, appProtocol: e.target.value || undefined };
+                            onConfigChange("spec", { ...config.spec, ports: updated });
+                          }}
+                          placeholder="http, https, grpc"
+                          className="input-field text-sm"
+                        />
+                      </div>
+                      <button
+                        onClick={() => {
+                          onConfigChange(
+                            "spec",
+                            {
+                              ...config.spec,
+                              ports: config.spec?.ports?.filter((_, i) => i !== idx),
+                            }
+                          );
+                        }}
+                        className="w-full text-xs text-destructive hover:bg-destructive/10 py-1.5 rounded transition-colors"
+                      >
+                        Remove Port
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Publish Not Ready Addresses */}
+              <div className="border-t border-border pt-4">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={config.spec?.publishNotReadyAddresses || false}
+                    onChange={(e) => {
+                      onConfigChange("spec", {
+                        ...config.spec,
+                        publishNotReadyAddresses: e.target.checked || undefined,
+                      });
+                    }}
+                    className="w-4 h-4 cursor-pointer"
+                  />
+                  <span className="text-sm font-medium text-foreground">Publish Not Ready Addresses</span>
+                </label>
+                <p className="text-xs text-foreground/50 mt-1 ml-7">Publish service endpoints even if not ready</p>
+              </div>
+
+              {/* Selector */}
+              <div className="border-t border-border pt-4">
+                <label className="block text-sm font-medium text-foreground mb-2">Selector</label>
+                {renderTagsField(
+                  config.spec?.selector,
+                  (value) => onConfigChange("spec", { ...config.spec, selector: value }),
+                  "Selector",
+                  "Add selector (key=value)"
+                )}
+                <p className="text-xs text-foreground/50 mt-1">Labels to select pods for the service</p>
+              </div>
+
+              {/* Session Affinity */}
+              <div className="border-t border-border pt-4">
+                <label htmlFor="sessionAffinity" className="block text-sm font-medium text-foreground mb-2">
+                  Session Affinity
+                </label>
+                <select
+                  id="sessionAffinity"
+                  value={config.spec?.sessionAffinity || "None"}
+                  onChange={(e) => {
+                    onConfigChange("spec", {
+                      ...config.spec,
+                      sessionAffinity: e.target.value as "ClientIP" | "None",
+                    });
+                  }}
+                  className="input-field"
+                >
+                  <option value="None">None</option>
+                  <option value="ClientIP">ClientIP</option>
+                </select>
+                <p className="text-xs text-foreground/50 mt-1">Affinity for session persistence</p>
+              </div>
+
+              {/* Traffic Distribution */}
+              <div className="border-t border-border pt-4">
+                <label htmlFor="trafficDistribution" className="block text-sm font-medium text-foreground mb-2">
+                  Traffic Distribution
+                </label>
+                <input
+                  id="trafficDistribution"
+                  type="text"
+                  value={config.spec?.trafficDistribution || ""}
+                  onChange={(e) => {
+                    onConfigChange("spec", {
+                      ...config.spec,
+                      trafficDistribution: e.target.value || undefined,
+                    });
+                  }}
+                  placeholder="PreferClose"
+                  className="input-field"
+                />
+                <p className="text-xs text-foreground/50 mt-1">Traffic distribution policy</p>
+              </div>
+            </div>
+          )}
+
           {/* Resource-specific sections will be rendered here based on type */}
-          {expandedSections.has(section.id) && section.id !== "metadata" && (
+          {expandedSections.has(section.id) && section.id !== "metadata" && config.type !== "Service" && (
             <div className="px-4 py-4 border-t border-border bg-muted/10 space-y-4">
               <div className="bg-muted/20 border border-border rounded-lg p-4">
                 <p className="text-sm font-medium text-foreground mb-3">{section.title}</p>
