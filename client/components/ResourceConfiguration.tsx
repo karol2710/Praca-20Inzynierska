@@ -61,7 +61,7 @@ interface HTTPRouteFilter {
   type: "RequestHeaderModifier" | "ResponseHeaderModifier" | "RequestMirror" | "RequestRedirect" | "URLRewrite";
   requestHeaderModifier?: { set?: Record<string, string>; add?: Record<string, string>; remove?: string[] };
   responseHeaderModifier?: { set?: Record<string, string>; add?: Record<string, string>; remove?: string[] };
-  requestMirror?: { backendRef: { name?: string; namespace?: string; port?: number } };
+  requestMirror?: { backendRef: { name?: string; namespace?: string; port?: number }; percent?: number; fraction?: { numerator?: number; denominator?: string } };
   requestRedirect?: { scheme?: string; hostname?: string; path?: { type?: string; value?: string }; port?: number; statusCode?: number };
   urlRewrite?: { hostname?: string; path?: { type?: string; value?: string } };
 }
