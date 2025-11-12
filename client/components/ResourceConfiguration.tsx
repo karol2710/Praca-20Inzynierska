@@ -762,7 +762,7 @@ export default function ResourceConfiguration({ config, onConfigChange }: Resour
                           onChange={(e) => {
                             const updated = [...(config.spec?.ports || [])];
                             updated[idx] = { ...port, appProtocol: e.target.value || undefined };
-                            onConfigChange("spec", { ...config.spec, ports: updated });
+                            onConfigChange("spec", { ...(config.spec || {}), ports: updated });
                           }}
                           placeholder="http, https, grpc"
                           className="input-field text-sm"
@@ -773,7 +773,7 @@ export default function ResourceConfiguration({ config, onConfigChange }: Resour
                           onConfigChange(
                             "spec",
                             {
-                              ...config.spec,
+                              ...(config.spec || {}),
                               ports: config.spec?.ports?.filter((_, i) => i !== idx),
                             }
                           );
