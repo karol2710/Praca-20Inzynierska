@@ -87,6 +87,12 @@ interface HTTPRouteSpec {
   timeouts?: HTTPRouteTimeout;
 }
 
+interface GRPCRouteSpec {
+  parentReferences?: HTTPRouteParentReference[];
+  hostnames?: string[];
+  rules?: Record<string, any>[];
+}
+
 interface ResourceConfig {
   id: string;
   name?: string;
@@ -97,7 +103,7 @@ interface ResourceConfig {
   deletionGracePeriodSeconds?: number;
   ownerReferences?: OwnerReference[];
   data?: Record<string, any>;
-  spec?: ServiceSpec | HTTPRouteSpec | Record<string, any>;
+  spec?: ServiceSpec | HTTPRouteSpec | GRPCRouteSpec | Record<string, any>;
 }
 
 interface ResourceConfigurationProps {
