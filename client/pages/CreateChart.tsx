@@ -299,9 +299,6 @@ export default function CreateChart() {
   };
 
   const updateResourceConfig = (key: keyof Resource, value: any) => {
-    const activeResource = resources.find((r) => r.id === activeResourceId);
-    if (!activeResource) return;
-
     setResources(
       resources.map((r) => (r.id === activeResourceId ? { ...r, [key]: value } : r))
     );
