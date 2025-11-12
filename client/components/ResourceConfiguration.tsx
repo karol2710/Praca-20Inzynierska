@@ -2143,7 +2143,8 @@ export default function ResourceConfiguration({ config, onConfigChange }: Resour
                                   </div>
                                   {(backend.filters || []).map((bFilter, bfIdx) => (
                                     <div key={bfIdx} className="p-2 bg-muted/5 border border-border/20 rounded mb-2 space-y-2">
-                                      <div className="flex items-center justify-between">
+                                      <div>
+                                        <label className="block text-xs font-medium text-foreground mb-1">Filter Type</label>
                                         <select
                                           value={bFilter.type || "RequestHeaderModifier"}
                                           onChange={(e) => {
@@ -2155,7 +2156,7 @@ export default function ResourceConfiguration({ config, onConfigChange }: Resour
                                             updated[rIdx] = { ...rule, backendRefs: backends };
                                             onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
                                           }}
-                                          className="input-field text-xs flex-1 mr-2"
+                                          className="input-field text-xs"
                                         >
                                           <option value="RequestHeaderModifier">Request Header Modifier</option>
                                           <option value="ResponseHeaderModifier">Response Header Modifier</option>
@@ -2163,20 +2164,950 @@ export default function ResourceConfiguration({ config, onConfigChange }: Resour
                                           <option value="RequestRedirect">Request Redirect</option>
                                           <option value="URLRewrite">URL Rewrite</option>
                                         </select>
-                                        <button
-                                          onClick={() => {
-                                            const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
-                                            const backends = [...(updated[rIdx]?.backendRefs || [])];
-                                            const filters = (backends[bIdx]?.filters || []).filter((_, i) => i !== bfIdx);
-                                            backends[bIdx] = { ...backend, filters: filters.length > 0 ? filters : undefined };
-                                            updated[rIdx] = { ...rule, backendRefs: backends };
-                                            onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
-                                          }}
-                                          className="text-destructive hover:opacity-70 text-xs"
-                                        >
-                                          ×
-                                        </button>
                                       </div>
+
+                                      {/* Request Header Modifier */}
+                                      {bFilter.type === "RequestHeaderModifier" && (
+                                        <div className="space-y-2 border-t border-border/20 pt-2">
+                                          <div>
+                                            <label className="block text-xs font-medium text-foreground mb-1">Set Headers</label>
+                                            {Object.entries(bFilter.requestHeaderModifier?.set || {}).map(([key, val], idx) => (
+                                              <div key={idx} className="flex gap-2 items-center mb-1">
+                                                <input
+                                                  type="text"
+                                                  value={key}
+                                                  onChange={(e) => {
+                                                    const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                                    const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                                    const filters = [...(backends[bIdx]?.filters || [])];
+                                                    const set = { ...filters[bfIdx]?.requestHeaderModifier?.set };
+                                                    if (e.target.value !== key) {
+                                                      delete set[key];
+                                                      set[e.target.value] = val;
+                                                    }
+                                                    filters[bfIdx] = {
+                                                      ...bFilter,
+                                                      requestHeaderModifier: {
+                                                        ...bFilter.requestHeaderModifier,
+                                                        set,
+                                                      },
+                                                    };
+                                                    backends[bIdx] = { ...backend, filters };
+                                                    updated[rIdx] = { ...rule, backendRefs: backends };
+                                                    onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                                  }}
+                                                  placeholder="Header name"
+                                                  className="input-field text-xs flex-1"
+                                                />
+                                                <input
+                                                  type="text"
+                                                  value={val}
+                                                  onChange={(e) => {
+                                                    const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                                    const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                                    const filters = [...(backends[bIdx]?.filters || [])];
+                                                    const set = { ...filters[bfIdx]?.requestHeaderModifier?.set };
+                                                    set[key] = e.target.value;
+                                                    filters[bfIdx] = {
+                                                      ...bFilter,
+                                                      requestHeaderModifier: {
+                                                        ...bFilter.requestHeaderModifier,
+                                                        set,
+                                                      },
+                                                    };
+                                                    backends[bIdx] = { ...backend, filters };
+                                                    updated[rIdx] = { ...rule, backendRefs: backends };
+                                                    onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                                  }}
+                                                  placeholder="Header value"
+                                                  className="input-field text-xs flex-1"
+                                                />
+                                                <button
+                                                  onClick={() => {
+                                                    const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                                    const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                                    const filters = [...(backends[bIdx]?.filters || [])];
+                                                    const set = { ...filters[bfIdx]?.requestHeaderModifier?.set };
+                                                    delete set[key];
+                                                    filters[bfIdx] = {
+                                                      ...bFilter,
+                                                      requestHeaderModifier: {
+                                                        ...bFilter.requestHeaderModifier,
+                                                        set: Object.keys(set).length > 0 ? set : undefined,
+                                                      },
+                                                    };
+                                                    backends[bIdx] = { ...backend, filters };
+                                                    updated[rIdx] = { ...rule, backendRefs: backends };
+                                                    onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                                  }}
+                                                  className="text-destructive hover:opacity-70 text-xs"
+                                                >
+                                                  ×
+                                                </button>
+                                              </div>
+                                            ))}
+                                            <button
+                                              onClick={() => {
+                                                const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                                const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                                const filters = [...(backends[bIdx]?.filters || [])];
+                                                filters[bfIdx] = {
+                                                  ...bFilter,
+                                                  requestHeaderModifier: {
+                                                    ...bFilter.requestHeaderModifier,
+                                                    set: { ...bFilter.requestHeaderModifier?.set, "": "" },
+                                                  },
+                                                };
+                                                backends[bIdx] = { ...backend, filters };
+                                                updated[rIdx] = { ...rule, backendRefs: backends };
+                                                onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                              }}
+                                              className="text-primary hover:opacity-70 text-xs"
+                                            >
+                                              + Add Set Header
+                                            </button>
+                                          </div>
+
+                                          <div className="border-t border-border/20 pt-1">
+                                            <label className="block text-xs font-medium text-foreground mb-1">Add Headers</label>
+                                            {Object.entries(bFilter.requestHeaderModifier?.add || {}).map(([key, val], idx) => (
+                                              <div key={idx} className="flex gap-2 items-center mb-1">
+                                                <input
+                                                  type="text"
+                                                  value={key}
+                                                  onChange={(e) => {
+                                                    const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                                    const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                                    const filters = [...(backends[bIdx]?.filters || [])];
+                                                    const add = { ...filters[bfIdx]?.requestHeaderModifier?.add };
+                                                    if (e.target.value !== key) {
+                                                      delete add[key];
+                                                      add[e.target.value] = val;
+                                                    }
+                                                    filters[bfIdx] = {
+                                                      ...bFilter,
+                                                      requestHeaderModifier: {
+                                                        ...bFilter.requestHeaderModifier,
+                                                        add,
+                                                      },
+                                                    };
+                                                    backends[bIdx] = { ...backend, filters };
+                                                    updated[rIdx] = { ...rule, backendRefs: backends };
+                                                    onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                                  }}
+                                                  placeholder="Header name"
+                                                  className="input-field text-xs flex-1"
+                                                />
+                                                <input
+                                                  type="text"
+                                                  value={val}
+                                                  onChange={(e) => {
+                                                    const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                                    const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                                    const filters = [...(backends[bIdx]?.filters || [])];
+                                                    const add = { ...filters[bfIdx]?.requestHeaderModifier?.add };
+                                                    add[key] = e.target.value;
+                                                    filters[bfIdx] = {
+                                                      ...bFilter,
+                                                      requestHeaderModifier: {
+                                                        ...bFilter.requestHeaderModifier,
+                                                        add,
+                                                      },
+                                                    };
+                                                    backends[bIdx] = { ...backend, filters };
+                                                    updated[rIdx] = { ...rule, backendRefs: backends };
+                                                    onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                                  }}
+                                                  placeholder="Header value"
+                                                  className="input-field text-xs flex-1"
+                                                />
+                                                <button
+                                                  onClick={() => {
+                                                    const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                                    const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                                    const filters = [...(backends[bIdx]?.filters || [])];
+                                                    const add = { ...filters[bfIdx]?.requestHeaderModifier?.add };
+                                                    delete add[key];
+                                                    filters[bfIdx] = {
+                                                      ...bFilter,
+                                                      requestHeaderModifier: {
+                                                        ...bFilter.requestHeaderModifier,
+                                                        add: Object.keys(add).length > 0 ? add : undefined,
+                                                      },
+                                                    };
+                                                    backends[bIdx] = { ...backend, filters };
+                                                    updated[rIdx] = { ...rule, backendRefs: backends };
+                                                    onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                                  }}
+                                                  className="text-destructive hover:opacity-70 text-xs"
+                                                >
+                                                  ×
+                                                </button>
+                                              </div>
+                                            ))}
+                                            <button
+                                              onClick={() => {
+                                                const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                                const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                                const filters = [...(backends[bIdx]?.filters || [])];
+                                                filters[bfIdx] = {
+                                                  ...bFilter,
+                                                  requestHeaderModifier: {
+                                                    ...bFilter.requestHeaderModifier,
+                                                    add: { ...bFilter.requestHeaderModifier?.add, "": "" },
+                                                  },
+                                                };
+                                                backends[bIdx] = { ...backend, filters };
+                                                updated[rIdx] = { ...rule, backendRefs: backends };
+                                                onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                              }}
+                                              className="text-primary hover:opacity-70 text-xs"
+                                            >
+                                              + Add Header
+                                            </button>
+                                          </div>
+
+                                          <div className="border-t border-border/20 pt-1">
+                                            <label className="block text-xs font-medium text-foreground mb-1">Remove Headers</label>
+                                            {(bFilter.requestHeaderModifier?.remove || []).map((header, idx) => (
+                                              <div key={idx} className="flex gap-2 items-center mb-1">
+                                                <input
+                                                  type="text"
+                                                  value={header}
+                                                  onChange={(e) => {
+                                                    const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                                    const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                                    const filters = [...(backends[bIdx]?.filters || [])];
+                                                    const remove = [...(filters[bfIdx]?.requestHeaderModifier?.remove || [])];
+                                                    remove[idx] = e.target.value;
+                                                    filters[bfIdx] = {
+                                                      ...bFilter,
+                                                      requestHeaderModifier: {
+                                                        ...bFilter.requestHeaderModifier,
+                                                        remove,
+                                                      },
+                                                    };
+                                                    backends[bIdx] = { ...backend, filters };
+                                                    updated[rIdx] = { ...rule, backendRefs: backends };
+                                                    onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                                  }}
+                                                  placeholder="Header name to remove"
+                                                  className="input-field text-xs flex-1"
+                                                />
+                                                <button
+                                                  onClick={() => {
+                                                    const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                                    const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                                    const filters = [...(backends[bIdx]?.filters || [])];
+                                                    const remove = (filters[bfIdx]?.requestHeaderModifier?.remove || []).filter((_, i) => i !== idx);
+                                                    filters[bfIdx] = {
+                                                      ...bFilter,
+                                                      requestHeaderModifier: {
+                                                        ...bFilter.requestHeaderModifier,
+                                                        remove: remove.length > 0 ? remove : undefined,
+                                                      },
+                                                    };
+                                                    backends[bIdx] = { ...backend, filters };
+                                                    updated[rIdx] = { ...rule, backendRefs: backends };
+                                                    onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                                  }}
+                                                  className="text-destructive hover:opacity-70 text-xs"
+                                                >
+                                                  ×
+                                                </button>
+                                              </div>
+                                            ))}
+                                            <button
+                                              onClick={() => {
+                                                const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                                const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                                const filters = [...(backends[bIdx]?.filters || [])];
+                                                filters[bfIdx] = {
+                                                  ...bFilter,
+                                                  requestHeaderModifier: {
+                                                    ...bFilter.requestHeaderModifier,
+                                                    remove: [...(bFilter.requestHeaderModifier?.remove || []), ""],
+                                                  },
+                                                };
+                                                backends[bIdx] = { ...backend, filters };
+                                                updated[rIdx] = { ...rule, backendRefs: backends };
+                                                onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                              }}
+                                              className="text-primary hover:opacity-70 text-xs"
+                                            >
+                                              + Remove Header
+                                            </button>
+                                          </div>
+                                        </div>
+                                      )}
+
+                                      {/* Response Header Modifier */}
+                                      {bFilter.type === "ResponseHeaderModifier" && (
+                                        <div className="space-y-2 border-t border-border/20 pt-2">
+                                          <div>
+                                            <label className="block text-xs font-medium text-foreground mb-1">Set Headers</label>
+                                            {Object.entries(bFilter.responseHeaderModifier?.set || {}).map(([key, val], idx) => (
+                                              <div key={idx} className="flex gap-2 items-center mb-1">
+                                                <input
+                                                  type="text"
+                                                  value={key}
+                                                  onChange={(e) => {
+                                                    const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                                    const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                                    const filters = [...(backends[bIdx]?.filters || [])];
+                                                    const set = { ...filters[bfIdx]?.responseHeaderModifier?.set };
+                                                    if (e.target.value !== key) {
+                                                      delete set[key];
+                                                      set[e.target.value] = val;
+                                                    }
+                                                    filters[bfIdx] = {
+                                                      ...bFilter,
+                                                      responseHeaderModifier: {
+                                                        ...bFilter.responseHeaderModifier,
+                                                        set,
+                                                      },
+                                                    };
+                                                    backends[bIdx] = { ...backend, filters };
+                                                    updated[rIdx] = { ...rule, backendRefs: backends };
+                                                    onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                                  }}
+                                                  placeholder="Header name"
+                                                  className="input-field text-xs flex-1"
+                                                />
+                                                <input
+                                                  type="text"
+                                                  value={val}
+                                                  onChange={(e) => {
+                                                    const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                                    const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                                    const filters = [...(backends[bIdx]?.filters || [])];
+                                                    const set = { ...filters[bfIdx]?.responseHeaderModifier?.set };
+                                                    set[key] = e.target.value;
+                                                    filters[bfIdx] = {
+                                                      ...bFilter,
+                                                      responseHeaderModifier: {
+                                                        ...bFilter.responseHeaderModifier,
+                                                        set,
+                                                      },
+                                                    };
+                                                    backends[bIdx] = { ...backend, filters };
+                                                    updated[rIdx] = { ...rule, backendRefs: backends };
+                                                    onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                                  }}
+                                                  placeholder="Header value"
+                                                  className="input-field text-xs flex-1"
+                                                />
+                                                <button
+                                                  onClick={() => {
+                                                    const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                                    const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                                    const filters = [...(backends[bIdx]?.filters || [])];
+                                                    const set = { ...filters[bfIdx]?.responseHeaderModifier?.set };
+                                                    delete set[key];
+                                                    filters[bfIdx] = {
+                                                      ...bFilter,
+                                                      responseHeaderModifier: {
+                                                        ...bFilter.responseHeaderModifier,
+                                                        set: Object.keys(set).length > 0 ? set : undefined,
+                                                      },
+                                                    };
+                                                    backends[bIdx] = { ...backend, filters };
+                                                    updated[rIdx] = { ...rule, backendRefs: backends };
+                                                    onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                                  }}
+                                                  className="text-destructive hover:opacity-70 text-xs"
+                                                >
+                                                  ×
+                                                </button>
+                                              </div>
+                                            ))}
+                                            <button
+                                              onClick={() => {
+                                                const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                                const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                                const filters = [...(backends[bIdx]?.filters || [])];
+                                                filters[bfIdx] = {
+                                                  ...bFilter,
+                                                  responseHeaderModifier: {
+                                                    ...bFilter.responseHeaderModifier,
+                                                    set: { ...bFilter.responseHeaderModifier?.set, "": "" },
+                                                  },
+                                                };
+                                                backends[bIdx] = { ...backend, filters };
+                                                updated[rIdx] = { ...rule, backendRefs: backends };
+                                                onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                              }}
+                                              className="text-primary hover:opacity-70 text-xs"
+                                            >
+                                              + Add Set Header
+                                            </button>
+                                          </div>
+
+                                          <div className="border-t border-border/20 pt-1">
+                                            <label className="block text-xs font-medium text-foreground mb-1">Add Headers</label>
+                                            {Object.entries(bFilter.responseHeaderModifier?.add || {}).map(([key, val], idx) => (
+                                              <div key={idx} className="flex gap-2 items-center mb-1">
+                                                <input
+                                                  type="text"
+                                                  value={key}
+                                                  onChange={(e) => {
+                                                    const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                                    const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                                    const filters = [...(backends[bIdx]?.filters || [])];
+                                                    const add = { ...filters[bfIdx]?.responseHeaderModifier?.add };
+                                                    if (e.target.value !== key) {
+                                                      delete add[key];
+                                                      add[e.target.value] = val;
+                                                    }
+                                                    filters[bfIdx] = {
+                                                      ...bFilter,
+                                                      responseHeaderModifier: {
+                                                        ...bFilter.responseHeaderModifier,
+                                                        add,
+                                                      },
+                                                    };
+                                                    backends[bIdx] = { ...backend, filters };
+                                                    updated[rIdx] = { ...rule, backendRefs: backends };
+                                                    onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                                  }}
+                                                  placeholder="Header name"
+                                                  className="input-field text-xs flex-1"
+                                                />
+                                                <input
+                                                  type="text"
+                                                  value={val}
+                                                  onChange={(e) => {
+                                                    const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                                    const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                                    const filters = [...(backends[bIdx]?.filters || [])];
+                                                    const add = { ...filters[bfIdx]?.responseHeaderModifier?.add };
+                                                    add[key] = e.target.value;
+                                                    filters[bfIdx] = {
+                                                      ...bFilter,
+                                                      responseHeaderModifier: {
+                                                        ...bFilter.responseHeaderModifier,
+                                                        add,
+                                                      },
+                                                    };
+                                                    backends[bIdx] = { ...backend, filters };
+                                                    updated[rIdx] = { ...rule, backendRefs: backends };
+                                                    onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                                  }}
+                                                  placeholder="Header value"
+                                                  className="input-field text-xs flex-1"
+                                                />
+                                                <button
+                                                  onClick={() => {
+                                                    const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                                    const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                                    const filters = [...(backends[bIdx]?.filters || [])];
+                                                    const add = { ...filters[bfIdx]?.responseHeaderModifier?.add };
+                                                    delete add[key];
+                                                    filters[bfIdx] = {
+                                                      ...bFilter,
+                                                      responseHeaderModifier: {
+                                                        ...bFilter.responseHeaderModifier,
+                                                        add: Object.keys(add).length > 0 ? add : undefined,
+                                                      },
+                                                    };
+                                                    backends[bIdx] = { ...backend, filters };
+                                                    updated[rIdx] = { ...rule, backendRefs: backends };
+                                                    onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                                  }}
+                                                  className="text-destructive hover:opacity-70 text-xs"
+                                                >
+                                                  ×
+                                                </button>
+                                              </div>
+                                            ))}
+                                            <button
+                                              onClick={() => {
+                                                const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                                const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                                const filters = [...(backends[bIdx]?.filters || [])];
+                                                filters[bfIdx] = {
+                                                  ...bFilter,
+                                                  responseHeaderModifier: {
+                                                    ...bFilter.responseHeaderModifier,
+                                                    add: { ...bFilter.responseHeaderModifier?.add, "": "" },
+                                                  },
+                                                };
+                                                backends[bIdx] = { ...backend, filters };
+                                                updated[rIdx] = { ...rule, backendRefs: backends };
+                                                onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                              }}
+                                              className="text-primary hover:opacity-70 text-xs"
+                                            >
+                                              + Add Header
+                                            </button>
+                                          </div>
+
+                                          <div className="border-t border-border/20 pt-1">
+                                            <label className="block text-xs font-medium text-foreground mb-1">Remove Headers</label>
+                                            {(bFilter.responseHeaderModifier?.remove || []).map((header, idx) => (
+                                              <div key={idx} className="flex gap-2 items-center mb-1">
+                                                <input
+                                                  type="text"
+                                                  value={header}
+                                                  onChange={(e) => {
+                                                    const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                                    const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                                    const filters = [...(backends[bIdx]?.filters || [])];
+                                                    const remove = [...(filters[bfIdx]?.responseHeaderModifier?.remove || [])];
+                                                    remove[idx] = e.target.value;
+                                                    filters[bfIdx] = {
+                                                      ...bFilter,
+                                                      responseHeaderModifier: {
+                                                        ...bFilter.responseHeaderModifier,
+                                                        remove,
+                                                      },
+                                                    };
+                                                    backends[bIdx] = { ...backend, filters };
+                                                    updated[rIdx] = { ...rule, backendRefs: backends };
+                                                    onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                                  }}
+                                                  placeholder="Header name to remove"
+                                                  className="input-field text-xs flex-1"
+                                                />
+                                                <button
+                                                  onClick={() => {
+                                                    const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                                    const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                                    const filters = [...(backends[bIdx]?.filters || [])];
+                                                    const remove = (filters[bfIdx]?.responseHeaderModifier?.remove || []).filter((_, i) => i !== idx);
+                                                    filters[bfIdx] = {
+                                                      ...bFilter,
+                                                      responseHeaderModifier: {
+                                                        ...bFilter.responseHeaderModifier,
+                                                        remove: remove.length > 0 ? remove : undefined,
+                                                      },
+                                                    };
+                                                    backends[bIdx] = { ...backend, filters };
+                                                    updated[rIdx] = { ...rule, backendRefs: backends };
+                                                    onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                                  }}
+                                                  className="text-destructive hover:opacity-70 text-xs"
+                                                >
+                                                  ×
+                                                </button>
+                                              </div>
+                                            ))}
+                                            <button
+                                              onClick={() => {
+                                                const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                                const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                                const filters = [...(backends[bIdx]?.filters || [])];
+                                                filters[bfIdx] = {
+                                                  ...bFilter,
+                                                  responseHeaderModifier: {
+                                                    ...bFilter.responseHeaderModifier,
+                                                    remove: [...(bFilter.responseHeaderModifier?.remove || []), ""],
+                                                  },
+                                                };
+                                                backends[bIdx] = { ...backend, filters };
+                                                updated[rIdx] = { ...rule, backendRefs: backends };
+                                                onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                              }}
+                                              className="text-primary hover:opacity-70 text-xs"
+                                            >
+                                              + Remove Header
+                                            </button>
+                                          </div>
+                                        </div>
+                                      )}
+
+                                      {/* Request Mirror */}
+                                      {bFilter.type === "RequestMirror" && (
+                                        <div className="space-y-2 border-t border-border/20 pt-2">
+                                          <div>
+                                            <p className="text-xs text-foreground/60 mb-2">Backend Reference (required)</p>
+                                            <div className="grid grid-cols-3 gap-2">
+                                              <input
+                                                type="text"
+                                                value={bFilter.requestMirror?.backendRef?.name || ""}
+                                                onChange={(e) => {
+                                                  const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                                  const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                                  const filters = [...(backends[bIdx]?.filters || [])];
+                                                  filters[bfIdx] = {
+                                                    ...bFilter,
+                                                    requestMirror: {
+                                                      ...bFilter.requestMirror,
+                                                      backendRef: {
+                                                        ...bFilter.requestMirror?.backendRef,
+                                                        name: e.target.value || undefined,
+                                                      },
+                                                    },
+                                                  };
+                                                  backends[bIdx] = { ...backend, filters };
+                                                  updated[rIdx] = { ...rule, backendRefs: backends };
+                                                  onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                                }}
+                                                placeholder="Service name"
+                                                className="input-field text-xs"
+                                              />
+                                              <input
+                                                type="text"
+                                                value={bFilter.requestMirror?.backendRef?.namespace || ""}
+                                                onChange={(e) => {
+                                                  const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                                  const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                                  const filters = [...(backends[bIdx]?.filters || [])];
+                                                  filters[bfIdx] = {
+                                                    ...bFilter,
+                                                    requestMirror: {
+                                                      ...bFilter.requestMirror,
+                                                      backendRef: {
+                                                        ...bFilter.requestMirror?.backendRef,
+                                                        namespace: e.target.value || undefined,
+                                                      },
+                                                    },
+                                                  };
+                                                  backends[bIdx] = { ...backend, filters };
+                                                  updated[rIdx] = { ...rule, backendRefs: backends };
+                                                  onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                                }}
+                                                placeholder="Namespace"
+                                                className="input-field text-xs"
+                                              />
+                                              <input
+                                                type="number"
+                                                value={bFilter.requestMirror?.backendRef?.port || ""}
+                                                onChange={(e) => {
+                                                  const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                                  const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                                  const filters = [...(backends[bIdx]?.filters || [])];
+                                                  filters[bfIdx] = {
+                                                    ...bFilter,
+                                                    requestMirror: {
+                                                      ...bFilter.requestMirror,
+                                                      backendRef: {
+                                                        ...bFilter.requestMirror?.backendRef,
+                                                        port: e.target.value ? parseInt(e.target.value) : undefined,
+                                                      },
+                                                    },
+                                                  };
+                                                  backends[bIdx] = { ...backend, filters };
+                                                  updated[rIdx] = { ...rule, backendRefs: backends };
+                                                  onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                                }}
+                                                placeholder="Port"
+                                                className="input-field text-xs"
+                                              />
+                                            </div>
+                                          </div>
+
+                                          <div className="border-t border-border/20 pt-1">
+                                            <p className="text-xs text-foreground/60 mb-1">Traffic Mirror Percentage (optional)</p>
+                                            <input
+                                              type="number"
+                                              value={bFilter.requestMirror?.percent || ""}
+                                              onChange={(e) => {
+                                                const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                                const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                                const filters = [...(backends[bIdx]?.filters || [])];
+                                                filters[bfIdx] = {
+                                                  ...bFilter,
+                                                  requestMirror: {
+                                                    ...bFilter.requestMirror,
+                                                    percent: e.target.value ? parseInt(e.target.value) : undefined,
+                                                  },
+                                                };
+                                                backends[bIdx] = { ...backend, filters };
+                                                updated[rIdx] = { ...rule, backendRefs: backends };
+                                                onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                              }}
+                                              placeholder="Percent (0-100)"
+                                              min="0"
+                                              max="100"
+                                              className="input-field text-xs"
+                                            />
+                                          </div>
+
+                                          <div className="border-t border-border/20 pt-1">
+                                            <p className="text-xs text-foreground/60 mb-1">Fraction (optional)</p>
+                                            <div className="grid grid-cols-2 gap-2">
+                                              <input
+                                                type="number"
+                                                value={bFilter.requestMirror?.fraction?.numerator || ""}
+                                                onChange={(e) => {
+                                                  const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                                  const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                                  const filters = [...(backends[bIdx]?.filters || [])];
+                                                  filters[bfIdx] = {
+                                                    ...bFilter,
+                                                    requestMirror: {
+                                                      ...bFilter.requestMirror,
+                                                      fraction: {
+                                                        ...bFilter.requestMirror?.fraction,
+                                                        numerator: e.target.value ? parseInt(e.target.value) : undefined,
+                                                      },
+                                                    },
+                                                  };
+                                                  backends[bIdx] = { ...backend, filters };
+                                                  updated[rIdx] = { ...rule, backendRefs: backends };
+                                                  onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                                }}
+                                                placeholder="Numerator"
+                                                className="input-field text-xs"
+                                              />
+                                              <input
+                                                type="text"
+                                                value={bFilter.requestMirror?.fraction?.denominator || ""}
+                                                onChange={(e) => {
+                                                  const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                                  const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                                  const filters = [...(backends[bIdx]?.filters || [])];
+                                                  filters[bfIdx] = {
+                                                    ...bFilter,
+                                                    requestMirror: {
+                                                      ...bFilter.requestMirror,
+                                                      fraction: {
+                                                        ...bFilter.requestMirror?.fraction,
+                                                        denominator: e.target.value || undefined,
+                                                      },
+                                                    },
+                                                  };
+                                                  backends[bIdx] = { ...backend, filters };
+                                                  updated[rIdx] = { ...rule, backendRefs: backends };
+                                                  onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                                }}
+                                                placeholder="Denominator"
+                                                className="input-field text-xs"
+                                              />
+                                            </div>
+                                          </div>
+                                        </div>
+                                      )}
+
+                                      {/* Request Redirect */}
+                                      {bFilter.type === "RequestRedirect" && (
+                                        <div className="space-y-2 border-t border-border/20 pt-2">
+                                          <div className="grid grid-cols-2 gap-2">
+                                            <input
+                                              type="text"
+                                              value={bFilter.requestRedirect?.scheme || ""}
+                                              onChange={(e) => {
+                                                const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                                const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                                const filters = [...(backends[bIdx]?.filters || [])];
+                                                filters[bfIdx] = {
+                                                  ...bFilter,
+                                                  requestRedirect: {
+                                                    ...bFilter.requestRedirect,
+                                                    scheme: e.target.value || undefined,
+                                                  },
+                                                };
+                                                backends[bIdx] = { ...backend, filters };
+                                                updated[rIdx] = { ...rule, backendRefs: backends };
+                                                onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                              }}
+                                              placeholder="Scheme (https)"
+                                              className="input-field text-xs"
+                                            />
+                                            <input
+                                              type="text"
+                                              value={bFilter.requestRedirect?.hostname || ""}
+                                              onChange={(e) => {
+                                                const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                                const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                                const filters = [...(backends[bIdx]?.filters || [])];
+                                                filters[bfIdx] = {
+                                                  ...bFilter,
+                                                  requestRedirect: {
+                                                    ...bFilter.requestRedirect,
+                                                    hostname: e.target.value || undefined,
+                                                  },
+                                                };
+                                                backends[bIdx] = { ...backend, filters };
+                                                updated[rIdx] = { ...rule, backendRefs: backends };
+                                                onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                              }}
+                                              placeholder="Hostname (example.com)"
+                                              className="input-field text-xs"
+                                            />
+                                            <input
+                                              type="text"
+                                              value={bFilter.requestRedirect?.path?.type || ""}
+                                              onChange={(e) => {
+                                                const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                                const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                                const filters = [...(backends[bIdx]?.filters || [])];
+                                                filters[bfIdx] = {
+                                                  ...bFilter,
+                                                  requestRedirect: {
+                                                    ...bFilter.requestRedirect,
+                                                    path: {
+                                                      ...bFilter.requestRedirect?.path,
+                                                      type: e.target.value || undefined,
+                                                    },
+                                                  },
+                                                };
+                                                backends[bIdx] = { ...backend, filters };
+                                                updated[rIdx] = { ...rule, backendRefs: backends };
+                                                onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                              }}
+                                              placeholder="Path Type"
+                                              className="input-field text-xs"
+                                            />
+                                            <input
+                                              type="text"
+                                              value={bFilter.requestRedirect?.path?.value || ""}
+                                              onChange={(e) => {
+                                                const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                                const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                                const filters = [...(backends[bIdx]?.filters || [])];
+                                                filters[bfIdx] = {
+                                                  ...bFilter,
+                                                  requestRedirect: {
+                                                    ...bFilter.requestRedirect,
+                                                    path: {
+                                                      ...bFilter.requestRedirect?.path,
+                                                      value: e.target.value || undefined,
+                                                    },
+                                                  },
+                                                };
+                                                backends[bIdx] = { ...backend, filters };
+                                                updated[rIdx] = { ...rule, backendRefs: backends };
+                                                onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                              }}
+                                              placeholder="Path Value"
+                                              className="input-field text-xs"
+                                            />
+                                            <input
+                                              type="number"
+                                              value={bFilter.requestRedirect?.port || ""}
+                                              onChange={(e) => {
+                                                const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                                const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                                const filters = [...(backends[bIdx]?.filters || [])];
+                                                filters[bfIdx] = {
+                                                  ...bFilter,
+                                                  requestRedirect: {
+                                                    ...bFilter.requestRedirect,
+                                                    port: e.target.value ? parseInt(e.target.value) : undefined,
+                                                  },
+                                                };
+                                                backends[bIdx] = { ...backend, filters };
+                                                updated[rIdx] = { ...rule, backendRefs: backends };
+                                                onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                              }}
+                                              placeholder="Port (8080)"
+                                              className="input-field text-xs"
+                                            />
+                                            <input
+                                              type="number"
+                                              value={bFilter.requestRedirect?.statusCode || ""}
+                                              onChange={(e) => {
+                                                const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                                const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                                const filters = [...(backends[bIdx]?.filters || [])];
+                                                filters[bfIdx] = {
+                                                  ...bFilter,
+                                                  requestRedirect: {
+                                                    ...bFilter.requestRedirect,
+                                                    statusCode: e.target.value ? parseInt(e.target.value) : undefined,
+                                                  },
+                                                };
+                                                backends[bIdx] = { ...backend, filters };
+                                                updated[rIdx] = { ...rule, backendRefs: backends };
+                                                onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                              }}
+                                              placeholder="Status Code (301)"
+                                              className="input-field text-xs"
+                                            />
+                                          </div>
+                                        </div>
+                                      )}
+
+                                      {/* URL Rewrite */}
+                                      {bFilter.type === "URLRewrite" && (
+                                        <div className="space-y-2 border-t border-border/20 pt-2">
+                                          <input
+                                            type="text"
+                                            value={bFilter.urlRewrite?.hostname || ""}
+                                            onChange={(e) => {
+                                              const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                              const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                              const filters = [...(backends[bIdx]?.filters || [])];
+                                              filters[bfIdx] = {
+                                                ...bFilter,
+                                                urlRewrite: {
+                                                  ...bFilter.urlRewrite,
+                                                  hostname: e.target.value || undefined,
+                                                },
+                                              };
+                                              backends[bIdx] = { ...backend, filters };
+                                              updated[rIdx] = { ...rule, backendRefs: backends };
+                                              onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                            }}
+                                            placeholder="Hostname (example.com)"
+                                            className="input-field text-xs"
+                                          />
+                                          <input
+                                            type="text"
+                                            value={bFilter.urlRewrite?.path?.type || ""}
+                                            onChange={(e) => {
+                                              const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                              const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                              const filters = [...(backends[bIdx]?.filters || [])];
+                                              filters[bfIdx] = {
+                                                ...bFilter,
+                                                urlRewrite: {
+                                                  ...bFilter.urlRewrite,
+                                                  path: {
+                                                    ...bFilter.urlRewrite?.path,
+                                                    type: e.target.value || undefined,
+                                                  },
+                                                },
+                                              };
+                                              backends[bIdx] = { ...backend, filters };
+                                              updated[rIdx] = { ...rule, backendRefs: backends };
+                                              onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                            }}
+                                            placeholder="Path Type"
+                                            className="input-field text-xs"
+                                          />
+                                          <input
+                                            type="text"
+                                            value={bFilter.urlRewrite?.path?.value || ""}
+                                            onChange={(e) => {
+                                              const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                              const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                              const filters = [...(backends[bIdx]?.filters || [])];
+                                              filters[bfIdx] = {
+                                                ...bFilter,
+                                                urlRewrite: {
+                                                  ...bFilter.urlRewrite,
+                                                  path: {
+                                                    ...bFilter.urlRewrite?.path,
+                                                    value: e.target.value || undefined,
+                                                  },
+                                                },
+                                              };
+                                              backends[bIdx] = { ...backend, filters };
+                                              updated[rIdx] = { ...rule, backendRefs: backends };
+                                              onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                            }}
+                                            placeholder="Path Value"
+                                            className="input-field text-xs"
+                                          />
+                                        </div>
+                                      )}
+
+                                      <button
+                                        onClick={() => {
+                                          const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                          const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                          const filters = (backends[bIdx]?.filters || []).filter((_, i) => i !== bfIdx);
+                                          backends[bIdx] = { ...backend, filters: filters.length > 0 ? filters : undefined };
+                                          updated[rIdx] = { ...rule, backendRefs: backends };
+                                          onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                        }}
+                                        className="w-full text-xs text-destructive hover:bg-destructive/10 py-1 rounded transition-colors"
+                                      >
+                                        Remove Filter
+                                      </button>
                                     </div>
                                   ))}
                                 </div>
