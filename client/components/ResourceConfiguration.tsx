@@ -773,8 +773,1136 @@ export default function ResourceConfiguration({ config, onConfigChange }: Resour
                 {((config.spec as HTTPRouteSpec)?.rules && (config.spec as HTTPRouteSpec).rules.length > 0) ? (
                   <div className="space-y-3">
                     {((config.spec as HTTPRouteSpec)?.rules || []).map((rule, rIdx) => (
-                      <div key={rIdx} className="p-4 bg-muted/20 border border-border rounded-lg space-y-3">
+                      <div key={rIdx} className="p-4 bg-muted/20 border border-border rounded-lg space-y-4">
                         <h4 className="font-semibold text-foreground text-sm">Rule {rIdx + 1}</h4>
+
+                        {/* Section Name */}
+                        <div className="border-t border-border/50 pt-3">
+                          <label className="block text-xs font-medium text-foreground mb-2">Section Name</label>
+                          <input
+                            type="text"
+                            value={rule.sectionName || ""}
+                            onChange={(e) => {
+                              const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                              updated[rIdx] = { ...rule, sectionName: e.target.value || undefined };
+                              onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                            }}
+                            placeholder="http"
+                            className="input-field text-sm"
+                          />
+                        </div>
+
+                        {/* Matches */}
+                        <div className="border-t border-border/50 pt-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <label className="block text-xs font-medium text-foreground">Matches</label>
+                            <button
+                              onClick={() => {
+                                const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                updated[rIdx] = {
+                                  ...rule,
+                                  matches: [...(rule.matches || []), { method: "" }],
+                                };
+                                onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                              }}
+                              className="text-primary hover:opacity-70 text-xs"
+                            >
+                              + Add Match
+                            </button>
+                          </div>
+                          <div className="space-y-3">
+                            {(rule.matches || []).map((match, mIdx) => (
+                              <div key={mIdx} className="p-3 bg-muted/10 border border-border/30 rounded-lg space-y-3">
+                                <div className="grid grid-cols-2 gap-3">
+                                  <div>
+                                    <label className="block text-xs font-medium text-foreground mb-1">Path Type</label>
+                                    <input
+                                      type="text"
+                                      value={match.path?.type || ""}
+                                      onChange={(e) => {
+                                        const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                        const matches = [...(updated[rIdx]?.matches || [])];
+                                        matches[mIdx] = {
+                                          ...match,
+                                          path: { ...match.path, type: e.target.value || undefined },
+                                        };
+                                        updated[rIdx] = { ...rule, matches };
+                                        onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                      }}
+                                      placeholder="Exact, PathPrefix"
+                                      className="input-field text-xs"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-xs font-medium text-foreground mb-1">Path Value</label>
+                                    <input
+                                      type="text"
+                                      value={match.path?.value || ""}
+                                      onChange={(e) => {
+                                        const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                        const matches = [...(updated[rIdx]?.matches || [])];
+                                        matches[mIdx] = {
+                                          ...match,
+                                          path: { ...match.path, value: e.target.value || undefined },
+                                        };
+                                        updated[rIdx] = { ...rule, matches };
+                                        onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                      }}
+                                      placeholder="/api"
+                                      className="input-field text-xs"
+                                    />
+                                  </div>
+                                </div>
+
+                                <div>
+                                  <label className="block text-xs font-medium text-foreground mb-2">Method</label>
+                                  <input
+                                    type="text"
+                                    value={match.method || ""}
+                                    onChange={(e) => {
+                                      const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                      const matches = [...(updated[rIdx]?.matches || [])];
+                                      matches[mIdx] = { ...match, method: e.target.value || undefined };
+                                      updated[rIdx] = { ...rule, matches };
+                                      onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                    }}
+                                    placeholder="GET, POST, PUT, DELETE"
+                                    className="input-field text-xs"
+                                  />
+                                </div>
+
+                                {/* Headers */}
+                                <div className="border-t border-border/30 pt-2">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <label className="block text-xs font-medium text-foreground">Headers</label>
+                                    <button
+                                      onClick={() => {
+                                        const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                        const matches = [...(updated[rIdx]?.matches || [])];
+                                        matches[mIdx] = {
+                                          ...match,
+                                          headers: [...(match.headers || []), { name: "", value: "" }],
+                                        };
+                                        updated[rIdx] = { ...rule, matches };
+                                        onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                      }}
+                                      className="text-primary hover:opacity-70 text-xs"
+                                    >
+                                      + Add
+                                    </button>
+                                  </div>
+                                  {(match.headers || []).map((header, hIdx) => (
+                                    <div key={hIdx} className="flex gap-2 items-center mb-2">
+                                      <input
+                                        type="text"
+                                        value={header.name || ""}
+                                        onChange={(e) => {
+                                          const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                          const matches = [...(updated[rIdx]?.matches || [])];
+                                          const headers = [...(matches[mIdx]?.headers || [])];
+                                          headers[hIdx] = { ...header, name: e.target.value || undefined };
+                                          matches[mIdx] = { ...match, headers };
+                                          updated[rIdx] = { ...rule, matches };
+                                          onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                        }}
+                                        placeholder="Header name"
+                                        className="input-field text-xs flex-1"
+                                      />
+                                      <input
+                                        type="text"
+                                        value={header.value || ""}
+                                        onChange={(e) => {
+                                          const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                          const matches = [...(updated[rIdx]?.matches || [])];
+                                          const headers = [...(matches[mIdx]?.headers || [])];
+                                          headers[hIdx] = { ...header, value: e.target.value || undefined };
+                                          matches[mIdx] = { ...match, headers };
+                                          updated[rIdx] = { ...rule, matches };
+                                          onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                        }}
+                                        placeholder="Header value"
+                                        className="input-field text-xs flex-1"
+                                      />
+                                      <button
+                                        onClick={() => {
+                                          const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                          const matches = [...(updated[rIdx]?.matches || [])];
+                                          const headers = (matches[mIdx]?.headers || []).filter((_, i) => i !== hIdx);
+                                          matches[mIdx] = {
+                                            ...match,
+                                            headers: headers.length > 0 ? headers : undefined,
+                                          };
+                                          updated[rIdx] = { ...rule, matches };
+                                          onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                        }}
+                                        className="text-destructive hover:opacity-70 text-xs"
+                                      >
+                                        ×
+                                      </button>
+                                    </div>
+                                  ))}
+                                </div>
+
+                                {/* Query Parameters */}
+                                <div className="border-t border-border/30 pt-2">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <label className="block text-xs font-medium text-foreground">Query Parameters</label>
+                                    <button
+                                      onClick={() => {
+                                        const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                        const matches = [...(updated[rIdx]?.matches || [])];
+                                        matches[mIdx] = {
+                                          ...match,
+                                          queryParams: [...(match.queryParams || []), { name: "", value: "" }],
+                                        };
+                                        updated[rIdx] = { ...rule, matches };
+                                        onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                      }}
+                                      className="text-primary hover:opacity-70 text-xs"
+                                    >
+                                      + Add
+                                    </button>
+                                  </div>
+                                  {(match.queryParams || []).map((param, pIdx) => (
+                                    <div key={pIdx} className="flex gap-2 items-center mb-2">
+                                      <input
+                                        type="text"
+                                        value={param.name || ""}
+                                        onChange={(e) => {
+                                          const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                          const matches = [...(updated[rIdx]?.matches || [])];
+                                          const queryParams = [...(matches[mIdx]?.queryParams || [])];
+                                          queryParams[pIdx] = { ...param, name: e.target.value || undefined };
+                                          matches[mIdx] = { ...match, queryParams };
+                                          updated[rIdx] = { ...rule, matches };
+                                          onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                        }}
+                                        placeholder="Param name"
+                                        className="input-field text-xs flex-1"
+                                      />
+                                      <input
+                                        type="text"
+                                        value={param.value || ""}
+                                        onChange={(e) => {
+                                          const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                          const matches = [...(updated[rIdx]?.matches || [])];
+                                          const queryParams = [...(matches[mIdx]?.queryParams || [])];
+                                          queryParams[pIdx] = { ...param, value: e.target.value || undefined };
+                                          matches[mIdx] = { ...match, queryParams };
+                                          updated[rIdx] = { ...rule, matches };
+                                          onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                        }}
+                                        placeholder="Param value"
+                                        className="input-field text-xs flex-1"
+                                      />
+                                      <button
+                                        onClick={() => {
+                                          const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                          const matches = [...(updated[rIdx]?.matches || [])];
+                                          const queryParams = (matches[mIdx]?.queryParams || []).filter((_, i) => i !== pIdx);
+                                          matches[mIdx] = {
+                                            ...match,
+                                            queryParams: queryParams.length > 0 ? queryParams : undefined,
+                                          };
+                                          updated[rIdx] = { ...rule, matches };
+                                          onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                        }}
+                                        className="text-destructive hover:opacity-70 text-xs"
+                                      >
+                                        ×
+                                      </button>
+                                    </div>
+                                  ))}
+                                </div>
+
+                                <button
+                                  onClick={() => {
+                                    const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                    const matches = (updated[rIdx]?.matches || []).filter((_, i) => i !== mIdx);
+                                    updated[rIdx] = { ...rule, matches: matches.length > 0 ? matches : undefined };
+                                    onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                  }}
+                                  className="w-full text-xs text-destructive hover:bg-destructive/10 py-1 rounded transition-colors"
+                                >
+                                  Remove Match
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Filters */}
+                        <div className="border-t border-border/50 pt-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <label className="block text-xs font-medium text-foreground">Filters</label>
+                            <button
+                              onClick={() => {
+                                const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                updated[rIdx] = {
+                                  ...rule,
+                                  filters: [...(rule.filters || []), { type: "RequestHeaderModifier" }],
+                                };
+                                onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                              }}
+                              className="text-primary hover:opacity-70 text-xs"
+                            >
+                              + Add Filter
+                            </button>
+                          </div>
+                          <div className="space-y-3">
+                            {(rule.filters || []).map((filter, fIdx) => (
+                              <div key={fIdx} className="p-3 bg-muted/10 border border-border/30 rounded-lg space-y-3">
+                                <div>
+                                  <label className="block text-xs font-medium text-foreground mb-1">Filter Type</label>
+                                  <select
+                                    value={filter.type || "RequestHeaderModifier"}
+                                    onChange={(e) => {
+                                      const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                      const filters = [...(updated[rIdx]?.filters || [])];
+                                      filters[fIdx] = { type: e.target.value as HTTPRouteFilter["type"] };
+                                      updated[rIdx] = { ...rule, filters };
+                                      onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                    }}
+                                    className="input-field text-xs"
+                                  >
+                                    <option value="RequestHeaderModifier">Request Header Modifier</option>
+                                    <option value="ResponseHeaderModifier">Response Header Modifier</option>
+                                    <option value="RequestMirror">Request Mirror</option>
+                                    <option value="RequestRedirect">Request Redirect</option>
+                                    <option value="URLRewrite">URL Rewrite</option>
+                                  </select>
+                                </div>
+
+                                {/* Request Header Modifier */}
+                                {filter.type === "RequestHeaderModifier" && (
+                                  <div className="space-y-3 border-t border-border/30 pt-2">
+                                    <div>
+                                      <label className="block text-xs font-medium text-foreground mb-2">Set Headers</label>
+                                      {Object.entries(filter.requestHeaderModifier?.set || {}).map(([key, val], idx) => (
+                                        <div key={idx} className="flex gap-2 items-center mb-2">
+                                          <input
+                                            type="text"
+                                            value={key}
+                                            onChange={(e) => {
+                                              const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                              const filters = [...(updated[rIdx]?.filters || [])];
+                                              const set = { ...filters[fIdx]?.requestHeaderModifier?.set };
+                                              if (e.target.value !== key) {
+                                                delete set[key];
+                                                set[e.target.value] = val;
+                                              }
+                                              filters[fIdx] = {
+                                                ...filter,
+                                                requestHeaderModifier: {
+                                                  ...filter.requestHeaderModifier,
+                                                  set,
+                                                },
+                                              };
+                                              updated[rIdx] = { ...rule, filters };
+                                              onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                            }}
+                                            placeholder="Header name"
+                                            className="input-field text-xs flex-1"
+                                          />
+                                          <input
+                                            type="text"
+                                            value={val}
+                                            onChange={(e) => {
+                                              const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                              const filters = [...(updated[rIdx]?.filters || [])];
+                                              const set = { ...filters[fIdx]?.requestHeaderModifier?.set };
+                                              set[key] = e.target.value;
+                                              filters[fIdx] = {
+                                                ...filter,
+                                                requestHeaderModifier: {
+                                                  ...filter.requestHeaderModifier,
+                                                  set,
+                                                },
+                                              };
+                                              updated[rIdx] = { ...rule, filters };
+                                              onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                            }}
+                                            placeholder="Header value"
+                                            className="input-field text-xs flex-1"
+                                          />
+                                          <button
+                                            onClick={() => {
+                                              const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                              const filters = [...(updated[rIdx]?.filters || [])];
+                                              const set = { ...filters[fIdx]?.requestHeaderModifier?.set };
+                                              delete set[key];
+                                              filters[fIdx] = {
+                                                ...filter,
+                                                requestHeaderModifier: {
+                                                  ...filter.requestHeaderModifier,
+                                                  set: Object.keys(set).length > 0 ? set : undefined,
+                                                },
+                                              };
+                                              updated[rIdx] = { ...rule, filters };
+                                              onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                            }}
+                                            className="text-destructive hover:opacity-70 text-xs"
+                                          >
+                                            ×
+                                          </button>
+                                        </div>
+                                      ))}
+                                      <button
+                                        onClick={() => {
+                                          const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                          const filters = [...(updated[rIdx]?.filters || [])];
+                                          filters[fIdx] = {
+                                            ...filter,
+                                            requestHeaderModifier: {
+                                              ...filter.requestHeaderModifier,
+                                              set: { ...filter.requestHeaderModifier?.set, "": "" },
+                                            },
+                                          };
+                                          updated[rIdx] = { ...rule, filters };
+                                          onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                        }}
+                                        className="text-primary hover:opacity-70 text-xs"
+                                      >
+                                        + Add Set Header
+                                      </button>
+                                    </div>
+
+                                    <div className="border-t border-border/30 pt-2">
+                                      <label className="block text-xs font-medium text-foreground mb-2">Add Headers</label>
+                                      {Object.entries(filter.requestHeaderModifier?.add || {}).map(([key, val], idx) => (
+                                        <div key={idx} className="flex gap-2 items-center mb-2">
+                                          <input
+                                            type="text"
+                                            value={key}
+                                            onChange={(e) => {
+                                              const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                              const filters = [...(updated[rIdx]?.filters || [])];
+                                              const add = { ...filters[fIdx]?.requestHeaderModifier?.add };
+                                              if (e.target.value !== key) {
+                                                delete add[key];
+                                                add[e.target.value] = val;
+                                              }
+                                              filters[fIdx] = {
+                                                ...filter,
+                                                requestHeaderModifier: {
+                                                  ...filter.requestHeaderModifier,
+                                                  add,
+                                                },
+                                              };
+                                              updated[rIdx] = { ...rule, filters };
+                                              onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                            }}
+                                            placeholder="Header name"
+                                            className="input-field text-xs flex-1"
+                                          />
+                                          <input
+                                            type="text"
+                                            value={val}
+                                            onChange={(e) => {
+                                              const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                              const filters = [...(updated[rIdx]?.filters || [])];
+                                              const add = { ...filters[fIdx]?.requestHeaderModifier?.add };
+                                              add[key] = e.target.value;
+                                              filters[fIdx] = {
+                                                ...filter,
+                                                requestHeaderModifier: {
+                                                  ...filter.requestHeaderModifier,
+                                                  add,
+                                                },
+                                              };
+                                              updated[rIdx] = { ...rule, filters };
+                                              onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                            }}
+                                            placeholder="Header value"
+                                            className="input-field text-xs flex-1"
+                                          />
+                                          <button
+                                            onClick={() => {
+                                              const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                              const filters = [...(updated[rIdx]?.filters || [])];
+                                              const add = { ...filters[fIdx]?.requestHeaderModifier?.add };
+                                              delete add[key];
+                                              filters[fIdx] = {
+                                                ...filter,
+                                                requestHeaderModifier: {
+                                                  ...filter.requestHeaderModifier,
+                                                  add: Object.keys(add).length > 0 ? add : undefined,
+                                                },
+                                              };
+                                              updated[rIdx] = { ...rule, filters };
+                                              onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                            }}
+                                            className="text-destructive hover:opacity-70 text-xs"
+                                          >
+                                            ×
+                                          </button>
+                                        </div>
+                                      ))}
+                                      <button
+                                        onClick={() => {
+                                          const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                          const filters = [...(updated[rIdx]?.filters || [])];
+                                          filters[fIdx] = {
+                                            ...filter,
+                                            requestHeaderModifier: {
+                                              ...filter.requestHeaderModifier,
+                                              add: { ...filter.requestHeaderModifier?.add, "": "" },
+                                            },
+                                          };
+                                          updated[rIdx] = { ...rule, filters };
+                                          onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                        }}
+                                        className="text-primary hover:opacity-70 text-xs"
+                                      >
+                                        + Add Header
+                                      </button>
+                                    </div>
+
+                                    <div className="border-t border-border/30 pt-2">
+                                      <label className="block text-xs font-medium text-foreground mb-2">Remove Headers</label>
+                                      {(filter.requestHeaderModifier?.remove || []).map((header, idx) => (
+                                        <div key={idx} className="flex gap-2 items-center mb-2">
+                                          <input
+                                            type="text"
+                                            value={header}
+                                            onChange={(e) => {
+                                              const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                              const filters = [...(updated[rIdx]?.filters || [])];
+                                              const remove = [...(filters[fIdx]?.requestHeaderModifier?.remove || [])];
+                                              remove[idx] = e.target.value;
+                                              filters[fIdx] = {
+                                                ...filter,
+                                                requestHeaderModifier: {
+                                                  ...filter.requestHeaderModifier,
+                                                  remove,
+                                                },
+                                              };
+                                              updated[rIdx] = { ...rule, filters };
+                                              onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                            }}
+                                            placeholder="Header name to remove"
+                                            className="input-field text-xs flex-1"
+                                          />
+                                          <button
+                                            onClick={() => {
+                                              const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                              const filters = [...(updated[rIdx]?.filters || [])];
+                                              const remove = (filters[fIdx]?.requestHeaderModifier?.remove || []).filter((_, i) => i !== idx);
+                                              filters[fIdx] = {
+                                                ...filter,
+                                                requestHeaderModifier: {
+                                                  ...filter.requestHeaderModifier,
+                                                  remove: remove.length > 0 ? remove : undefined,
+                                                },
+                                              };
+                                              updated[rIdx] = { ...rule, filters };
+                                              onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                            }}
+                                            className="text-destructive hover:opacity-70 text-xs"
+                                          >
+                                            ×
+                                          </button>
+                                        </div>
+                                      ))}
+                                      <button
+                                        onClick={() => {
+                                          const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                          const filters = [...(updated[rIdx]?.filters || [])];
+                                          filters[fIdx] = {
+                                            ...filter,
+                                            requestHeaderModifier: {
+                                              ...filter.requestHeaderModifier,
+                                              remove: [...(filter.requestHeaderModifier?.remove || []), ""],
+                                            },
+                                          };
+                                          updated[rIdx] = { ...rule, filters };
+                                          onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                        }}
+                                        className="text-primary hover:opacity-70 text-xs"
+                                      >
+                                        + Remove Header
+                                      </button>
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Response Header Modifier */}
+                                {filter.type === "ResponseHeaderModifier" && (
+                                  <div className="space-y-3 border-t border-border/30 pt-2">
+                                    <div>
+                                      <label className="block text-xs font-medium text-foreground mb-2">Set Headers</label>
+                                      {Object.entries(filter.responseHeaderModifier?.set || {}).map(([key, val], idx) => (
+                                        <div key={idx} className="flex gap-2 items-center mb-2">
+                                          <input
+                                            type="text"
+                                            value={key}
+                                            onChange={(e) => {
+                                              const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                              const filters = [...(updated[rIdx]?.filters || [])];
+                                              const set = { ...filters[fIdx]?.responseHeaderModifier?.set };
+                                              if (e.target.value !== key) {
+                                                delete set[key];
+                                                set[e.target.value] = val;
+                                              }
+                                              filters[fIdx] = {
+                                                ...filter,
+                                                responseHeaderModifier: {
+                                                  ...filter.responseHeaderModifier,
+                                                  set,
+                                                },
+                                              };
+                                              updated[rIdx] = { ...rule, filters };
+                                              onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                            }}
+                                            placeholder="Header name"
+                                            className="input-field text-xs flex-1"
+                                          />
+                                          <input
+                                            type="text"
+                                            value={val}
+                                            onChange={(e) => {
+                                              const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                              const filters = [...(updated[rIdx]?.filters || [])];
+                                              const set = { ...filters[fIdx]?.responseHeaderModifier?.set };
+                                              set[key] = e.target.value;
+                                              filters[fIdx] = {
+                                                ...filter,
+                                                responseHeaderModifier: {
+                                                  ...filter.responseHeaderModifier,
+                                                  set,
+                                                },
+                                              };
+                                              updated[rIdx] = { ...rule, filters };
+                                              onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                            }}
+                                            placeholder="Header value"
+                                            className="input-field text-xs flex-1"
+                                          />
+                                          <button
+                                            onClick={() => {
+                                              const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                              const filters = [...(updated[rIdx]?.filters || [])];
+                                              const set = { ...filters[fIdx]?.responseHeaderModifier?.set };
+                                              delete set[key];
+                                              filters[fIdx] = {
+                                                ...filter,
+                                                responseHeaderModifier: {
+                                                  ...filter.responseHeaderModifier,
+                                                  set: Object.keys(set).length > 0 ? set : undefined,
+                                                },
+                                              };
+                                              updated[rIdx] = { ...rule, filters };
+                                              onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                            }}
+                                            className="text-destructive hover:opacity-70 text-xs"
+                                          >
+                                            ×
+                                          </button>
+                                        </div>
+                                      ))}
+                                      <button
+                                        onClick={() => {
+                                          const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                          const filters = [...(updated[rIdx]?.filters || [])];
+                                          filters[fIdx] = {
+                                            ...filter,
+                                            responseHeaderModifier: {
+                                              ...filter.responseHeaderModifier,
+                                              set: { ...filter.responseHeaderModifier?.set, "": "" },
+                                            },
+                                          };
+                                          updated[rIdx] = { ...rule, filters };
+                                          onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                        }}
+                                        className="text-primary hover:opacity-70 text-xs"
+                                      >
+                                        + Add Set Header
+                                      </button>
+                                    </div>
+
+                                    <div className="border-t border-border/30 pt-2">
+                                      <label className="block text-xs font-medium text-foreground mb-2">Add Headers</label>
+                                      {Object.entries(filter.responseHeaderModifier?.add || {}).map(([key, val], idx) => (
+                                        <div key={idx} className="flex gap-2 items-center mb-2">
+                                          <input
+                                            type="text"
+                                            value={key}
+                                            onChange={(e) => {
+                                              const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                              const filters = [...(updated[rIdx]?.filters || [])];
+                                              const add = { ...filters[fIdx]?.responseHeaderModifier?.add };
+                                              if (e.target.value !== key) {
+                                                delete add[key];
+                                                add[e.target.value] = val;
+                                              }
+                                              filters[fIdx] = {
+                                                ...filter,
+                                                responseHeaderModifier: {
+                                                  ...filter.responseHeaderModifier,
+                                                  add,
+                                                },
+                                              };
+                                              updated[rIdx] = { ...rule, filters };
+                                              onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                            }}
+                                            placeholder="Header name"
+                                            className="input-field text-xs flex-1"
+                                          />
+                                          <input
+                                            type="text"
+                                            value={val}
+                                            onChange={(e) => {
+                                              const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                              const filters = [...(updated[rIdx]?.filters || [])];
+                                              const add = { ...filters[fIdx]?.responseHeaderModifier?.add };
+                                              add[key] = e.target.value;
+                                              filters[fIdx] = {
+                                                ...filter,
+                                                responseHeaderModifier: {
+                                                  ...filter.responseHeaderModifier,
+                                                  add,
+                                                },
+                                              };
+                                              updated[rIdx] = { ...rule, filters };
+                                              onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                            }}
+                                            placeholder="Header value"
+                                            className="input-field text-xs flex-1"
+                                          />
+                                          <button
+                                            onClick={() => {
+                                              const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                              const filters = [...(updated[rIdx]?.filters || [])];
+                                              const add = { ...filters[fIdx]?.responseHeaderModifier?.add };
+                                              delete add[key];
+                                              filters[fIdx] = {
+                                                ...filter,
+                                                responseHeaderModifier: {
+                                                  ...filter.responseHeaderModifier,
+                                                  add: Object.keys(add).length > 0 ? add : undefined,
+                                                },
+                                              };
+                                              updated[rIdx] = { ...rule, filters };
+                                              onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                            }}
+                                            className="text-destructive hover:opacity-70 text-xs"
+                                          >
+                                            ×
+                                          </button>
+                                        </div>
+                                      ))}
+                                      <button
+                                        onClick={() => {
+                                          const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                          const filters = [...(updated[rIdx]?.filters || [])];
+                                          filters[fIdx] = {
+                                            ...filter,
+                                            responseHeaderModifier: {
+                                              ...filter.responseHeaderModifier,
+                                              add: { ...filter.responseHeaderModifier?.add, "": "" },
+                                            },
+                                          };
+                                          updated[rIdx] = { ...rule, filters };
+                                          onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                        }}
+                                        className="text-primary hover:opacity-70 text-xs"
+                                      >
+                                        + Add Header
+                                      </button>
+                                    </div>
+
+                                    <div className="border-t border-border/30 pt-2">
+                                      <label className="block text-xs font-medium text-foreground mb-2">Remove Headers</label>
+                                      {(filter.responseHeaderModifier?.remove || []).map((header, idx) => (
+                                        <div key={idx} className="flex gap-2 items-center mb-2">
+                                          <input
+                                            type="text"
+                                            value={header}
+                                            onChange={(e) => {
+                                              const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                              const filters = [...(updated[rIdx]?.filters || [])];
+                                              const remove = [...(filters[fIdx]?.responseHeaderModifier?.remove || [])];
+                                              remove[idx] = e.target.value;
+                                              filters[fIdx] = {
+                                                ...filter,
+                                                responseHeaderModifier: {
+                                                  ...filter.responseHeaderModifier,
+                                                  remove,
+                                                },
+                                              };
+                                              updated[rIdx] = { ...rule, filters };
+                                              onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                            }}
+                                            placeholder="Header name to remove"
+                                            className="input-field text-xs flex-1"
+                                          />
+                                          <button
+                                            onClick={() => {
+                                              const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                              const filters = [...(updated[rIdx]?.filters || [])];
+                                              const remove = (filters[fIdx]?.responseHeaderModifier?.remove || []).filter((_, i) => i !== idx);
+                                              filters[fIdx] = {
+                                                ...filter,
+                                                responseHeaderModifier: {
+                                                  ...filter.responseHeaderModifier,
+                                                  remove: remove.length > 0 ? remove : undefined,
+                                                },
+                                              };
+                                              updated[rIdx] = { ...rule, filters };
+                                              onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                            }}
+                                            className="text-destructive hover:opacity-70 text-xs"
+                                          >
+                                            ×
+                                          </button>
+                                        </div>
+                                      ))}
+                                      <button
+                                        onClick={() => {
+                                          const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                          const filters = [...(updated[rIdx]?.filters || [])];
+                                          filters[fIdx] = {
+                                            ...filter,
+                                            responseHeaderModifier: {
+                                              ...filter.responseHeaderModifier,
+                                              remove: [...(filter.responseHeaderModifier?.remove || []), ""],
+                                            },
+                                          };
+                                          updated[rIdx] = { ...rule, filters };
+                                          onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                        }}
+                                        className="text-primary hover:opacity-70 text-xs"
+                                      >
+                                        + Remove Header
+                                      </button>
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Request Mirror */}
+                                {filter.type === "RequestMirror" && (
+                                  <div className="space-y-3 border-t border-border/30 pt-2">
+                                    <div className="grid grid-cols-3 gap-2">
+                                      <div>
+                                        <label className="block text-xs font-medium text-foreground mb-1">Service Name</label>
+                                        <input
+                                          type="text"
+                                          value={filter.requestMirror?.backendRef?.name || ""}
+                                          onChange={(e) => {
+                                            const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                            const filters = [...(updated[rIdx]?.filters || [])];
+                                            filters[fIdx] = {
+                                              ...filter,
+                                              requestMirror: {
+                                                ...filter.requestMirror,
+                                                backendRef: {
+                                                  ...filter.requestMirror?.backendRef,
+                                                  name: e.target.value || undefined,
+                                                },
+                                              },
+                                            };
+                                            updated[rIdx] = { ...rule, filters };
+                                            onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                          }}
+                                          placeholder="service-name"
+                                          className="input-field text-xs"
+                                        />
+                                      </div>
+                                      <div>
+                                        <label className="block text-xs font-medium text-foreground mb-1">Namespace</label>
+                                        <input
+                                          type="text"
+                                          value={filter.requestMirror?.backendRef?.namespace || ""}
+                                          onChange={(e) => {
+                                            const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                            const filters = [...(updated[rIdx]?.filters || [])];
+                                            filters[fIdx] = {
+                                              ...filter,
+                                              requestMirror: {
+                                                ...filter.requestMirror,
+                                                backendRef: {
+                                                  ...filter.requestMirror?.backendRef,
+                                                  namespace: e.target.value || undefined,
+                                                },
+                                              },
+                                            };
+                                            updated[rIdx] = { ...rule, filters };
+                                            onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                          }}
+                                          placeholder="default"
+                                          className="input-field text-xs"
+                                        />
+                                      </div>
+                                      <div>
+                                        <label className="block text-xs font-medium text-foreground mb-1">Port</label>
+                                        <input
+                                          type="number"
+                                          value={filter.requestMirror?.backendRef?.port || ""}
+                                          onChange={(e) => {
+                                            const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                            const filters = [...(updated[rIdx]?.filters || [])];
+                                            filters[fIdx] = {
+                                              ...filter,
+                                              requestMirror: {
+                                                ...filter.requestMirror,
+                                                backendRef: {
+                                                  ...filter.requestMirror?.backendRef,
+                                                  port: e.target.value ? parseInt(e.target.value) : undefined,
+                                                },
+                                              },
+                                            };
+                                            updated[rIdx] = { ...rule, filters };
+                                            onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                          }}
+                                          placeholder="80"
+                                          className="input-field text-xs"
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Request Redirect */}
+                                {filter.type === "RequestRedirect" && (
+                                  <div className="space-y-3 border-t border-border/30 pt-2">
+                                    <div className="grid grid-cols-2 gap-3">
+                                      <div>
+                                        <label className="block text-xs font-medium text-foreground mb-1">Scheme</label>
+                                        <input
+                                          type="text"
+                                          value={filter.requestRedirect?.scheme || ""}
+                                          onChange={(e) => {
+                                            const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                            const filters = [...(updated[rIdx]?.filters || [])];
+                                            filters[fIdx] = {
+                                              ...filter,
+                                              requestRedirect: {
+                                                ...filter.requestRedirect,
+                                                scheme: e.target.value || undefined,
+                                              },
+                                            };
+                                            updated[rIdx] = { ...rule, filters };
+                                            onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                          }}
+                                          placeholder="https"
+                                          className="input-field text-xs"
+                                        />
+                                      </div>
+                                      <div>
+                                        <label className="block text-xs font-medium text-foreground mb-1">Hostname</label>
+                                        <input
+                                          type="text"
+                                          value={filter.requestRedirect?.hostname || ""}
+                                          onChange={(e) => {
+                                            const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                            const filters = [...(updated[rIdx]?.filters || [])];
+                                            filters[fIdx] = {
+                                              ...filter,
+                                              requestRedirect: {
+                                                ...filter.requestRedirect,
+                                                hostname: e.target.value || undefined,
+                                              },
+                                            };
+                                            updated[rIdx] = { ...rule, filters };
+                                            onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                          }}
+                                          placeholder="example.com"
+                                          className="input-field text-xs"
+                                        />
+                                      </div>
+                                      <div>
+                                        <label className="block text-xs font-medium text-foreground mb-1">Path Type</label>
+                                        <input
+                                          type="text"
+                                          value={filter.requestRedirect?.path?.type || ""}
+                                          onChange={(e) => {
+                                            const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                            const filters = [...(updated[rIdx]?.filters || [])];
+                                            filters[fIdx] = {
+                                              ...filter,
+                                              requestRedirect: {
+                                                ...filter.requestRedirect,
+                                                path: {
+                                                  ...filter.requestRedirect?.path,
+                                                  type: e.target.value || undefined,
+                                                },
+                                              },
+                                            };
+                                            updated[rIdx] = { ...rule, filters };
+                                            onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                          }}
+                                          placeholder="Exact, ReplacePrefixMatch"
+                                          className="input-field text-xs"
+                                        />
+                                      </div>
+                                      <div>
+                                        <label className="block text-xs font-medium text-foreground mb-1">Path Value</label>
+                                        <input
+                                          type="text"
+                                          value={filter.requestRedirect?.path?.value || ""}
+                                          onChange={(e) => {
+                                            const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                            const filters = [...(updated[rIdx]?.filters || [])];
+                                            filters[fIdx] = {
+                                              ...filter,
+                                              requestRedirect: {
+                                                ...filter.requestRedirect,
+                                                path: {
+                                                  ...filter.requestRedirect?.path,
+                                                  value: e.target.value || undefined,
+                                                },
+                                              },
+                                            };
+                                            updated[rIdx] = { ...rule, filters };
+                                            onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                          }}
+                                          placeholder="/new-path"
+                                          className="input-field text-xs"
+                                        />
+                                      </div>
+                                      <div>
+                                        <label className="block text-xs font-medium text-foreground mb-1">Port</label>
+                                        <input
+                                          type="number"
+                                          value={filter.requestRedirect?.port || ""}
+                                          onChange={(e) => {
+                                            const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                            const filters = [...(updated[rIdx]?.filters || [])];
+                                            filters[fIdx] = {
+                                              ...filter,
+                                              requestRedirect: {
+                                                ...filter.requestRedirect,
+                                                port: e.target.value ? parseInt(e.target.value) : undefined,
+                                              },
+                                            };
+                                            updated[rIdx] = { ...rule, filters };
+                                            onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                          }}
+                                          placeholder="8080"
+                                          className="input-field text-xs"
+                                        />
+                                      </div>
+                                      <div>
+                                        <label className="block text-xs font-medium text-foreground mb-1">Status Code</label>
+                                        <input
+                                          type="number"
+                                          value={filter.requestRedirect?.statusCode || ""}
+                                          onChange={(e) => {
+                                            const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                            const filters = [...(updated[rIdx]?.filters || [])];
+                                            filters[fIdx] = {
+                                              ...filter,
+                                              requestRedirect: {
+                                                ...filter.requestRedirect,
+                                                statusCode: e.target.value ? parseInt(e.target.value) : undefined,
+                                              },
+                                            };
+                                            updated[rIdx] = { ...rule, filters };
+                                            onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                          }}
+                                          placeholder="301"
+                                          className="input-field text-xs"
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* URL Rewrite */}
+                                {filter.type === "URLRewrite" && (
+                                  <div className="space-y-3 border-t border-border/30 pt-2">
+                                    <div className="grid grid-cols-2 gap-3">
+                                      <div>
+                                        <label className="block text-xs font-medium text-foreground mb-1">Hostname</label>
+                                        <input
+                                          type="text"
+                                          value={filter.urlRewrite?.hostname || ""}
+                                          onChange={(e) => {
+                                            const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                            const filters = [...(updated[rIdx]?.filters || [])];
+                                            filters[fIdx] = {
+                                              ...filter,
+                                              urlRewrite: {
+                                                ...filter.urlRewrite,
+                                                hostname: e.target.value || undefined,
+                                              },
+                                            };
+                                            updated[rIdx] = { ...rule, filters };
+                                            onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                          }}
+                                          placeholder="example.com"
+                                          className="input-field text-xs"
+                                        />
+                                      </div>
+                                      <div>
+                                        <label className="block text-xs font-medium text-foreground mb-1">Path Type</label>
+                                        <input
+                                          type="text"
+                                          value={filter.urlRewrite?.path?.type || ""}
+                                          onChange={(e) => {
+                                            const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                            const filters = [...(updated[rIdx]?.filters || [])];
+                                            filters[fIdx] = {
+                                              ...filter,
+                                              urlRewrite: {
+                                                ...filter.urlRewrite,
+                                                path: {
+                                                  ...filter.urlRewrite?.path,
+                                                  type: e.target.value || undefined,
+                                                },
+                                              },
+                                            };
+                                            updated[rIdx] = { ...rule, filters };
+                                            onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                          }}
+                                          placeholder="Exact, ReplacePrefixMatch"
+                                          className="input-field text-xs"
+                                        />
+                                      </div>
+                                      <div className="col-span-2">
+                                        <label className="block text-xs font-medium text-foreground mb-1">Path Value</label>
+                                        <input
+                                          type="text"
+                                          value={filter.urlRewrite?.path?.value || ""}
+                                          onChange={(e) => {
+                                            const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                            const filters = [...(updated[rIdx]?.filters || [])];
+                                            filters[fIdx] = {
+                                              ...filter,
+                                              urlRewrite: {
+                                                ...filter.urlRewrite,
+                                                path: {
+                                                  ...filter.urlRewrite?.path,
+                                                  value: e.target.value || undefined,
+                                                },
+                                              },
+                                            };
+                                            updated[rIdx] = { ...rule, filters };
+                                            onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                          }}
+                                          placeholder="/new-path"
+                                          className="input-field text-xs"
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+
+                                <button
+                                  onClick={() => {
+                                    const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                    const filters = (updated[rIdx]?.filters || []).filter((_, i) => i !== fIdx);
+                                    updated[rIdx] = { ...rule, filters: filters.length > 0 ? filters : undefined };
+                                    onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                  }}
+                                  className="w-full text-xs text-destructive hover:bg-destructive/10 py-1 rounded transition-colors"
+                                >
+                                  Remove Filter
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
 
                         {/* Backend Refs */}
                         <div className="border-t border-border/50 pt-3">
@@ -794,64 +1922,234 @@ export default function ResourceConfiguration({ config, onConfigChange }: Resour
                               + Add Backend
                             </button>
                           </div>
-                          <div className="space-y-2">
+                          <div className="space-y-3">
                             {(rule.backendRefs || []).map((backend, bIdx) => (
-                              <div key={bIdx} className="flex gap-2 items-center bg-muted/10 p-2 rounded">
-                                <input
-                                  type="text"
-                                  value={backend.name || ""}
-                                  onChange={(e) => {
-                                    const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
-                                    const backends = [...(updated[rIdx]?.backendRefs || [])];
-                                    backends[bIdx] = { ...backend, name: e.target.value || undefined };
-                                    updated[rIdx] = { ...rule, backendRefs: backends };
-                                    onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
-                                  }}
-                                  placeholder="service-name"
-                                  className="input-field text-xs flex-1"
-                                />
-                                <input
-                                  type="text"
-                                  value={backend.namespace || ""}
-                                  onChange={(e) => {
-                                    const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
-                                    const backends = [...(updated[rIdx]?.backendRefs || [])];
-                                    backends[bIdx] = { ...backend, namespace: e.target.value || undefined };
-                                    updated[rIdx] = { ...rule, backendRefs: backends };
-                                    onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
-                                  }}
-                                  placeholder="default"
-                                  className="input-field text-xs flex-1"
-                                />
-                                <input
-                                  type="number"
-                                  value={backend.port || ""}
-                                  onChange={(e) => {
-                                    const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
-                                    const backends = [...(updated[rIdx]?.backendRefs || [])];
-                                    backends[bIdx] = {
-                                      ...backend,
-                                      port: e.target.value ? parseInt(e.target.value) : undefined,
-                                    };
-                                    updated[rIdx] = { ...rule, backendRefs: backends };
-                                    onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
-                                  }}
-                                  placeholder="80"
-                                  className="input-field text-xs flex-1"
-                                />
+                              <div key={bIdx} className="p-3 bg-muted/10 border border-border/30 rounded-lg space-y-3">
+                                <div className="grid grid-cols-3 gap-3">
+                                  <div>
+                                    <label className="block text-xs font-medium text-foreground mb-1">Name</label>
+                                    <input
+                                      type="text"
+                                      value={backend.name || ""}
+                                      onChange={(e) => {
+                                        const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                        const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                        backends[bIdx] = { ...backend, name: e.target.value || undefined };
+                                        updated[rIdx] = { ...rule, backendRefs: backends };
+                                        onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                      }}
+                                      placeholder="service-name"
+                                      className="input-field text-xs"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-xs font-medium text-foreground mb-1">Namespace</label>
+                                    <input
+                                      type="text"
+                                      value={backend.namespace || ""}
+                                      onChange={(e) => {
+                                        const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                        const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                        backends[bIdx] = { ...backend, namespace: e.target.value || undefined };
+                                        updated[rIdx] = { ...rule, backendRefs: backends };
+                                        onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                      }}
+                                      placeholder="default"
+                                      className="input-field text-xs"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-xs font-medium text-foreground mb-1">Port</label>
+                                    <input
+                                      type="number"
+                                      value={backend.port || ""}
+                                      onChange={(e) => {
+                                        const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                        const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                        backends[bIdx] = {
+                                          ...backend,
+                                          port: e.target.value ? parseInt(e.target.value) : undefined,
+                                        };
+                                        updated[rIdx] = { ...rule, backendRefs: backends };
+                                        onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                      }}
+                                      placeholder="80"
+                                      className="input-field text-xs"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-xs font-medium text-foreground mb-1">Weight</label>
+                                    <input
+                                      type="number"
+                                      value={backend.weight || ""}
+                                      onChange={(e) => {
+                                        const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                        const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                        backends[bIdx] = {
+                                          ...backend,
+                                          weight: e.target.value ? parseInt(e.target.value) : undefined,
+                                        };
+                                        updated[rIdx] = { ...rule, backendRefs: backends };
+                                        onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                      }}
+                                      placeholder="100"
+                                      className="input-field text-xs"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-xs font-medium text-foreground mb-1">Group</label>
+                                    <input
+                                      type="text"
+                                      value={backend.group || ""}
+                                      onChange={(e) => {
+                                        const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                        const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                        backends[bIdx] = { ...backend, group: e.target.value || undefined };
+                                        updated[rIdx] = { ...rule, backendRefs: backends };
+                                        onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                      }}
+                                      placeholder="core"
+                                      className="input-field text-xs"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-xs font-medium text-foreground mb-1">Kind</label>
+                                    <input
+                                      type="text"
+                                      value={backend.kind || ""}
+                                      onChange={(e) => {
+                                        const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                        const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                        backends[bIdx] = { ...backend, kind: e.target.value || undefined };
+                                        updated[rIdx] = { ...rule, backendRefs: backends };
+                                        onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                      }}
+                                      placeholder="Service"
+                                      className="input-field text-xs"
+                                    />
+                                  </div>
+                                </div>
+
+                                {/* Backend Filters */}
+                                <div className="border-t border-border/30 pt-2">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <label className="block text-xs font-medium text-foreground">Filters</label>
+                                    <button
+                                      onClick={() => {
+                                        const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                        const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                        backends[bIdx] = {
+                                          ...backend,
+                                          filters: [...(backend.filters || []), { type: "RequestHeaderModifier" }],
+                                        };
+                                        updated[rIdx] = { ...rule, backendRefs: backends };
+                                        onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                      }}
+                                      className="text-primary hover:opacity-70 text-xs"
+                                    >
+                                      + Add Filter
+                                    </button>
+                                  </div>
+                                  {(backend.filters || []).map((bFilter, bfIdx) => (
+                                    <div key={bfIdx} className="p-2 bg-muted/5 border border-border/20 rounded mb-2 space-y-2">
+                                      <div className="flex items-center justify-between">
+                                        <select
+                                          value={bFilter.type || "RequestHeaderModifier"}
+                                          onChange={(e) => {
+                                            const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                            const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                            const filters = [...(backends[bIdx]?.filters || [])];
+                                            filters[bfIdx] = { type: e.target.value as HTTPRouteFilter["type"] };
+                                            backends[bIdx] = { ...backend, filters };
+                                            updated[rIdx] = { ...rule, backendRefs: backends };
+                                            onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                          }}
+                                          className="input-field text-xs flex-1 mr-2"
+                                        >
+                                          <option value="RequestHeaderModifier">Request Header Modifier</option>
+                                          <option value="ResponseHeaderModifier">Response Header Modifier</option>
+                                          <option value="RequestMirror">Request Mirror</option>
+                                          <option value="RequestRedirect">Request Redirect</option>
+                                          <option value="URLRewrite">URL Rewrite</option>
+                                        </select>
+                                        <button
+                                          onClick={() => {
+                                            const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                            const backends = [...(updated[rIdx]?.backendRefs || [])];
+                                            const filters = (backends[bIdx]?.filters || []).filter((_, i) => i !== bfIdx);
+                                            backends[bIdx] = { ...backend, filters: filters.length > 0 ? filters : undefined };
+                                            updated[rIdx] = { ...rule, backendRefs: backends };
+                                            onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                          }}
+                                          className="text-destructive hover:opacity-70 text-xs"
+                                        >
+                                          ×
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+
                                 <button
                                   onClick={() => {
                                     const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
                                     const backends = (updated[rIdx]?.backendRefs || []).filter((_, i) => i !== bIdx);
-                                    updated[rIdx] = { ...rule, backendRefs: backends.length > 0 ? backends : [] };
+                                    updated[rIdx] = { ...rule, backendRefs: backends.length > 0 ? backends : undefined };
                                     onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
                                   }}
-                                  className="text-destructive hover:opacity-70 text-xs"
+                                  className="w-full text-xs text-destructive hover:bg-destructive/10 py-1 rounded transition-colors"
                                 >
-                                  ×
+                                  Remove Backend
                                 </button>
                               </div>
                             ))}
+                          </div>
+                        </div>
+
+                        {/* Timeouts */}
+                        <div className="border-t border-border/50 pt-3">
+                          <label className="block text-xs font-medium text-foreground mb-2">Timeouts</label>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-xs font-medium text-foreground mb-1">Request Duration</label>
+                              <input
+                                type="text"
+                                value={rule.timeouts?.requestDuration || ""}
+                                onChange={(e) => {
+                                  const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                  updated[rIdx] = {
+                                    ...rule,
+                                    timeouts: {
+                                      ...rule.timeouts,
+                                      requestDuration: e.target.value || undefined,
+                                    },
+                                  };
+                                  onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                }}
+                                placeholder="30s"
+                                className="input-field text-xs"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-foreground mb-1">Backend Request Duration</label>
+                              <input
+                                type="text"
+                                value={rule.timeouts?.backendRequestDuration || ""}
+                                onChange={(e) => {
+                                  const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
+                                  updated[rIdx] = {
+                                    ...rule,
+                                    timeouts: {
+                                      ...rule.timeouts,
+                                      backendRequestDuration: e.target.value || undefined,
+                                    },
+                                  };
+                                  onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                }}
+                                placeholder="5s"
+                                className="input-field text-xs"
+                              />
+                            </div>
                           </div>
                         </div>
 
@@ -864,7 +2162,7 @@ export default function ResourceConfiguration({ config, onConfigChange }: Resour
                               rules: updated.length > 0 ? updated : undefined,
                             });
                           }}
-                          className="w-full text-xs text-destructive hover:bg-destructive/10 py-1.5 rounded transition-colors"
+                          className="w-full text-xs text-destructive hover:bg-destructive/10 py-1.5 rounded transition-colors border-t border-border/50"
                         >
                           Remove Rule
                         </button>
