@@ -515,6 +515,7 @@ export default function CreateChart() {
   };
 
   const activeWorkload = workloads.find((w) => w.id === activeWorkloadId);
+  const activeResource = resources.find((r) => r.id === activeResourceId);
 
   const isContainerConfigValid = (container: Container): boolean => {
     const hasName = !!container.name?.trim();
