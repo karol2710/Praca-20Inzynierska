@@ -275,6 +275,38 @@ export default function CreateChart() {
     }
   };
 
+  // Resource Management Functions
+  const addResource = () => {
+    if (!newResourceName.trim()) return;
+
+    const newResource: Resource = {
+      id: Date.now().toString(),
+      name: newResourceName,
+      type: selectedResourceType,
+      namespace: "default",
+      data: {},
+    };
+    setResources([...resources, newResource]);
+    setNewResourceName("");
+    setActiveResourceId(newResource.id);
+  };
+
+  const deleteResource = (id: string) => {
+    setResources(resources.filter((r) => r.id !== id));
+    if (activeResourceId === id) {
+      setActiveResourceId(resources.find((r) => r.id !== id)?.id || "");
+    }
+  };
+
+  const updateResourceConfig = (key: keyof Resource, value: any) => {
+    const activeResource = resources.find((r) => r.id === activeResourceId);
+    if (!activeResource) return;
+
+    setResources(
+      resources.map((r) => (r.id === activeResourceId ? { ...r, [key]: value } : r))
+    );
+  };
+
   const addContainer = () => {
     if (!activeWorkloadId) return;
 
