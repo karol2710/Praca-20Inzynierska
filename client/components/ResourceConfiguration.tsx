@@ -808,14 +808,67 @@ export default function ResourceConfiguration({ config, onConfigChange }: Resour
 
               {/* Selector */}
               <div className="border-t border-border pt-4">
-                <label className="block text-sm font-medium text-foreground mb-2">Selector</label>
-                {renderTagsField(
-                  config.spec?.selector,
-                  (value) => onConfigChange("spec", { ...(config.spec || {}), selector: value }),
-                  "Selector",
-                  "Add selector (key=value)"
-                )}
-                <p className="text-xs text-foreground/50 mt-1">Labels to select pods for the service</p>
+                <div className="flex items-center justify-between mb-3">
+                  <label className="block text-sm font-medium text-foreground">Selector</label>
+                  <button
+                    onClick={() => {
+                      const selector = { ...config.spec?.selector, "": "" };
+                      onConfigChange("spec", { ...(config.spec || {}), selector });
+                    }}
+                    className="text-primary hover:opacity-70 text-sm"
+                  >
+                    + Add
+                  </button>
+                </div>
+
+                <div className="space-y-2">
+                  {Object.entries(config.spec?.selector || {}).map(([key, val], idx) => (
+                    <div key={idx} className="flex gap-2 items-center">
+                      <input
+                        type="text"
+                        value={key}
+                        onChange={(e) => {
+                          const selector = { ...config.spec?.selector };
+                          if (e.target.value !== key) {
+                            delete selector[key];
+                            selector[e.target.value] = val;
+                          } else {
+                            selector[key] = val;
+                          }
+                          onConfigChange("spec", { ...(config.spec || {}), selector });
+                        }}
+                        placeholder="key"
+                        className="input-field text-sm flex-1"
+                      />
+                      <input
+                        type="text"
+                        value={val}
+                        onChange={(e) => {
+                          const selector = { ...config.spec?.selector };
+                          selector[key] = e.target.value;
+                          onConfigChange("spec", { ...(config.spec || {}), selector });
+                        }}
+                        placeholder="value"
+                        className="input-field text-sm flex-1"
+                      />
+                      <button
+                        onClick={() => {
+                          const selector = { ...config.spec?.selector };
+                          delete selector[key];
+                          onConfigChange("spec", {
+                            ...(config.spec || {}),
+                            selector: Object.keys(selector).length > 0 ? selector : undefined,
+                          });
+                        }}
+                        className="text-destructive hover:bg-destructive/10 p-2 rounded hover:opacity-75 transition-opacity"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                <p className="text-xs text-foreground/50 mt-2">Labels to select pods for the service</p>
               </div>
 
               {/* Session Affinity */}
