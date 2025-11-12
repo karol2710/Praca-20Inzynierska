@@ -214,7 +214,13 @@ export default function CreateChart() {
   const [editingEphemeralWorkloadId, setEditingEphemeralWorkloadId] = useState<string>("");
   const [isCreating, setIsCreating] = useState(false);
 
+  const [resources, setResources] = useState<Resource[]>([]);
+  const [selectedResourceType, setSelectedResourceType] = useState<ResourceType>("Service");
+  const [newResourceName, setNewResourceName] = useState<string>("");
+  const [activeResourceId, setActiveResourceId] = useState<string>("");
+
   const workloadTypes: WorkloadType[] = ["Pod", "Deployment", "ReplicaSet", "StatefulSet", "DaemonSet", "Job", "CronJob"];
+  const resourceTypes: ResourceType[] = ["Service", "HTTPRoute", "GRPCRoute", "Gateway", "NetworkPolicy", "StorageClass", "PersistentVolume", "PersistentVolumeClaim", "VolumeAttributesClass", "ConfigMap", "Secret", "LimitRange", "RuntimeClass"];
 
   // Standard mode handlers
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
