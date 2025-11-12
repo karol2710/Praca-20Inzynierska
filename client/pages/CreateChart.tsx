@@ -878,7 +878,16 @@ export default function CreateChart() {
               <div className="space-y-8">
                 {/* Workload Configuration */}
                 <div className="bg-card border border-border rounded-xl p-8 max-w-3xl">
-                  <h2 className="text-xl font-bold text-foreground mb-6">Configure "{activeWorkload.name}" ({activeWorkload.type})</h2>
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-xl font-bold text-foreground">Configure "{activeWorkload.name}" ({activeWorkload.type})</h2>
+                    <button
+                      onClick={() => setActiveWorkloadId("")}
+                      className="text-destructive hover:bg-destructive/10 p-1 rounded hover:opacity-75 transition-opacity"
+                      title="Close configuration"
+                    >
+                      <X className="w-6 h-6" />
+                    </button>
+                  </div>
 
                   {/* Type-specific Configuration */}
                   <div className="space-y-4 mb-8 p-6 bg-muted/30 rounded-lg border border-border">
