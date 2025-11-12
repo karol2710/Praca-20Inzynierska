@@ -32,16 +32,29 @@ interface ServiceSpec {
   trafficDistribution?: string;
 }
 
+interface HTTPRouteMatch {
+  path?: { type?: string; value?: string };
+  headers?: { name?: string; value?: string }[];
+  queryParams?: { name?: string; value?: string }[];
+  method?: string;
+}
+
 interface HTTPRouteRule {
-  matches?: {
-    path?: { type?: string; value?: string };
-    headers?: { name?: string; value?: string }[];
-    queryParams?: { name?: string; value?: string }[];
-    method?: string;
-  }[];
-  backendRefs?: { name?: string; namespace?: string; port?: number; weight?: number; filters?: HTTPRouteFilter[] }[];
+  sectionName?: string;
+  matches?: HTTPRouteMatch[];
+  backendRefs?: HTTPRouteBackendRef[];
   filters?: HTTPRouteFilter[];
-  timeout?: string; // Request Duration
+  timeouts?: HTTPRouteTimeout;
+}
+
+interface HTTPRouteBackendRef {
+  name?: string;
+  namespace?: string;
+  port?: number;
+  weight?: number;
+  group?: string;
+  kind?: string;
+  filters?: HTTPRouteFilter[];
 }
 
 interface HTTPRouteFilter {
@@ -49,13 +62,22 @@ interface HTTPRouteFilter {
   requestHeaderModifier?: { set?: Record<string, string>; add?: Record<string, string>; remove?: string[] };
   responseHeaderModifier?: { set?: Record<string, string>; add?: Record<string, string>; remove?: string[] };
   requestMirror?: { backendRef: { name?: string; namespace?: string; port?: number } };
-  requestRedirect?: { scheme?: string; hostname?: string; path?: { type?: string; value?: string }; port?: number };
+  requestRedirect?: { scheme?: string; hostname?: string; path?: { type?: string; value?: string }; port?: number; statusCode?: number };
   urlRewrite?: { hostname?: string; path?: { type?: string; value?: string } };
 }
 
 interface HTTPRouteTimeout {
   requestDuration?: string;
   backendRequestDuration?: string;
+}
+
+interface HTTPRouteParentReference {
+  name?: string;
+  namespace?: string;
+  kind?: string;
+  group?: string;
+  sectionName?: string;
+  port?: number;
 }
 
 interface HTTPRouteSpec {
