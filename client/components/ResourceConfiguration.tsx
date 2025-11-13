@@ -321,7 +321,7 @@ interface ResourceConfig {
   deletionGracePeriodSeconds?: number;
   ownerReferences?: OwnerReference[];
   data?: Record<string, any>;
-  spec?: ServiceSpec | HTTPRouteSpec | GRPCRouteSpec | GatewaySpec | NetworkPolicySpec | StorageClassSpec | PersistentVolumeSpec | PersistentVolumeClaimSpec | Record<string, any>;
+  spec?: ServiceSpec | HTTPRouteSpec | GRPCRouteSpec | GatewaySpec | NetworkPolicySpec | StorageClassSpec | PersistentVolumeSpec | PersistentVolumeClaimSpec | VolumeAttributesClassSpec | Record<string, any>;
 }
 
 interface ResourceConfigurationProps {
