@@ -370,7 +370,7 @@ interface ResourceConfig {
   deletionGracePeriodSeconds?: number;
   ownerReferences?: OwnerReference[];
   data?: Record<string, any>;
-  spec?: ServiceSpec | HTTPRouteSpec | GRPCRouteSpec | GatewaySpec | NetworkPolicySpec | StorageClassSpec | PersistentVolumeSpec | PersistentVolumeClaimSpec | VolumeAttributesClassSpec | ConfigMapSpec | SecretSpec | LimitRangeSpec | Record<string, any>;
+  spec?: ServiceSpec | HTTPRouteSpec | GRPCRouteSpec | GatewaySpec | NetworkPolicySpec | StorageClassSpec | PersistentVolumeSpec | PersistentVolumeClaimSpec | VolumeAttributesClassSpec | ConfigMapSpec | SecretSpec | LimitRangeSpec | RuntimeClassSpec | Record<string, any>;
 }
 
 interface ResourceConfigurationProps {
