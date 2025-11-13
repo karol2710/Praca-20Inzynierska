@@ -5694,6 +5694,52 @@ export default function ResourceConfiguration({ config, onConfigChange }: Resour
                                   className="input-field text-sm"
                                 />
                               </div>
+                              <div>
+                                <label className="block text-xs font-medium text-foreground mb-1">Certificate Kind</label>
+                                <input
+                                  type="text"
+                                  value={listener.tlsConfig?.certificateRef?.kind || ""}
+                                  onChange={(e) => {
+                                    const updated = [...((config.spec as GatewaySpec)?.listeners || [])];
+                                    updated[lIdx] = {
+                                      ...listener,
+                                      tlsConfig: {
+                                        ...listener.tlsConfig,
+                                        certificateRef: {
+                                          ...listener.tlsConfig?.certificateRef,
+                                          kind: e.target.value || undefined,
+                                        },
+                                      },
+                                    };
+                                    onConfigChange("spec", { ...(config.spec as GatewaySpec || {}), listeners: updated });
+                                  }}
+                                  placeholder="Secret"
+                                  className="input-field text-sm"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-foreground mb-1">Certificate Group</label>
+                                <input
+                                  type="text"
+                                  value={listener.tlsConfig?.certificateRef?.group || ""}
+                                  onChange={(e) => {
+                                    const updated = [...((config.spec as GatewaySpec)?.listeners || [])];
+                                    updated[lIdx] = {
+                                      ...listener,
+                                      tlsConfig: {
+                                        ...listener.tlsConfig,
+                                        certificateRef: {
+                                          ...listener.tlsConfig?.certificateRef,
+                                          group: e.target.value || undefined,
+                                        },
+                                      },
+                                    };
+                                    onConfigChange("spec", { ...(config.spec as GatewaySpec || {}), listeners: updated });
+                                  }}
+                                  placeholder="core"
+                                  className="input-field text-sm"
+                                />
+                              </div>
                             </div>
 
                             <div>
