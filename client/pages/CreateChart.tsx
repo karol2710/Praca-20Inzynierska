@@ -537,64 +537,6 @@ export default function CreateChart() {
           {mode === "standard" && (
             <form onSubmit={handleStandardSubmit} className="max-w-2xl mx-auto space-y-6 bg-card border border-border rounded-xl p-8">
               <div>
-                <label htmlFor="chartName" className="block text-sm font-semibold text-foreground mb-2">
-                  Configuration Name
-                </label>
-                <input
-                  id="chartName"
-                  type="text"
-                  value={chartName}
-                  onChange={(e) => setChartName(e.target.value)}
-                  placeholder="my-app"
-                  className="input-field"
-                  required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="chartDescription" className="block text-sm font-semibold text-foreground mb-2">
-                  Description
-                </label>
-                <textarea
-                  id="chartDescription"
-                  value={chartDescription}
-                  onChange={(e) => setChartDescription(e.target.value)}
-                  placeholder="A brief description of your configuration..."
-                  className="input-field resize-none h-24"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="chartVersion" className="block text-sm font-semibold text-foreground mb-2">
-                    Version
-                  </label>
-                  <input
-                    id="chartVersion"
-                    type="text"
-                    value={chartVersion}
-                    onChange={(e) => setChartVersion(e.target.value)}
-                    placeholder="1.0.0"
-                    className="input-field"
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="chartAuthor" className="block text-sm font-semibold text-foreground mb-2">
-                    Author
-                  </label>
-                  <input
-                    id="chartAuthor"
-                    type="text"
-                    value={chartAuthor}
-                    onChange={(e) => setChartAuthor(e.target.value)}
-                    placeholder="Your Name"
-                    className="input-field"
-                  />
-                </div>
-              </div>
-
-              <div>
                 <label htmlFor="repository" className="block text-sm font-semibold text-foreground mb-2">
                   Repository
                 </label>
@@ -618,20 +560,6 @@ export default function CreateChart() {
                   value={helmInstall}
                   onChange={(e) => setHelmInstall(e.target.value)}
                   placeholder="my-nirmata-kyverno-operator kyverno-nirmata/nirmata-kyverno-operator --version 0.8.9-rc1"
-                  className="input-field resize-none h-24"
-                  required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="kubectlCommand" className="block text-sm font-semibold text-foreground mb-2">
-                  Kubectl Deploy Command
-                </label>
-                <textarea
-                  id="kubectlCommand"
-                  value={kubectlCommand}
-                  onChange={(e) => setKubectlCommand(e.target.value)}
-                  placeholder="kubectl apply -f https://..."
                   className="input-field resize-none h-24"
                   required
                 />
