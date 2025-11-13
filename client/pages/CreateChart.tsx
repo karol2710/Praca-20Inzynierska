@@ -600,6 +600,35 @@ export default function CreateChart() {
               </div>
 
               <div>
+                <label htmlFor="repository" className="block text-sm font-semibold text-foreground mb-2">
+                  Repository
+                </label>
+                <input
+                  id="repository"
+                  type="text"
+                  value={repository}
+                  onChange={(e) => setRepository(e.target.value)}
+                  placeholder="kyverno-nirmata https://nirmata.github.io/kyverno-charts/"
+                  className="input-field"
+                  required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="helmInstall" className="block text-sm font-semibold text-foreground mb-2">
+                  Helm Install
+                </label>
+                <textarea
+                  id="helmInstall"
+                  value={helmInstall}
+                  onChange={(e) => setHelmInstall(e.target.value)}
+                  placeholder="my-nirmata-kyverno-operator kyverno-nirmata/nirmata-kyverno-operator --version 0.8.9-rc1"
+                  className="input-field resize-none h-24"
+                  required
+                />
+              </div>
+
+              <div>
                 <label htmlFor="kubectlCommand" className="block text-sm font-semibold text-foreground mb-2">
                   Kubectl Deploy Command
                 </label>
