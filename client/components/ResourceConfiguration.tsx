@@ -456,9 +456,9 @@ const configSections: { [key: string]: { id: string; title: string; description:
       description: "Configure ConfigMap metadata",
     },
     {
-      id: "data",
+      id: "spec",
       title: "Data",
-      description: "Configure key-value data",
+      description: "Configure ConfigMap data and settings",
     },
   ],
   Secret: [
