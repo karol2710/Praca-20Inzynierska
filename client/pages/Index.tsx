@@ -7,7 +7,7 @@ export default function Index() {
     {
       icon: Zap,
       title: "Lightning Fast",
-      description: "Create and deploy Kubernetes charts in minutes, not hours. Streamline your workflow with intelligent automation.",
+      description: "Deploy Kubernetes configurations in minutes. Streamline your workflow with intelligent configuration management.",
     },
     {
       icon: Shield,
@@ -17,7 +17,7 @@ export default function Index() {
     {
       icon: Rocket,
       title: "Powerful & Flexible",
-      description: "From simple deployments to complex multi-container orchestration. Scale your infrastructure with ease.",
+      description: "From simple deployments to complex multi-resource orchestration. Deploy your infrastructure with ease.",
     },
   ];
 
@@ -25,17 +25,17 @@ export default function Index() {
     {
       number: "1",
       title: "Choose Your Path",
-      description: "Select between Standard (simple) or Advanced (customizable) chart creation",
+      description: "Select between Standard (simple) or Advanced (customizable) configuration deployment",
     },
     {
       number: "2",
       title: "Configure",
-      description: "Upload files, link repositories, or define custom workflows and containers",
+      description: "Define workloads, resources, and deployment settings with our intuitive configuration builder",
     },
     {
       number: "3",
       title: "Deploy",
-      description: "Execute your kubectl commands and deploy your applications instantly",
+      description: "Execute your configuration and deploy your applications to Kubernetes instantly",
     },
   ];
 
