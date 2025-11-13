@@ -144,6 +144,8 @@ interface GatewayListener {
     certificateRef?: {
       name?: string;
       namespace?: string;
+      kind?: string;
+      group?: string;
     };
     options?: Record<string, string>;
   };
