@@ -541,7 +541,7 @@ export default function CreateChart() {
             <form onSubmit={handleStandardSubmit} className="max-w-2xl mx-auto space-y-6 bg-card border border-border rounded-xl p-8">
               <div>
                 <label htmlFor="chartName" className="block text-sm font-semibold text-foreground mb-2">
-                  Chart Name
+                  Configuration Name
                 </label>
                 <input
                   id="chartName"
@@ -562,7 +562,7 @@ export default function CreateChart() {
                   id="chartDescription"
                   value={chartDescription}
                   onChange={(e) => setChartDescription(e.target.value)}
-                  placeholder="A brief description of your application..."
+                  placeholder="A brief description of your configuration..."
                   className="input-field resize-none h-24"
                 />
               </div>
@@ -599,7 +599,7 @@ export default function CreateChart() {
 
               <div>
                 <label htmlFor="kubectlCommand" className="block text-sm font-semibold text-foreground mb-2">
-                  Kubectl Install Command
+                  Kubectl Deploy Command
                 </label>
                 <textarea
                   id="kubectlCommand"
@@ -616,7 +616,7 @@ export default function CreateChart() {
                 disabled={isCreating}
                 className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isCreating ? "Creating Chart..." : "Create Chart"}
+                {isCreating ? "Deploying Configuration..." : "Deploy Configuration"}
               </button>
             </form>
           )}
