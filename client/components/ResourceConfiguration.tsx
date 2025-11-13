@@ -234,6 +234,11 @@ const configSections: { [key: string]: { id: string; title: string; description:
   ],
   Gateway: [
     {
+      id: "warning",
+      title: "Important",
+      description: "Important: Gateway should not be configured unless necessary",
+    },
+    {
       id: "metadata",
       title: "Metadata",
       description: "Configure Gateway metadata",
