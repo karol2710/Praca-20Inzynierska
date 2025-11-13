@@ -134,29 +134,26 @@ interface GRPCRouteSpec {
   rules?: GRPCRouteRule[];
 }
 
-interface GatewayTLSConfig {
-  mode?: string;
-  certificateRef?: { name?: string; namespace?: string };
-  options?: Record<string, string>;
+interface GatewayAddress {
+  addressType?: string; // IPAddress, Hostname, Named Address
+  value?: string;
 }
 
-interface GatewayAllowedRoutes {
-  namespaces?: string[];
-  kinds?: string[];
-}
-
-interface GatewayListener {
-  name?: string;
-  hostname?: string;
-  port?: number;
-  protocol?: string;
-  tlsConfig?: GatewayTLSConfig;
-  allowedRoutes?: GatewayAllowedRoutes;
+interface GatewayInfrastructure {
+  labels?: Record<string, string>;
+  annotations?: Record<string, string>;
+  parametersRef?: {
+    group?: string;
+    kind?: string;
+    name?: string;
+  };
 }
 
 interface GatewaySpec {
   gatewayClassName?: string;
   listeners?: GatewayListener[];
+  addresses?: GatewayAddress[];
+  infrastructure?: GatewayInfrastructure;
 }
 
 interface ResourceConfig {
