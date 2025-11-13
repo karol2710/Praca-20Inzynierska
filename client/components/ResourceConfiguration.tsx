@@ -5909,6 +5909,198 @@ export default function ResourceConfiguration({ config, onConfigChange }: Resour
                   <p className="text-foreground/60 text-sm py-2">No listeners defined</p>
                 )}
               </div>
+
+              {/* Addresses */}
+              <div className="border-t border-border pt-4">
+                <div className="flex items-center justify-between mb-3">
+                  <label className="block text-sm font-medium text-foreground">Addresses</label>
+                  <button
+                    onClick={() => {
+                      const addresses = ((config.spec as GatewaySpec)?.addresses || []);
+                      onConfigChange("spec", {
+                        ...(config.spec as GatewaySpec || {}),
+                        addresses: [...addresses, { addressType: "IPAddress", value: "" }],
+                      });
+                    }}
+                    className="text-primary hover:opacity-70 text-sm"
+                  >
+                    + Add Address
+                  </button>
+                </div>
+
+                {((config.spec as GatewaySpec)?.addresses && (config.spec as GatewaySpec).addresses.length > 0) ? (
+                  <div className="space-y-3">
+                    {((config.spec as GatewaySpec)?.addresses || []).map((address, aIdx) => (
+                      <div key={aIdx} className="p-4 bg-muted/20 border border-border rounded-lg space-y-3">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs font-medium text-foreground mb-1">Address Type</label>
+                            <select
+                              value={address.addressType || ""}
+                              onChange={(e) => {
+                                const updated = [...((config.spec as GatewaySpec)?.addresses || [])];
+                                updated[aIdx] = { ...address, addressType: e.target.value || undefined };
+                                onConfigChange("spec", { ...(config.spec as GatewaySpec || {}), addresses: updated });
+                              }}
+                              className="input-field text-sm"
+                            >
+                              <option value="">Select Type</option>
+                              <option value="IPAddress">IPAddress</option>
+                              <option value="Hostname">Hostname</option>
+                              <option value="Named Address">Named Address</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-foreground mb-1">Value</label>
+                            <input
+                              type="text"
+                              value={address.value || ""}
+                              onChange={(e) => {
+                                const updated = [...((config.spec as GatewaySpec)?.addresses || [])];
+                                updated[aIdx] = { ...address, value: e.target.value || undefined };
+                                onConfigChange("spec", { ...(config.spec as GatewaySpec || {}), addresses: updated });
+                              }}
+                              placeholder="192.168.1.100 or example.com or address-name"
+                              className="input-field text-sm"
+                            />
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => {
+                            const updated = ((config.spec as GatewaySpec)?.addresses || []).filter((_, i) => i !== aIdx);
+                            onConfigChange("spec", {
+                              ...(config.spec as GatewaySpec || {}),
+                              addresses: updated.length > 0 ? updated : undefined,
+                            });
+                          }}
+                          className="w-full text-xs text-destructive hover:bg-destructive/10 py-1.5 rounded transition-colors"
+                        >
+                          Remove Address
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-foreground/60 text-sm py-2">No addresses defined</p>
+                )}
+                <p className="text-xs text-foreground/50 mt-2">Gateway addresses that can be accessed by clients</p>
+              </div>
+
+              {/* Infrastructure */}
+              <div className="border-t border-border pt-4">
+                <label className="block text-sm font-medium text-foreground mb-3">Infrastructure</label>
+
+                {/* Labels */}
+                <div className="mb-4">
+                  <label className="block text-xs font-medium text-foreground mb-2">Labels</label>
+                  {renderTagsField(
+                    (config.spec as GatewaySpec)?.infrastructure?.labels,
+                    (value) => {
+                      onConfigChange("spec", {
+                        ...(config.spec as GatewaySpec || {}),
+                        infrastructure: {
+                          ...(config.spec as GatewaySpec)?.infrastructure,
+                          labels: value,
+                        },
+                      });
+                    },
+                    "Infrastructure Labels",
+                    "Add label (key=value)"
+                  )}
+                  <p className="text-xs text-foreground/50 mt-1">Labels for infrastructure identification</p>
+                </div>
+
+                {/* Annotations */}
+                <div className="border-t border-border/50 pt-4 mb-4">
+                  <label className="block text-xs font-medium text-foreground mb-2">Annotations</label>
+                  {renderTagsField(
+                    (config.spec as GatewaySpec)?.infrastructure?.annotations,
+                    (value) => {
+                      onConfigChange("spec", {
+                        ...(config.spec as GatewaySpec || {}),
+                        infrastructure: {
+                          ...(config.spec as GatewaySpec)?.infrastructure,
+                          annotations: value,
+                        },
+                      });
+                    },
+                    "Infrastructure Annotations",
+                    "Add annotation (key=value)"
+                  )}
+                  <p className="text-xs text-foreground/50 mt-1">Annotations for infrastructure metadata</p>
+                </div>
+
+                {/* Parameters Reference */}
+                <div className="border-t border-border/50 pt-4">
+                  <label className="block text-xs font-medium text-foreground mb-3">Parameters Reference</label>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-xs font-medium text-foreground mb-1">Group</label>
+                      <input
+                        type="text"
+                        value={(config.spec as GatewaySpec)?.infrastructure?.parametersRef?.group || ""}
+                        onChange={(e) => {
+                          onConfigChange("spec", {
+                            ...(config.spec as GatewaySpec || {}),
+                            infrastructure: {
+                              ...(config.spec as GatewaySpec)?.infrastructure,
+                              parametersRef: {
+                                ...(config.spec as GatewaySpec)?.infrastructure?.parametersRef,
+                                group: e.target.value || undefined,
+                              },
+                            },
+                          });
+                        }}
+                        placeholder="networking.x-k8s.io"
+                        className="input-field text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-foreground mb-1">Kind</label>
+                      <input
+                        type="text"
+                        value={(config.spec as GatewaySpec)?.infrastructure?.parametersRef?.kind || ""}
+                        onChange={(e) => {
+                          onConfigChange("spec", {
+                            ...(config.spec as GatewaySpec || {}),
+                            infrastructure: {
+                              ...(config.spec as GatewaySpec)?.infrastructure,
+                              parametersRef: {
+                                ...(config.spec as GatewaySpec)?.infrastructure?.parametersRef,
+                                kind: e.target.value || undefined,
+                              },
+                            },
+                          });
+                        }}
+                        placeholder="GatewayClassParameters"
+                        className="input-field text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-foreground mb-1">Name</label>
+                      <input
+                        type="text"
+                        value={(config.spec as GatewaySpec)?.infrastructure?.parametersRef?.name || ""}
+                        onChange={(e) => {
+                          onConfigChange("spec", {
+                            ...(config.spec as GatewaySpec || {}),
+                            infrastructure: {
+                              ...(config.spec as GatewaySpec)?.infrastructure,
+                              parametersRef: {
+                                ...(config.spec as GatewaySpec)?.infrastructure?.parametersRef,
+                                name: e.target.value || undefined,
+                              },
+                            },
+                          });
+                        }}
+                        placeholder="default-params"
+                        className="input-field text-sm"
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs text-foreground/50 mt-2">Reference to gateway class parameters configuration</p>
+                </div>
+              </div>
             </div>
           )}
 
