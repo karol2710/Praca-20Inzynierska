@@ -263,11 +263,6 @@ export default function CreateChart() {
   const [editingEphemeralContainerId, setEditingEphemeralContainerId] = useState<string>("");
   const [editingEphemeralWorkloadId, setEditingEphemeralWorkloadId] = useState<string>("");
   const [isCreating, setIsCreating] = useState<boolean>(false);
-  const [chartName, setChartName] = useState<string>("");
-  const [chartDescription, setChartDescription] = useState<string>("");
-  const [chartVersion, setChartVersion] = useState<string>("1.0.0");
-  const [chartAuthor, setChartAuthor] = useState<string>("");
-  const [kubectlCommand, setKubectlCommand] = useState<string>("");
   const [repository, setRepository] = useState<string>("");
   const [helmInstall, setHelmInstall] = useState<string>("");
 
