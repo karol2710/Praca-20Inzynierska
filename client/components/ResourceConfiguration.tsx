@@ -7687,23 +7687,12 @@ export default function ResourceConfiguration({ config, onConfigChange }: Resour
             <div className="px-4 py-4 border-t border-border bg-muted/10 space-y-4">
               {/* Provisioner */}
               <div>
-                <label htmlFor="provisioner" className="block text-sm font-medium text-foreground mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Provisioner
                 </label>
-                <select
-                  id="provisioner"
-                  value={(config.spec as StorageClassSpec)?.provisioner || ""}
-                  onChange={(e) => {
-                    onConfigChange("spec", {
-                      ...(config.spec as StorageClassSpec || {}),
-                      provisioner: e.target.value || undefined,
-                    });
-                  }}
-                  className="input-field"
-                >
-                  <option value="">Select Provisioner</option>
-                  <option value="driver.longhorn.io">driver.longhorn.io</option>
-                </select>
+                <div className="p-3 bg-muted/30 border border-border rounded text-sm text-foreground">
+                  driver.longhorn.io
+                </div>
                 <p className="text-xs text-foreground/50 mt-1">Storage provisioner implementation</p>
               </div>
 
