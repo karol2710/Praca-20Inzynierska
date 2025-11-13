@@ -9302,8 +9302,66 @@ export default function ResourceConfiguration({ config, onConfigChange }: Resour
             </div>
           )}
 
+          {/* ConfigMap Spec Section */}
+          {expandedSections.has(section.id) && section.id === "spec" && config.type === "ConfigMap" && (
+            <div className="px-4 py-4 border-t border-border bg-muted/10 space-y-4">
+              {/* Immutable */}
+              <div>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={(config.spec as ConfigMapSpec)?.immutable || false}
+                    onChange={(e) => {
+                      onConfigChange("spec", {
+                        ...(config.spec as ConfigMapSpec || {}),
+                        immutable: e.target.checked || undefined,
+                      });
+                    }}
+                    className="w-4 h-4 cursor-pointer"
+                  />
+                  <span className="text-sm font-medium text-foreground">Immutable</span>
+                </label>
+                <p className="text-xs text-foreground/50 mt-1">Prevent data in this ConfigMap from being modified</p>
+              </div>
+
+              {/* Data */}
+              <div className="border-t border-border pt-4">
+                <label className="block text-sm font-medium text-foreground mb-2">Data</label>
+                {renderTagsField(
+                  (config.spec as ConfigMapSpec)?.data,
+                  (value) => {
+                    onConfigChange("spec", {
+                      ...(config.spec as ConfigMapSpec || {}),
+                      data: value,
+                    });
+                  },
+                  "ConfigMap Data",
+                  "Add data (key=value)"
+                )}
+                <p className="text-xs text-foreground/50 mt-1">Text data for this ConfigMap</p>
+              </div>
+
+              {/* Binary Data */}
+              <div className="border-t border-border pt-4">
+                <label className="block text-sm font-medium text-foreground mb-2">Binary Data</label>
+                {renderTagsField(
+                  (config.spec as ConfigMapSpec)?.binaryData,
+                  (value) => {
+                    onConfigChange("spec", {
+                      ...(config.spec as ConfigMapSpec || {}),
+                      binaryData: value,
+                    });
+                  },
+                  "ConfigMap Binary Data",
+                  "Add binary data (key=base64value)"
+                )}
+                <p className="text-xs text-foreground/50 mt-1">Binary data for this ConfigMap (base64 encoded)</p>
+              </div>
+            </div>
+          )}
+
           {/* Resource-specific sections will be rendered here based on type */}
-          {expandedSections.has(section.id) && section.id !== "metadata" && config.type !== "Service" && config.type !== "HTTPRoute" && config.type !== "GRPCRoute" && config.type !== "Gateway" && config.type !== "NetworkPolicy" && config.type !== "StorageClass" && config.type !== "PersistentVolume" && config.type !== "PersistentVolumeClaim" && config.type !== "VolumeAttributesClass" && (
+          {expandedSections.has(section.id) && section.id !== "metadata" && config.type !== "Service" && config.type !== "HTTPRoute" && config.type !== "GRPCRoute" && config.type !== "Gateway" && config.type !== "NetworkPolicy" && config.type !== "StorageClass" && config.type !== "PersistentVolume" && config.type !== "PersistentVolumeClaim" && config.type !== "VolumeAttributesClass" && config.type !== "ConfigMap" && (
             <div className="px-4 py-4 border-t border-border bg-muted/10 space-y-4">
               <div className="bg-muted/20 border border-border rounded-lg p-4">
                 <p className="text-sm font-medium text-foreground mb-3">{section.title}</p>
