@@ -311,6 +311,12 @@ interface VolumeAttributesClassSpec {
   parameters?: Record<string, string>;
 }
 
+interface ConfigMapSpec {
+  data?: Record<string, string>;
+  binaryData?: Record<string, string>;
+  immutable?: boolean;
+}
+
 interface ResourceConfig {
   id: string;
   name?: string;
