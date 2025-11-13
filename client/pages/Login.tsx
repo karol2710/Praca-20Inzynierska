@@ -56,19 +56,20 @@ export default function Login() {
           <p className="text-foreground/60 mb-6">Sign in to your KubeChart account</p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Email Input */}
+            {/* Username Input */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
-                Email Address
+              <label htmlFor="username" className="block text-sm font-medium text-foreground mb-2">
+                Username
               </label>
               <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
+                id="username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="your-username"
                 className="input-field"
                 required
+                disabled={isLoading}
               />
             </div>
 
@@ -85,19 +86,16 @@ export default function Login() {
                 placeholder="••••••••"
                 className="input-field"
                 required
+                disabled={isLoading}
               />
             </div>
 
-            {/* Remember & Forgot */}
-            <div className="flex items-center justify-between text-sm">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" className="w-4 h-4 rounded border-border bg-input cursor-pointer" />
-                <span className="text-foreground/70">Remember me</span>
-              </label>
-              <Link to="#" className="text-primary hover:underline">
-                Forgot password?
-              </Link>
-            </div>
+            {/* Error Message */}
+            {error && (
+              <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+                {error}
+              </div>
+            )}
 
             {/* Submit Button */}
             <button
