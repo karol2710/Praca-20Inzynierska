@@ -213,6 +213,23 @@ interface NetworkPolicySpec {
   egress?: NetworkPolicyRule[];
 }
 
+interface AllowedTopology {
+  matchLabelExpressions?: {
+    key?: string;
+    value?: string;
+  }[];
+}
+
+interface StorageClassSpec {
+  allowVolumeExpansion?: boolean;
+  allowedTopologies?: AllowedTopology[];
+  mountOptions?: string[];
+  parameters?: Record<string, string>;
+  provisioner?: string;
+  reclaimPolicy?: string;
+  volumeBindingMode?: string;
+}
+
 interface ResourceConfig {
   id: string;
   name?: string;
