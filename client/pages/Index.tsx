@@ -51,13 +51,13 @@ export default function Index() {
         <div className="container mx-auto relative z-10">
           <div className="text-center max-w-3xl mx-auto">
             <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6 leading-tight">
-              Kubernetes Charts Made{" "}
+              Kubernetes Configuration{" "}
               <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Simple
+                Deployer
               </span>
             </h1>
             <p className="text-xl text-foreground/70 mb-8">
-              Create, customize, and deploy Kubernetes charts with ease. Whether you're just getting started or managing complex multi-container applications, KubeChart has you covered.
+              Manage and deploy Kubernetes configurations with ease. Whether you're just getting started or managing complex multi-resource applications, we have you covered.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/signup" className="btn-primary inline-flex items-center justify-center gap-2">
