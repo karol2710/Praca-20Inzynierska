@@ -75,8 +75,8 @@ export default function Index() {
       <section className="py-20 px-4">
         <div className="container mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-foreground mb-4">Why Choose KubeChart?</h2>
-            <p className="text-lg text-foreground/60">Everything you need to manage Kubernetes deployments effectively</p>
+            <h2 className="text-4xl font-bold text-foreground mb-4">Why Choose Our Deployer?</h2>
+            <p className="text-lg text-foreground/60">Everything you need to manage Kubernetes configurations effectively</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
