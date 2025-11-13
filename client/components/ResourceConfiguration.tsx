@@ -276,6 +276,36 @@ interface PersistentVolumeSpec {
   volumeMode?: string;
 }
 
+interface DataSource {
+  apiGroup?: string;
+  kind?: string;
+  name?: string;
+}
+
+interface DataSourceReference {
+  apiGroup?: string;
+  kind?: string;
+  name?: string;
+  namespace?: string;
+}
+
+interface ResourceRequirements {
+  limits?: Record<string, string>;
+  requests?: Record<string, string>;
+}
+
+interface PersistentVolumeClaimSpec {
+  accessModes?: string[];
+  dataSource?: DataSource;
+  dataSourceRef?: DataSourceReference;
+  resources?: ResourceRequirements;
+  selector?: LabelSelector;
+  storageClassName?: string;
+  volumeAttributesClassName?: string;
+  volumeMode?: string;
+  volumeName?: string;
+}
+
 interface ResourceConfig {
   id: string;
   name?: string;
