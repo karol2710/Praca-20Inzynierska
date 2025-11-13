@@ -20,6 +20,7 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./client"),
+      "@server": path.resolve(__dirname, "./server"),
       "@shared": path.resolve(__dirname, "./shared"),
     },
   },
@@ -30,10 +31,11 @@ function expressPlugin(): Plugin {
     name: "express-plugin",
     apply: "serve", // Only apply during development (serve mode)
     configureServer(server) {
-      const app = createServer();
-
-      // Add Express app as middleware to Vite dev server
-      server.middlewares.use(app);
+      // Configure server asynchronously
+      createServer().then((app) => {
+        // Add Express app as middleware to Vite dev server
+        server.middlewares.use(app);
+      });
     },
   };
 }
