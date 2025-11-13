@@ -513,11 +513,6 @@ export default function CreateChart() {
     }
   };
 
-  const [advancedDeploymentResult, setAdvancedDeploymentResult] =
-    useState<string>("");
-  const [advancedDeploymentError, setAdvancedDeploymentError] =
-    useState<string>("");
-
   const handleAdvancedSubmit = async () => {
     setAdvancedDeploymentResult("");
     setAdvancedDeploymentError("");
