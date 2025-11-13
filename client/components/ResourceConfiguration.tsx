@@ -5492,8 +5492,412 @@ export default function ResourceConfiguration({ config, onConfigChange }: Resour
             </div>
           )}
 
+          {/* Gateway Spec Section */}
+          {expandedSections.has(section.id) && section.id === "spec" && config.type === "Gateway" && (
+            <div className="px-4 py-4 border-t border-border bg-muted/10 space-y-4">
+              {/* Warning Note */}
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+                <p className="text-sm text-amber-900 font-medium">⚠️ Important: Gateway configuration should not be configured unless necessary</p>
+                <p className="text-xs text-amber-800 mt-1">Only configure if you're managing gateway infrastructure for your cluster.</p>
+              </div>
+
+              {/* Gateway Class Name */}
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Gateway Class Name*</label>
+                <input
+                  type="text"
+                  value={(config.spec as GatewaySpec)?.gatewayClassName || ""}
+                  onChange={(e) => {
+                    onConfigChange("spec", {
+                      ...(config.spec as GatewaySpec || {}),
+                      gatewayClassName: e.target.value || undefined,
+                    });
+                  }}
+                  placeholder="nginx (predefined)"
+                  className="input-field text-sm"
+                />
+                <p className="text-xs text-foreground/60 mt-1">The class of gateway this configuration represents (usually predefined)</p>
+              </div>
+
+              {/* Listeners */}
+              <div className="border-t border-border pt-4">
+                <div className="flex items-center justify-between mb-3">
+                  <label className="block text-sm font-medium text-foreground">Listeners</label>
+                  <button
+                    onClick={() => {
+                      const listeners = ((config.spec as GatewaySpec)?.listeners || []);
+                      onConfigChange("spec", {
+                        ...(config.spec as GatewaySpec || {}),
+                        listeners: [...listeners, { name: "", port: 80, protocol: "HTTP" }],
+                      });
+                    }}
+                    className="text-primary hover:opacity-70 text-sm"
+                  >
+                    + Add Listener
+                  </button>
+                </div>
+
+                {((config.spec as GatewaySpec)?.listeners && (config.spec as GatewaySpec).listeners.length > 0) ? (
+                  <div className="space-y-3">
+                    {((config.spec as GatewaySpec)?.listeners || []).map((listener, lIdx) => (
+                      <div key={lIdx} className="p-4 bg-muted/20 border border-border rounded-lg space-y-3">
+                        <h4 className="font-semibold text-foreground text-sm">Listener {lIdx + 1}</h4>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs font-medium text-foreground mb-1">Name*</label>
+                            <input
+                              type="text"
+                              value={listener.name || ""}
+                              onChange={(e) => {
+                                const updated = [...((config.spec as GatewaySpec)?.listeners || [])];
+                                updated[lIdx] = { ...listener, name: e.target.value || undefined };
+                                onConfigChange("spec", { ...(config.spec as GatewaySpec || {}), listeners: updated });
+                              }}
+                              placeholder="http"
+                              className="input-field text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-foreground mb-1">Hostname</label>
+                            <input
+                              type="text"
+                              value={listener.hostname || ""}
+                              onChange={(e) => {
+                                const updated = [...((config.spec as GatewaySpec)?.listeners || [])];
+                                updated[lIdx] = { ...listener, hostname: e.target.value || undefined };
+                                onConfigChange("spec", { ...(config.spec as GatewaySpec || {}), listeners: updated });
+                              }}
+                              placeholder="*.example.com"
+                              className="input-field text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-foreground mb-1">Port*</label>
+                            <input
+                              type="number"
+                              value={listener.port || ""}
+                              onChange={(e) => {
+                                const updated = [...((config.spec as GatewaySpec)?.listeners || [])];
+                                updated[lIdx] = { ...listener, port: e.target.value ? parseInt(e.target.value) : undefined };
+                                onConfigChange("spec", { ...(config.spec as GatewaySpec || {}), listeners: updated });
+                              }}
+                              placeholder="80"
+                              className="input-field text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-foreground mb-1">Protocol*</label>
+                            <select
+                              value={listener.protocol || ""}
+                              onChange={(e) => {
+                                const updated = [...((config.spec as GatewaySpec)?.listeners || [])];
+                                updated[lIdx] = { ...listener, protocol: e.target.value || undefined };
+                                onConfigChange("spec", { ...(config.spec as GatewaySpec || {}), listeners: updated });
+                              }}
+                              className="input-field text-sm"
+                            >
+                              <option value="">Select Protocol</option>
+                              <option value="HTTP">HTTP</option>
+                              <option value="HTTPS">HTTPS</option>
+                              <option value="TCP">TCP</option>
+                              <option value="TLS">TLS</option>
+                              <option value="UDP">UDP</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        {/* TLS Config */}
+                        <div className="border-t border-border/50 pt-3">
+                          <label className="block text-xs font-medium text-foreground mb-2">TLS Config</label>
+                          <div className="space-y-3">
+                            <div>
+                              <label className="block text-xs font-medium text-foreground mb-1">Mode</label>
+                              <input
+                                type="text"
+                                value={listener.tlsConfig?.mode || ""}
+                                onChange={(e) => {
+                                  const updated = [...((config.spec as GatewaySpec)?.listeners || [])];
+                                  updated[lIdx] = {
+                                    ...listener,
+                                    tlsConfig: { ...listener.tlsConfig, mode: e.target.value || undefined },
+                                  };
+                                  onConfigChange("spec", { ...(config.spec as GatewaySpec || {}), listeners: updated });
+                                }}
+                                placeholder="Terminate, Passthrough"
+                                className="input-field text-sm"
+                              />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label className="block text-xs font-medium text-foreground mb-1">Certificate Name</label>
+                                <input
+                                  type="text"
+                                  value={listener.tlsConfig?.certificateRef?.name || ""}
+                                  onChange={(e) => {
+                                    const updated = [...((config.spec as GatewaySpec)?.listeners || [])];
+                                    updated[lIdx] = {
+                                      ...listener,
+                                      tlsConfig: {
+                                        ...listener.tlsConfig,
+                                        certificateRef: {
+                                          ...listener.tlsConfig?.certificateRef,
+                                          name: e.target.value || undefined,
+                                        },
+                                      },
+                                    };
+                                    onConfigChange("spec", { ...(config.spec as GatewaySpec || {}), listeners: updated });
+                                  }}
+                                  placeholder="tls-cert"
+                                  className="input-field text-sm"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-foreground mb-1">Certificate Namespace</label>
+                                <input
+                                  type="text"
+                                  value={listener.tlsConfig?.certificateRef?.namespace || ""}
+                                  onChange={(e) => {
+                                    const updated = [...((config.spec as GatewaySpec)?.listeners || [])];
+                                    updated[lIdx] = {
+                                      ...listener,
+                                      tlsConfig: {
+                                        ...listener.tlsConfig,
+                                        certificateRef: {
+                                          ...listener.tlsConfig?.certificateRef,
+                                          namespace: e.target.value || undefined,
+                                        },
+                                      },
+                                    };
+                                    onConfigChange("spec", { ...(config.spec as GatewaySpec || {}), listeners: updated });
+                                  }}
+                                  placeholder="default"
+                                  className="input-field text-sm"
+                                />
+                              </div>
+                            </div>
+
+                            <div>
+                              <label className="block text-xs font-medium text-foreground mb-2">TLS Options</label>
+                              <div className="space-y-2">
+                                {Object.entries(listener.tlsConfig?.options || {}).map(([key, val], idx) => (
+                                  <div key={idx} className="flex gap-2 items-center">
+                                    <input
+                                      type="text"
+                                      value={key}
+                                      onChange={(e) => {
+                                        const updated = [...((config.spec as GatewaySpec)?.listeners || [])];
+                                        const options = { ...listener.tlsConfig?.options };
+                                        if (e.target.value !== key) {
+                                          delete options[key];
+                                          options[e.target.value] = val;
+                                        }
+                                        updated[lIdx] = {
+                                          ...listener,
+                                          tlsConfig: { ...listener.tlsConfig, options },
+                                        };
+                                        onConfigChange("spec", { ...(config.spec as GatewaySpec || {}), listeners: updated });
+                                      }}
+                                      placeholder="Option name"
+                                      className="input-field text-xs flex-1"
+                                    />
+                                    <input
+                                      type="text"
+                                      value={val}
+                                      onChange={(e) => {
+                                        const updated = [...((config.spec as GatewaySpec)?.listeners || [])];
+                                        const options = { ...listener.tlsConfig?.options };
+                                        options[key] = e.target.value;
+                                        updated[lIdx] = {
+                                          ...listener,
+                                          tlsConfig: { ...listener.tlsConfig, options },
+                                        };
+                                        onConfigChange("spec", { ...(config.spec as GatewaySpec || {}), listeners: updated });
+                                      }}
+                                      placeholder="Option value"
+                                      className="input-field text-xs flex-1"
+                                    />
+                                    <button
+                                      onClick={() => {
+                                        const updated = [...((config.spec as GatewaySpec)?.listeners || [])];
+                                        const options = { ...listener.tlsConfig?.options };
+                                        delete options[key];
+                                        updated[lIdx] = {
+                                          ...listener,
+                                          tlsConfig: { ...listener.tlsConfig, options: Object.keys(options).length > 0 ? options : undefined },
+                                        };
+                                        onConfigChange("spec", { ...(config.spec as GatewaySpec || {}), listeners: updated });
+                                      }}
+                                      className="text-destructive hover:opacity-70"
+                                    >
+                                      <X className="w-4 h-4" />
+                                    </button>
+                                  </div>
+                                ))}
+                                <button
+                                  onClick={() => {
+                                    const updated = [...((config.spec as GatewaySpec)?.listeners || [])];
+                                    updated[lIdx] = {
+                                      ...listener,
+                                      tlsConfig: {
+                                        ...listener.tlsConfig,
+                                        options: { ...listener.tlsConfig?.options, "": "" },
+                                      },
+                                    };
+                                    onConfigChange("spec", { ...(config.spec as GatewaySpec || {}), listeners: updated });
+                                  }}
+                                  className="text-primary hover:opacity-70 text-sm"
+                                >
+                                  + Add Option
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Allowed Routes */}
+                        <div className="border-t border-border/50 pt-3">
+                          <label className="block text-xs font-medium text-foreground mb-2">Allowed Routes</label>
+                          <div className="space-y-3">
+                            <div>
+                              <label className="block text-xs font-medium text-foreground mb-2">Namespaces</label>
+                              <div className="space-y-2">
+                                {(listener.allowedRoutes?.namespaces || []).map((ns, idx) => (
+                                  <div key={idx} className="flex gap-2 items-center">
+                                    <input
+                                      type="text"
+                                      value={ns}
+                                      onChange={(e) => {
+                                        const updated = [...((config.spec as GatewaySpec)?.listeners || [])];
+                                        const namespaces = [...(listener.allowedRoutes?.namespaces || [])];
+                                        namespaces[idx] = e.target.value || "";
+                                        updated[lIdx] = {
+                                          ...listener,
+                                          allowedRoutes: { ...listener.allowedRoutes, namespaces },
+                                        };
+                                        onConfigChange("spec", { ...(config.spec as GatewaySpec || {}), listeners: updated });
+                                      }}
+                                      placeholder="default"
+                                      className="input-field text-sm flex-1"
+                                    />
+                                    <button
+                                      onClick={() => {
+                                        const updated = [...((config.spec as GatewaySpec)?.listeners || [])];
+                                        const namespaces = (listener.allowedRoutes?.namespaces || []).filter((_, i) => i !== idx);
+                                        updated[lIdx] = {
+                                          ...listener,
+                                          allowedRoutes: { ...listener.allowedRoutes, namespaces: namespaces.length > 0 ? namespaces : undefined },
+                                        };
+                                        onConfigChange("spec", { ...(config.spec as GatewaySpec || {}), listeners: updated });
+                                      }}
+                                      className="text-destructive hover:opacity-70"
+                                    >
+                                      <X className="w-4 h-4" />
+                                    </button>
+                                  </div>
+                                ))}
+                                <button
+                                  onClick={() => {
+                                    const updated = [...((config.spec as GatewaySpec)?.listeners || [])];
+                                    updated[lIdx] = {
+                                      ...listener,
+                                      allowedRoutes: {
+                                        ...listener.allowedRoutes,
+                                        namespaces: [...(listener.allowedRoutes?.namespaces || []), ""],
+                                      },
+                                    };
+                                    onConfigChange("spec", { ...(config.spec as GatewaySpec || {}), listeners: updated });
+                                  }}
+                                  className="text-primary hover:opacity-70 text-sm"
+                                >
+                                  + Add Namespace
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="border-t border-border/30 pt-2">
+                              <label className="block text-xs font-medium text-foreground mb-2">Kinds</label>
+                              <div className="space-y-2">
+                                {(listener.allowedRoutes?.kinds || []).map((kind, idx) => (
+                                  <div key={idx} className="flex gap-2 items-center">
+                                    <input
+                                      type="text"
+                                      value={kind}
+                                      onChange={(e) => {
+                                        const updated = [...((config.spec as GatewaySpec)?.listeners || [])];
+                                        const kinds = [...(listener.allowedRoutes?.kinds || [])];
+                                        kinds[idx] = e.target.value || "";
+                                        updated[lIdx] = {
+                                          ...listener,
+                                          allowedRoutes: { ...listener.allowedRoutes, kinds },
+                                        };
+                                        onConfigChange("spec", { ...(config.spec as GatewaySpec || {}), listeners: updated });
+                                      }}
+                                      placeholder="HTTPRoute"
+                                      className="input-field text-sm flex-1"
+                                    />
+                                    <button
+                                      onClick={() => {
+                                        const updated = [...((config.spec as GatewaySpec)?.listeners || [])];
+                                        const kinds = (listener.allowedRoutes?.kinds || []).filter((_, i) => i !== idx);
+                                        updated[lIdx] = {
+                                          ...listener,
+                                          allowedRoutes: { ...listener.allowedRoutes, kinds: kinds.length > 0 ? kinds : undefined },
+                                        };
+                                        onConfigChange("spec", { ...(config.spec as GatewaySpec || {}), listeners: updated });
+                                      }}
+                                      className="text-destructive hover:opacity-70"
+                                    >
+                                      <X className="w-4 h-4" />
+                                    </button>
+                                  </div>
+                                ))}
+                                <button
+                                  onClick={() => {
+                                    const updated = [...((config.spec as GatewaySpec)?.listeners || [])];
+                                    updated[lIdx] = {
+                                      ...listener,
+                                      allowedRoutes: {
+                                        ...listener.allowedRoutes,
+                                        kinds: [...(listener.allowedRoutes?.kinds || []), ""],
+                                      },
+                                    };
+                                    onConfigChange("spec", { ...(config.spec as GatewaySpec || {}), listeners: updated });
+                                  }}
+                                  className="text-primary hover:opacity-70 text-sm"
+                                >
+                                  + Add Kind
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={() => {
+                            const updated = ((config.spec as GatewaySpec)?.listeners || []).filter((_, i) => i !== lIdx);
+                            onConfigChange("spec", {
+                              ...(config.spec as GatewaySpec || {}),
+                              listeners: updated.length > 0 ? updated : undefined,
+                            });
+                          }}
+                          className="w-full text-xs text-destructive hover:bg-destructive/10 py-1.5 rounded transition-colors border-t border-border/50"
+                        >
+                          Remove Listener
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-foreground/60 text-sm py-2">No listeners defined</p>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Resource-specific sections will be rendered here based on type */}
-          {expandedSections.has(section.id) && section.id !== "metadata" && config.type !== "Service" && config.type !== "HTTPRoute" && config.type !== "GRPCRoute" && (
+          {expandedSections.has(section.id) && section.id !== "metadata" && config.type !== "Service" && config.type !== "HTTPRoute" && config.type !== "GRPCRoute" && config.type !== "Gateway" && (
             <div className="px-4 py-4 border-t border-border bg-muted/10 space-y-4">
               <div className="bg-muted/20 border border-border rounded-lg p-4">
                 <p className="text-sm font-medium text-foreground mb-3">{section.title}</p>
