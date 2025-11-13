@@ -321,9 +321,9 @@ const configSections: { [key: string]: { id: string; title: string; description:
       description: "Configure StorageClass metadata",
     },
     {
-      id: "provisioner",
-      title: "Provisioner",
-      description: "Configure provisioner and parameters",
+      id: "spec",
+      title: "Specification",
+      description: "Configure StorageClass specification",
     },
   ],
   PersistentVolume: [
