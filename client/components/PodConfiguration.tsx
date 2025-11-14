@@ -1224,6 +1224,151 @@ export default function PodConfiguration({ config, onConfigChange }: PodConfigur
                     </div>
                   </div>
                 </div>
+              ) : section.id === "metadata" ? (
+                <div className="space-y-4">
+                  {section.fields.map((field) => (
+                    <div key={String(field.key)}>
+                      {field.type === "checkbox" ? (
+                        renderField(field)
+                      ) : (
+                        <>
+                          <label className="block text-sm font-medium text-foreground mb-2">
+                            {field.label}
+                          </label>
+                          {renderField(field)}
+                        </>
+                      )}
+                      {field.description && (
+                        <p className="text-xs text-foreground/50 mt-1">{field.description}</p>
+                      )}
+                    </div>
+                  ))}
+
+                  <div className="border-t border-border pt-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <label className="block text-sm font-medium text-foreground">Owner References</label>
+                      <button
+                        onClick={() => {
+                          const refs = config.ownerReferences || [];
+                          onConfigChange("ownerReferences", [
+                            ...refs,
+                            { apiVersion: "", kind: "", name: "", uid: "" },
+                          ]);
+                        }}
+                        className="text-primary hover:opacity-70 text-sm"
+                      >
+                        + Add Owner
+                      </button>
+                    </div>
+                    <div className="space-y-3">
+                      {(config.ownerReferences || []).map((ref, idx) => (
+                        <div key={idx} className="p-4 bg-muted/20 border border-border rounded-lg space-y-3">
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-xs font-medium text-foreground mb-1">API Version*</label>
+                              <input
+                                type="text"
+                                value={ref.apiVersion || ""}
+                                onChange={(e) => {
+                                  const updated = [...(config.ownerReferences || [])];
+                                  updated[idx] = { ...ref, apiVersion: e.target.value || undefined };
+                                  onConfigChange("ownerReferences", updated);
+                                }}
+                                placeholder="v1"
+                                className="input-field text-sm"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-foreground mb-1">Kind*</label>
+                              <input
+                                type="text"
+                                value={ref.kind || ""}
+                                onChange={(e) => {
+                                  const updated = [...(config.ownerReferences || [])];
+                                  updated[idx] = { ...ref, kind: e.target.value || undefined };
+                                  onConfigChange("ownerReferences", updated);
+                                }}
+                                placeholder="Pod"
+                                className="input-field text-sm"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-foreground mb-1">Name*</label>
+                              <input
+                                type="text"
+                                value={ref.name || ""}
+                                onChange={(e) => {
+                                  const updated = [...(config.ownerReferences || [])];
+                                  updated[idx] = { ...ref, name: e.target.value || undefined };
+                                  onConfigChange("ownerReferences", updated);
+                                }}
+                                placeholder="owner-name"
+                                className="input-field text-sm"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-foreground mb-1">UID*</label>
+                              <input
+                                type="text"
+                                value={ref.uid || ""}
+                                onChange={(e) => {
+                                  const updated = [...(config.ownerReferences || [])];
+                                  updated[idx] = { ...ref, uid: e.target.value || undefined };
+                                  onConfigChange("ownerReferences", updated);
+                                }}
+                                placeholder="uuid"
+                                className="input-field text-sm"
+                              />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={ref.controller || false}
+                                  onChange={(e) => {
+                                    const updated = [...(config.ownerReferences || [])];
+                                    updated[idx] = { ...ref, controller: e.target.checked ? true : undefined };
+                                    onConfigChange("ownerReferences", updated);
+                                  }}
+                                  className="w-4 h-4 rounded border-border bg-input cursor-pointer"
+                                />
+                                <span className="text-sm font-medium text-foreground">Controller</span>
+                              </label>
+                            </div>
+                            <div>
+                              <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={ref.blockOwnerDeletion || false}
+                                  onChange={(e) => {
+                                    const updated = [...(config.ownerReferences || [])];
+                                    updated[idx] = { ...ref, blockOwnerDeletion: e.target.checked ? true : undefined };
+                                    onConfigChange("ownerReferences", updated);
+                                  }}
+                                  className="w-4 h-4 rounded border-border bg-input cursor-pointer"
+                                />
+                                <span className="text-sm font-medium text-foreground">Block Owner Deletion</span>
+                              </label>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => {
+                              onConfigChange(
+                                "ownerReferences",
+                                config.ownerReferences?.filter((_, i) => i !== idx)
+                              );
+                            }}
+                            className="w-full text-xs text-destructive hover:bg-destructive/10 py-1.5 rounded transition-colors"
+                          >
+                            Remove Owner
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               ) : section.id === "securityContext" ? (
                 <div className="space-y-6">
                   {/* Run as User */}
