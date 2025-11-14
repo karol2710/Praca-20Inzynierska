@@ -724,33 +724,52 @@ export default function AffinityConfiguration({
             <>
               <NodeAffinitySchedulingSection
                 title="Required During Scheduling, Ignored During Execution"
-                expressions={(config as NodeAffinityConfig)?.requiredDuringScheduling?.nodeAffinityTerm?.matchExpressions || []}
-                onExpressionsChange={(exprs) => {
+                matchExpressions={(config as NodeAffinityConfig)?.requiredDuringScheduling?.nodeAffinityTerm?.matchExpressions || []}
+                matchFields={(config as NodeAffinityConfig)?.requiredDuringScheduling?.nodeAffinityTerm?.matchFields || []}
+                onMatchExpressionsChange={(exprs) => {
+                  const currentFields = (config as NodeAffinityConfig)?.requiredDuringScheduling?.nodeAffinityTerm?.matchFields || [];
                   onConfigChange({
                     ...config,
-                    requiredDuringScheduling: { nodeAffinityTerm: { matchExpressions: exprs } },
+                    requiredDuringScheduling: { nodeAffinityTerm: { matchExpressions: exprs, matchFields: currentFields } },
+                  });
+                }}
+                onMatchFieldsChange={(fields) => {
+                  const currentExprs = (config as NodeAffinityConfig)?.requiredDuringScheduling?.nodeAffinityTerm?.matchExpressions || [];
+                  onConfigChange({
+                    ...config,
+                    requiredDuringScheduling: { nodeAffinityTerm: { matchExpressions: currentExprs, matchFields: fields } },
                   });
                 }}
               />
 
               <NodeAffinitySchedulingSection
                 title="Preferred During Scheduling, Ignored During Execution"
-                expressions={(config as NodeAffinityConfig)?.preferredDuringScheduling?.nodeAffinityTerm?.matchExpressions || []}
-                onExpressionsChange={(exprs) => {
+                matchExpressions={(config as NodeAffinityConfig)?.preferredDuringScheduling?.nodeAffinityTerm?.matchExpressions || []}
+                matchFields={(config as NodeAffinityConfig)?.preferredDuringScheduling?.nodeAffinityTerm?.matchFields || []}
+                onMatchExpressionsChange={(exprs) => {
+                  const currentFields = (config as NodeAffinityConfig)?.preferredDuringScheduling?.nodeAffinityTerm?.matchFields || [];
+                  const currentWeight = (config as NodeAffinityConfig)?.preferredDuringScheduling?.nodeAffinityTerm?.weight;
                   onConfigChange({
                     ...config,
-                    preferredDuringScheduling: { nodeAffinityTerm: { matchExpressions: exprs } },
+                    preferredDuringScheduling: { nodeAffinityTerm: { matchExpressions: exprs, matchFields: currentFields, weight: currentWeight } },
+                  });
+                }}
+                onMatchFieldsChange={(fields) => {
+                  const currentExprs = (config as NodeAffinityConfig)?.preferredDuringScheduling?.nodeAffinityTerm?.matchExpressions || [];
+                  const currentWeight = (config as NodeAffinityConfig)?.preferredDuringScheduling?.nodeAffinityTerm?.weight;
+                  onConfigChange({
+                    ...config,
+                    preferredDuringScheduling: { nodeAffinityTerm: { matchExpressions: currentExprs, matchFields: fields, weight: currentWeight } },
                   });
                 }}
                 showWeight={true}
                 weight={(config as NodeAffinityConfig)?.preferredDuringScheduling?.nodeAffinityTerm?.weight}
                 onWeightChange={(weight) => {
-                  const currentConfig = (config as NodeAffinityConfig)?.preferredDuringScheduling?.nodeAffinityTerm;
+                  const currentExprs = (config as NodeAffinityConfig)?.preferredDuringScheduling?.nodeAffinityTerm?.matchExpressions || [];
+                  const currentFields = (config as NodeAffinityConfig)?.preferredDuringScheduling?.nodeAffinityTerm?.matchFields || [];
                   onConfigChange({
                     ...config,
-                    preferredDuringScheduling: {
-                      nodeAffinityTerm: { ...currentConfig, weight, matchExpressions: currentConfig?.matchExpressions || [] },
-                    },
+                    preferredDuringScheduling: { nodeAffinityTerm: { matchExpressions: currentExprs, matchFields: currentFields, weight } },
                   });
                 }}
               />
