@@ -1,11 +1,11 @@
 import { RequestHandler } from "express";
-import { query } from "@server/db";
+import { query } from "../db";
 import {
   generateToken,
   hashPassword,
   verifyPassword,
   verifyToken,
-} from "@server/auth";
+} from "../auth";
 
 interface SignupRequest {
   username: string;
