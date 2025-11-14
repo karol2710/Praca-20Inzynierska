@@ -3,17 +3,17 @@ import { Plus, X, ChevronDown } from "lucide-react";
 
 type Operator = "In" | "NotIn" | "Exists" | "DoesNotExist" | "Gt" | "Lt";
 
-interface MatchExpressionItem {
+interface MatchItem {
   id: string;
+  type: "label" | "expression";
   key: string;
-  operator: Operator;
-  values: string[];
-  weight?: number;
+  value?: string;
+  operator?: Operator;
+  values?: string[];
 }
 
 interface LabelSelectorItem {
-  matchLabels?: Record<string, string>;
-  matchExpressions?: MatchExpressionItem[];
+  matches?: MatchItem[];
 }
 
 interface PodAffinityTerm {
@@ -28,11 +28,11 @@ interface PodAffinityTerm {
 }
 
 interface RequiredScheduling {
-  podAffinityTerms?: PodAffinityTerm[];
+  podAffinityTerm?: PodAffinityTerm;
 }
 
 interface PreferredScheduling {
-  podAffinityTerms?: PodAffinityTerm[];
+  podAffinityTerm?: PodAffinityTerm;
 }
 
 interface NodeAffinityExpr {
@@ -43,12 +43,16 @@ interface NodeAffinityExpr {
 }
 
 interface RequiredSchedulingNode {
-  matchExpressions: NodeAffinityExpr[];
+  nodeAffinityTerm?: {
+    matchExpressions: NodeAffinityExpr[];
+  };
 }
 
 interface PreferredSchedulingNode {
-  matchExpressions: NodeAffinityExpr[];
-  weight?: number;
+  nodeAffinityTerm?: {
+    matchExpressions: NodeAffinityExpr[];
+    weight?: number;
+  };
 }
 
 interface NodeAffinityConfig {
@@ -112,172 +116,189 @@ export default function AffinityConfiguration({
     onChange: (selector: LabelSelectorItem) => void;
   }) => (
     <div className="p-3 bg-muted/10 rounded-lg border border-border space-y-3">
-      <h6 className="font-medium text-sm text-foreground">{label}</h6>
-
-      {/* Match Labels */}
-      <div>
-        <label className="block text-xs font-medium text-foreground mb-2">Match Labels</label>
-        <div className="space-y-2">
-          {Object.entries(selector?.matchLabels || {}).map(([key, value]) => (
-            <div key={key} className="flex items-center gap-2">
-              <input
-                type="text"
-                value={key}
-                disabled
-                className="input-field text-sm flex-1 bg-muted/20"
-              />
-              <input
-                type="text"
-                value={value}
-                onChange={(e) => {
-                  const newLabels = { ...selector?.matchLabels };
-                  if (e.target.value.trim()) {
-                    newLabels[key] = e.target.value;
-                  } else {
-                    delete newLabels[key];
-                  }
-                  onChange({ ...selector, matchLabels: newLabels });
-                }}
-                placeholder="value"
-                className="input-field text-sm flex-1"
-              />
-              <button
-                onClick={() => {
-                  const newLabels = { ...selector?.matchLabels };
-                  delete newLabels[key];
-                  onChange({ ...selector, matchLabels: newLabels });
-                }}
-                className="text-destructive hover:opacity-70"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          ))}
-          <div className="flex items-center gap-2">
-            <input
-              type="text"
-              id={`${label}-key`}
-              placeholder="key"
-              className="input-field text-sm flex-1"
-            />
-            <input
-              type="text"
-              id={`${label}-value`}
-              placeholder="value"
-              className="input-field text-sm flex-1"
-            />
-            <button
-              onClick={() => {
-                const keyInput = document.getElementById(`${label}-key`) as HTMLInputElement;
-                const valueInput = document.getElementById(`${label}-value`) as HTMLInputElement;
-                const key = keyInput?.value.trim();
-                const value = valueInput?.value.trim();
-
-                if (key && value) {
-                  onChange({
-                    ...selector,
-                    matchLabels: {
-                      ...selector?.matchLabels,
-                      [key]: value,
-                    },
-                  });
-                  keyInput.value = "";
-                  valueInput.value = "";
-                }
-              }}
-              className="text-primary hover:opacity-70"
-            >
-              <Plus className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
+      <div className="flex items-center justify-between">
+        <h6 className="font-medium text-sm text-foreground">{label}</h6>
+        <button
+          onClick={() => {
+            onChange({
+              ...selector,
+              matches: [...(selector?.matches || []), { id: Date.now().toString(), type: "label", key: "" }],
+            });
+          }}
+          className="text-primary hover:opacity-70 text-xs flex items-center gap-1"
+        >
+          <Plus className="w-3 h-3" />
+          Add Match
+        </button>
       </div>
 
-      {/* Match Expressions */}
-      <div>
-        <label className="block text-xs font-medium text-foreground mb-2">Match Expressions</label>
-        <div className="space-y-2">
-          {selector?.matchExpressions?.map((expr) => (
-            <div key={expr.id} className="p-2 bg-muted/20 rounded border border-border space-y-2">
-              <div className="grid grid-cols-3 gap-2">
+      <div className="space-y-2">
+        {selector?.matches?.map((item) => (
+          <div key={item.id} className="p-2 bg-muted/20 rounded border border-border space-y-2">
+            {item.type === "label" ? (
+              // Match Label UI
+              <div className="flex items-center gap-2">
                 <input
                   type="text"
-                  value={expr.key}
+                  value={item.key}
                   onChange={(e) => {
-                    const updated = selector.matchExpressions?.map((x) =>
-                      x.id === expr.id ? { ...x, key: e.target.value } : x
-                    );
-                    onChange({ ...selector, matchExpressions: updated });
+                    onChange({
+                      ...selector,
+                      matches: selector.matches?.map((m) =>
+                        m.id === item.id ? { ...m, key: e.target.value } : m
+                      ),
+                    });
                   }}
                   placeholder="key"
-                  className="input-field text-sm"
+                  className="input-field text-sm flex-1"
                 />
-                <select
-                  value={expr.operator}
+                <input
+                  type="text"
+                  value={item.value || ""}
                   onChange={(e) => {
-                    const updated = selector.matchExpressions?.map((x) =>
-                      x.id === expr.id ? { ...x, operator: e.target.value as Operator } : x
-                    );
-                    onChange({ ...selector, matchExpressions: updated });
+                    onChange({
+                      ...selector,
+                      matches: selector.matches?.map((m) =>
+                        m.id === item.id ? { ...m, value: e.target.value } : m
+                      ),
+                    });
                   }}
-                  className="input-field text-sm"
-                >
-                  {operators.map((op) => (
-                    <option key={op} value={op}>
-                      {op}
-                    </option>
-                  ))}
-                </select>
+                  placeholder="value"
+                  className="input-field text-sm flex-1"
+                />
                 <button
                   onClick={() => {
-                    const updated = selector.matchExpressions?.filter((x) => x.id !== expr.id);
-                    onChange({ ...selector, matchExpressions: updated });
+                    onChange({
+                      ...selector,
+                      matches: selector.matches?.filter((m) => m.id !== item.id),
+                    });
                   }}
                   className="text-destructive hover:opacity-70"
                 >
                   <X className="w-4 h-4" />
                 </button>
+                <button
+                  onClick={() => {
+                    onChange({
+                      ...selector,
+                      matches: selector.matches?.map((m) =>
+                        m.id === item.id ? { ...m, type: "expression", operator: "In", values: [] } : m
+                      ),
+                    });
+                  }}
+                  className="text-primary text-xs hover:opacity-70"
+                >
+                  Switch to Expression
+                </button>
               </div>
-              <div className="flex flex-wrap gap-1">
-                {expr.values.map((val, idx) => (
-                  <div key={idx} className="bg-primary/10 text-primary px-2 py-1 rounded text-xs flex items-center gap-1">
-                    {val}
-                    <button
-                      onClick={() => {
-                        const newValues = expr.values.filter((_, i) => i !== idx);
-                        const updated = selector.matchExpressions?.map((x) =>
-                          x.id === expr.id ? { ...x, values: newValues } : x
-                        );
-                        onChange({ ...selector, matchExpressions: updated });
-                      }}
-                      className="hover:opacity-70"
-                    >
-                      ×
-                    </button>
+            ) : (
+              // Match Expression UI
+              <div className="space-y-2">
+                <div className="grid grid-cols-3 gap-2">
+                  <input
+                    type="text"
+                    value={item.key}
+                    onChange={(e) => {
+                      onChange({
+                        ...selector,
+                        matches: selector.matches?.map((m) =>
+                          m.id === item.id ? { ...m, key: e.target.value } : m
+                        ),
+                      });
+                    }}
+                    placeholder="key"
+                    className="input-field text-sm"
+                  />
+                  <select
+                    value={item.operator || "In"}
+                    onChange={(e) => {
+                      onChange({
+                        ...selector,
+                        matches: selector.matches?.map((m) =>
+                          m.id === item.id ? { ...m, operator: e.target.value as Operator } : m
+                        ),
+                      });
+                    }}
+                    className="input-field text-sm"
+                  >
+                    {operators.map((op) => (
+                      <option key={op} value={op}>
+                        {op}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    onClick={() => {
+                      onChange({
+                        ...selector,
+                        matches: selector.matches?.filter((m) => m.id !== item.id),
+                      });
+                    }}
+                    className="text-destructive hover:opacity-70"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-foreground mb-1">Values</label>
+                  <div className="flex flex-wrap gap-1 mb-2">
+                    {item.values?.map((val, idx) => (
+                      <div key={idx} className="bg-primary/10 text-primary px-2 py-1 rounded text-xs flex items-center gap-1">
+                        {val}
+                        <button
+                          onClick={() => {
+                            onChange({
+                              ...selector,
+                              matches: selector.matches?.map((m) =>
+                                m.id === item.id
+                                  ? { ...m, values: m.values?.filter((_, i) => i !== idx) }
+                                  : m
+                              ),
+                            });
+                          }}
+                          className="hover:opacity-70"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                  <input
+                    type="text"
+                    placeholder="Add value and press Enter"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && e.currentTarget.value.trim()) {
+                        onChange({
+                          ...selector,
+                          matches: selector.matches?.map((m) =>
+                            m.id === item.id
+                              ? { ...m, values: [...(m.values || []), e.currentTarget.value.trim()] }
+                              : m
+                          ),
+                        });
+                        e.currentTarget.value = "";
+                      }
+                    }}
+                    className="input-field text-sm"
+                  />
+                </div>
+                <button
+                  onClick={() => {
+                    onChange({
+                      ...selector,
+                      matches: selector.matches?.map((m) =>
+                        m.id === item.id ? { ...m, type: "label", value: "" } : m
+                      ),
+                    });
+                  }}
+                  className="text-primary text-xs hover:opacity-70"
+                >
+                  Switch to Label
+                </button>
               </div>
-            </div>
-          ))}
-          <button
-            onClick={() => {
-              const newExpr: MatchExpressionItem = {
-                id: Date.now().toString(),
-                key: "",
-                operator: "In",
-                values: [],
-              };
-              onChange({
-                ...selector,
-                matchExpressions: [...(selector?.matchExpressions || []), newExpr],
-              });
-            }}
-            className="text-primary text-sm flex items-center gap-1"
-          >
-            <Plus className="w-4 h-4" />
-            Add Expression
-          </button>
-        </div>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -285,13 +306,9 @@ export default function AffinityConfiguration({
   const PodAffinityTermComponent = ({
     term,
     onUpdate,
-    onDelete,
-    showWeight,
   }: {
     term: PodAffinityTerm;
     onUpdate: (term: PodAffinityTerm) => void;
-    onDelete: () => void;
-    showWeight?: boolean;
   }) => (
     <div className="p-4 bg-muted/20 border border-border rounded-lg space-y-4">
       {/* Topology Key */}
@@ -425,122 +442,75 @@ export default function AffinityConfiguration({
           className="input-field text-sm"
         />
       </div>
-
-      {/* Weight (for Preferred) */}
-      {showWeight && (
-        <div>
-          <label className="block text-xs font-medium text-foreground mb-1">Weight</label>
-          <input
-            type="number"
-            min="1"
-            max="100"
-            value={term.weight || 1}
-            onChange={(e) => onUpdate({ ...term, weight: parseInt(e.target.value) || 1 })}
-            className="input-field text-sm"
-          />
-        </div>
-      )}
-
-      <button
-        onClick={onDelete}
-        className="w-full py-2 text-destructive hover:bg-destructive/10 rounded transition-colors text-sm"
-      >
-        Remove Term
-      </button>
     </div>
   );
 
   const SchedulingSection = ({
     title,
-    terms,
-    onTermsChange,
+    term,
+    onTermChange,
     showWeight,
   }: {
     title: string;
-    terms?: PodAffinityTerm[];
-    onTermsChange: (terms: PodAffinityTerm[]) => void;
+    term?: PodAffinityTerm;
+    onTermChange: (term: PodAffinityTerm) => void;
     showWeight?: boolean;
-  }) => (
-    <div className="space-y-3 p-4 bg-muted/30 rounded-lg border border-border">
-      <div className="flex items-center justify-between">
-        <h5 className="font-medium text-foreground text-sm">{title}</h5>
-        <button
-          onClick={() => {
-            const newTerm: PodAffinityTerm = {
-              id: Date.now().toString(),
-              topologyKey: "",
-              namespaces: [],
-              labelSelector: { matchLabels: {}, matchExpressions: [] },
-              matchLabelKeys: [],
-              mismatchLabelKeys: [],
-              namespaceSelector: { matchLabels: {}, matchExpressions: [] },
-              ...(showWeight && { weight: 1 }),
-            };
-            onTermsChange([...(terms || []), newTerm]);
-          }}
-          className="text-primary hover:opacity-70 text-sm flex items-center gap-1"
-        >
-          <Plus className="w-4 h-4" />
-          Add Term
-        </button>
-      </div>
+  }) => {
+    const initialTerm: PodAffinityTerm = term || {
+      id: Date.now().toString(),
+      topologyKey: "",
+      namespaces: [],
+      labelSelector: { matches: [] },
+      matchLabelKeys: [],
+      mismatchLabelKeys: [],
+      namespaceSelector: { matches: [] },
+      ...(showWeight && { weight: 1 }),
+    };
 
-      {terms && terms.length > 0 ? (
-        <div className="space-y-3">
-          {terms.map((term) => (
-            <PodAffinityTermComponent
-              key={term.id}
-              term={term}
-              onUpdate={(updated) => {
-                onTermsChange(terms.map((t) => (t.id === term.id ? updated : t)));
-              }}
-              onDelete={() => {
-                onTermsChange(terms.filter((t) => t.id !== term.id));
-              }}
-              showWeight={showWeight}
+    return (
+      <div className="space-y-3 p-4 bg-muted/30 rounded-lg border border-border">
+        <h5 className="font-medium text-foreground text-sm">{title}</h5>
+
+        <PodAffinityTermComponent term={initialTerm} onUpdate={onTermChange} />
+
+        {showWeight && (
+          <div>
+            <label className="block text-xs font-medium text-foreground mb-1">Weight</label>
+            <input
+              type="number"
+              min="1"
+              max="100"
+              value={initialTerm.weight || 1}
+              onChange={(e) => onTermChange({ ...initialTerm, weight: parseInt(e.target.value) || 1 })}
+              className="input-field text-sm"
             />
-          ))}
-        </div>
-      ) : (
-        <p className="text-foreground/50 text-sm">No terms added yet</p>
-      )}
-    </div>
-  );
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const NodeAffinitySchedulingSection = ({
     title,
     expressions,
     onExpressionsChange,
     showWeight,
+    weight,
+    onWeightChange,
   }: {
     title: string;
     expressions: NodeAffinityExpr[];
     onExpressionsChange: (exprs: NodeAffinityExpr[]) => void;
     showWeight?: boolean;
+    weight?: number;
+    onWeightChange?: (weight: number) => void;
   }) => (
     <div className="space-y-3 p-4 bg-muted/30 rounded-lg border border-border">
-      <div className="flex items-center justify-between">
-        <h5 className="font-medium text-foreground text-sm">{title}</h5>
-        <button
-          onClick={() => {
-            const newExpr: NodeAffinityExpr = {
-              id: Date.now().toString(),
-              key: "",
-              operator: "In",
-              values: [],
-            };
-            onExpressionsChange([...expressions, newExpr]);
-          }}
-          className="text-primary hover:opacity-70 text-sm flex items-center gap-1"
-        >
-          <Plus className="w-4 h-4" />
-          Add Expression
-        </button>
-      </div>
+      <h5 className="font-medium text-foreground text-sm">{title}</h5>
 
-      {expressions.length > 0 ? (
-        <div className="space-y-3">
-          {expressions.map((expr) => (
+      <div className="space-y-3">
+        {expressions.length > 0 ? (
+          expressions.map((expr) => (
             <div key={expr.id} className="p-4 bg-muted/20 border border-border rounded-lg space-y-3">
               <div className="grid grid-cols-3 gap-3">
                 <div>
@@ -579,14 +549,6 @@ export default function AffinityConfiguration({
                     ))}
                   </select>
                 </div>
-                <button
-                  onClick={() =>
-                    onExpressionsChange(expressions.filter((x) => x.id !== expr.id))
-                  }
-                  className="text-destructive hover:opacity-70 mt-6"
-                >
-                  <X className="w-4 h-4" />
-                </button>
               </div>
 
               <div>
@@ -630,10 +592,38 @@ export default function AffinityConfiguration({
                 />
               </div>
             </div>
-          ))}
+          ))
+        ) : (
+          <button
+            onClick={() => {
+              const newExpr: NodeAffinityExpr = {
+                id: Date.now().toString(),
+                key: "",
+                operator: "In",
+                values: [],
+              };
+              onExpressionsChange([newExpr]);
+            }}
+            className="text-primary hover:opacity-70 text-sm flex items-center gap-1"
+          >
+            <Plus className="w-4 h-4" />
+            Add Expression
+          </button>
+        )}
+      </div>
+
+      {showWeight && (
+        <div>
+          <label className="block text-xs font-medium text-foreground mb-1">Weight</label>
+          <input
+            type="number"
+            min="1"
+            max="100"
+            value={weight || 1}
+            onChange={(e) => onWeightChange?.(parseInt(e.target.value) || 1)}
+            className="input-field text-sm"
+          />
         </div>
-      ) : (
-        <p className="text-foreground/50 text-sm">No expressions added yet</p>
       )}
     </div>
   );
@@ -670,22 +660,22 @@ export default function AffinityConfiguration({
             <>
               <SchedulingSection
                 title="Required During Scheduling, Ignored During Execution"
-                terms={(config as PodAffinityConfig)?.requiredDuringScheduling?.podAffinityTerms}
-                onTermsChange={(terms) => {
+                term={(config as PodAffinityConfig)?.requiredDuringScheduling?.podAffinityTerm}
+                onTermChange={(term) => {
                   onConfigChange({
                     ...config,
-                    requiredDuringScheduling: { podAffinityTerms: terms },
+                    requiredDuringScheduling: { podAffinityTerm: term },
                   });
                 }}
               />
 
               <SchedulingSection
                 title="Preferred During Scheduling, Ignored During Execution"
-                terms={(config as PodAffinityConfig)?.preferredDuringScheduling?.podAffinityTerms}
-                onTermsChange={(terms) => {
+                term={(config as PodAffinityConfig)?.preferredDuringScheduling?.podAffinityTerm}
+                onTermChange={(term) => {
                   onConfigChange({
                     ...config,
-                    preferredDuringScheduling: { podAffinityTerms: terms },
+                    preferredDuringScheduling: { podAffinityTerm: term },
                   });
                 }}
                 showWeight={true}
@@ -695,25 +685,35 @@ export default function AffinityConfiguration({
             <>
               <NodeAffinitySchedulingSection
                 title="Required During Scheduling, Ignored During Execution"
-                expressions={(config as NodeAffinityConfig)?.requiredDuringScheduling?.matchExpressions || []}
+                expressions={(config as NodeAffinityConfig)?.requiredDuringScheduling?.nodeAffinityTerm?.matchExpressions || []}
                 onExpressionsChange={(exprs) => {
                   onConfigChange({
                     ...config,
-                    requiredDuringScheduling: { matchExpressions: exprs },
+                    requiredDuringScheduling: { nodeAffinityTerm: { matchExpressions: exprs } },
                   });
                 }}
               />
 
               <NodeAffinitySchedulingSection
                 title="Preferred During Scheduling, Ignored During Execution"
-                expressions={(config as NodeAffinityConfig)?.preferredDuringScheduling?.matchExpressions || []}
+                expressions={(config as NodeAffinityConfig)?.preferredDuringScheduling?.nodeAffinityTerm?.matchExpressions || []}
                 onExpressionsChange={(exprs) => {
                   onConfigChange({
                     ...config,
-                    preferredDuringScheduling: { matchExpressions: exprs },
+                    preferredDuringScheduling: { nodeAffinityTerm: { matchExpressions: exprs } },
                   });
                 }}
                 showWeight={true}
+                weight={(config as NodeAffinityConfig)?.preferredDuringScheduling?.nodeAffinityTerm?.weight}
+                onWeightChange={(weight) => {
+                  const currentConfig = (config as NodeAffinityConfig)?.preferredDuringScheduling?.nodeAffinityTerm;
+                  onConfigChange({
+                    ...config,
+                    preferredDuringScheduling: {
+                      nodeAffinityTerm: { ...currentConfig, weight, matchExpressions: currentConfig?.matchExpressions || [] },
+                    },
+                  });
+                }}
               />
             </>
           )}
