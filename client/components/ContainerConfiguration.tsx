@@ -76,6 +76,13 @@ export interface ContainerConfig {
   // Advanced
   resizePolicy?: { type: string; resourceName: string }[];
   restartPolicy?: "Always" | "OnFailure" | "Never";
+  restartPolicyRules?: {
+    action?: string;
+    exitCodes?: {
+      operator?: "In" | "NotIn";
+      values?: number[];
+    };
+  }[];
 
   // Security Context
   securityContext?: SecurityContext;
@@ -2474,6 +2481,143 @@ export default function ContainerConfiguration({
                 <option value="OnFailure">OnFailure</option>
                 <option value="Never">Never</option>
               </select>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <label className="block text-sm font-medium text-foreground">Restart Policy Rules</label>
+                <button
+                  onClick={() => {
+                    const rules = container.restartPolicyRules || [];
+                    onConfigChange("restartPolicyRules", [
+                      ...rules,
+                      { action: "Restart", exitCodes: { operator: "In", values: [] } },
+                    ]);
+                  }}
+                  className="text-primary hover:opacity-70 text-sm"
+                >
+                  + Add Rule
+                </button>
+              </div>
+              <div className="space-y-3">
+                {(container.restartPolicyRules || []).map((rule, idx) => (
+                  <div key={idx} className="p-4 bg-muted/20 border border-border rounded-lg space-y-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <h5 className="font-medium text-foreground text-sm">Rule {idx + 1}</h5>
+                      <button
+                        onClick={() => {
+                          onConfigChange(
+                            "restartPolicyRules",
+                            container.restartPolicyRules?.filter((_, i) => i !== idx)
+                          );
+                        }}
+                        className="text-destructive hover:opacity-70"
+                      >
+                        ×
+                      </button>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-foreground mb-1">Action</label>
+                      <div className="px-3 py-2 text-sm bg-muted rounded border border-border text-foreground">
+                        Restart
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-foreground mb-2">Exit Codes</label>
+                      <div className="space-y-3 p-3 bg-muted/10 rounded-lg">
+                        <div>
+                          <label className="block text-xs font-medium text-foreground mb-1">Operator</label>
+                          <select
+                            value={rule.exitCodes?.operator || "In"}
+                            onChange={(e) => {
+                              const updated = [...(container.restartPolicyRules || [])];
+                              updated[idx] = {
+                                ...rule,
+                                exitCodes: {
+                                  ...rule.exitCodes,
+                                  operator: e.target.value as "In" | "NotIn",
+                                },
+                              };
+                              onConfigChange("restartPolicyRules", updated);
+                            }}
+                            className="input-field text-sm"
+                          >
+                            <option value="In">In</option>
+                            <option value="NotIn">NotIn</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <div className="flex items-center justify-between mb-1">
+                            <label className="block text-xs font-medium text-foreground">Values</label>
+                            <button
+                              onClick={() => {
+                                const updated = [...(container.restartPolicyRules || [])];
+                                const values = [...(rule.exitCodes?.values || []), 0];
+                                updated[idx] = {
+                                  ...rule,
+                                  exitCodes: {
+                                    ...rule.exitCodes,
+                                    values,
+                                  },
+                                };
+                                onConfigChange("restartPolicyRules", updated);
+                              }}
+                              className="text-primary hover:opacity-70 text-xs"
+                            >
+                              + Add Value
+                            </button>
+                          </div>
+                          <div className="space-y-1">
+                            {(rule.exitCodes?.values || []).map((val, vIdx) => (
+                              <div key={vIdx} className="flex gap-2 items-center">
+                                <input
+                                  type="number"
+                                  value={val}
+                                  onChange={(e) => {
+                                    const updated = [...(container.restartPolicyRules || [])];
+                                    const values = [...(rule.exitCodes?.values || [])];
+                                    values[vIdx] = parseInt(e.target.value) || 0;
+                                    updated[idx] = {
+                                      ...rule,
+                                      exitCodes: {
+                                        ...rule.exitCodes,
+                                        values,
+                                      },
+                                    };
+                                    onConfigChange("restartPolicyRules", updated);
+                                  }}
+                                  placeholder="0"
+                                  className="input-field text-sm flex-1"
+                                />
+                                <button
+                                  onClick={() => {
+                                    const updated = [...(container.restartPolicyRules || [])];
+                                    const values = (rule.exitCodes?.values || []).filter((_, i) => i !== vIdx);
+                                    updated[idx] = {
+                                      ...rule,
+                                      exitCodes: {
+                                        ...rule.exitCodes,
+                                        values,
+                                      },
+                                    };
+                                    onConfigChange("restartPolicyRules", updated);
+                                  }}
+                                  className="text-destructive hover:opacity-70"
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div>
