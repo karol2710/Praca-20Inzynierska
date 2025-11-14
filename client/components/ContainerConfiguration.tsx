@@ -127,7 +127,7 @@ interface SecurityContext {
 
 interface ProbeConfig {
   exec?: { command: string[] };
-  httpGet?: { path: string; port: number; scheme?: string };
+  httpGet?: { path: string; port: number; scheme?: string; httpHeaders?: { name: string; value: string }[] };
   tcpSocket?: { host?: string; port: number };
   grpc?: { port: number; service?: string };
   initialDelaySeconds?: number;
@@ -613,6 +613,75 @@ function ProbeEditor({ title, probe, onProbeChange }: ProbeEditorProps) {
                 className="input-field text-sm"
               />
             </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-foreground mb-2">HTTP Headers</label>
+            <div className="space-y-1">
+              {(probe?.httpGet?.httpHeaders || []).map((header, idx) => (
+                <div key={idx} className="flex gap-2 items-center">
+                  <input
+                    type="text"
+                    value={header.name}
+                    onChange={(e) => {
+                      const updated = [...(probe?.httpGet?.httpHeaders || [])];
+                      updated[idx] = { ...header, name: e.target.value };
+                      onProbeChange({
+                        ...probe,
+                        httpGet: { ...probe?.httpGet, httpHeaders: updated, path: probe?.httpGet?.path || "/", port: probe?.httpGet?.port || 80 },
+                      });
+                    }}
+                    placeholder="Header Name"
+                    className="input-field text-sm flex-1"
+                  />
+                  <input
+                    type="text"
+                    value={header.value}
+                    onChange={(e) => {
+                      const updated = [...(probe?.httpGet?.httpHeaders || [])];
+                      updated[idx] = { ...header, value: e.target.value };
+                      onProbeChange({
+                        ...probe,
+                        httpGet: { ...probe?.httpGet, httpHeaders: updated, path: probe?.httpGet?.path || "/", port: probe?.httpGet?.port || 80 },
+                      });
+                    }}
+                    placeholder="Header Value"
+                    className="input-field text-sm flex-1"
+                  />
+                  <button
+                    onClick={() => {
+                      onProbeChange({
+                        ...probe,
+                        httpGet: {
+                          ...probe?.httpGet,
+                          httpHeaders: (probe?.httpGet?.httpHeaders || []).filter((_, i) => i !== idx),
+                          path: probe?.httpGet?.path || "/",
+                          port: probe?.httpGet?.port || 80,
+                        },
+                      });
+                    }}
+                    className="text-destructive hover:opacity-70"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={() => {
+                onProbeChange({
+                  ...probe,
+                  httpGet: {
+                    ...probe?.httpGet,
+                    httpHeaders: [...(probe?.httpGet?.httpHeaders || []), { name: "", value: "" }],
+                    path: probe?.httpGet?.path || "/",
+                    port: probe?.httpGet?.port || 80,
+                  },
+                });
+              }}
+              className="text-primary hover:opacity-70 text-xs"
+            >
+              + Add Header
+            </button>
           </div>
         </div>
       )}
