@@ -9,7 +9,8 @@ import DaemonSetConfiguration from "@/components/DaemonSetConfiguration";
 import JobConfiguration from "@/components/JobConfiguration";
 import CronJobConfiguration from "@/components/CronJobConfiguration";
 import ResourceConfiguration from "@/components/ResourceConfiguration";
-import { Upload, Plus, X, Zap } from "lucide-react";
+import { Upload, Plus, X, Zap, Copy, Download } from "lucide-react";
+import { generatePodYAML } from "@/server/yaml-generator";
 
 type ChartMode = "standard" | "advanced";
 type InputType = "file" | "repo";
@@ -271,8 +272,37 @@ export default function CreateChart() {
     useState<string>("");
   const [advancedDeploymentError, setAdvancedDeploymentError] =
     useState<string>("");
+  const [showYamlModal, setShowYamlModal] = useState<boolean>(false);
+  const [generatedYaml, setGeneratedYaml] = useState<string>("");
 
   const activeWorkload = workloads.find((w) => w.id === activeWorkloadId);
+
+  const handleViewYaml = () => {
+    if (activeWorkload && activeWorkload.type === "Pod") {
+      const yaml = generatePodYAML(
+        activeWorkload.name,
+        activeWorkload.config,
+        activeWorkload.containers
+      );
+      const yamlString = require("js-yaml").dump(yaml, { indent: 2 });
+      setGeneratedYaml(yamlString);
+      setShowYamlModal(true);
+    }
+  };
+
+  const handleCopyYaml = () => {
+    navigator.clipboard.writeText(generatedYaml);
+  };
+
+  const handleDownloadYaml = () => {
+    const element = document.createElement("a");
+    const file = new Blob([generatedYaml], { type: "text/yaml" });
+    element.href = URL.createObjectURL(file);
+    element.download = `${activeWorkload?.name || "pod"}.yaml`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+  };
   const activeResource = resources.find((r) => r.id === activeResourceId);
 
   const addWorkload = () => {
