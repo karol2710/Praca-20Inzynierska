@@ -793,13 +793,24 @@ export default function CreateChart() {
                     <div className="bg-card border border-border rounded-xl p-8">
                       <div className="flex items-center justify-between mb-6">
                         <h2 className="text-xl font-bold text-foreground">Configure "{activeWorkload.name}" ({activeWorkload.type})</h2>
-                        <button
-                          onClick={() => setActiveWorkloadId("")}
-                          className="text-destructive hover:bg-destructive/10 p-1 rounded hover:opacity-75 transition-opacity"
-                          title="Close configuration"
-                        >
-                          <X className="w-6 h-6" />
-                        </button>
+                        <div className="flex items-center gap-2">
+                          {activeWorkload.type === "Pod" && (
+                            <button
+                              onClick={handleViewYaml}
+                              className="flex items-center gap-2 px-3 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity text-sm font-medium"
+                            >
+                              <Zap className="w-4 h-4" />
+                              View YAML
+                            </button>
+                          )}
+                          <button
+                            onClick={() => setActiveWorkloadId("")}
+                            className="text-destructive hover:bg-destructive/10 p-1 rounded hover:opacity-75 transition-opacity"
+                            title="Close configuration"
+                          >
+                            <X className="w-6 h-6" />
+                          </button>
+                        </div>
                       </div>
 
                       {/* Type-specific Configuration */}
@@ -1460,6 +1471,42 @@ export default function CreateChart() {
           )}
         </div>
       </div>
+
+      {/* YAML Modal */}
+      {showYamlModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-card border border-border rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between p-6 border-b border-border">
+              <h3 className="text-xl font-bold text-foreground">Generated Pod YAML</h3>
+              <button
+                onClick={() => setShowYamlModal(false)}
+                className="text-foreground/60 hover:text-foreground transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-auto p-6 bg-muted/20">
+              <pre className="text-sm font-mono text-foreground whitespace-pre-wrap break-words">{generatedYaml}</pre>
+            </div>
+            <div className="flex items-center gap-2 p-4 border-t border-border bg-muted/10">
+              <button
+                onClick={handleCopyYaml}
+                className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity text-sm font-medium"
+              >
+                <Copy className="w-4 h-4" />
+                Copy
+              </button>
+              <button
+                onClick={handleDownloadYaml}
+                className="flex items-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:opacity-90 transition-opacity text-sm font-medium"
+              >
+                <Download className="w-4 h-4" />
+                Download
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 }
