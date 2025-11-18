@@ -330,13 +330,6 @@ export default function CreateChart() {
           activeWorkload.containers
         );
         break;
-      case "DaemonSet":
-        yamlString = generateDaemonSetYAML(
-          activeWorkload.name,
-          transformedConfig,
-          activeWorkload.containers
-        );
-        break;
       case "Job":
         yamlString = generateJobYAML(
           activeWorkload.name,
