@@ -32,7 +32,6 @@ interface PodConfig {
 interface VolumeClaimTemplate {
   metadata?: {
     name?: string;
-    namespace?: string;
     deletionGracePeriodSeconds?: number;
     annotations?: Record<string, string>;
     labels?: Record<string, string>;
