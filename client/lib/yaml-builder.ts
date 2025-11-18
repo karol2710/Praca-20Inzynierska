@@ -554,15 +554,16 @@ export function generateStatefulSetYAML(statefulSetName: string, statefulSetConf
   return YAML.dump(cleaned, { indent: 2 });
 }
 
-export function generateDaemonSetYAML(daemonSetName: string, daemonSetConfig: Record<string, any>, containers: Container[]): string {
-  return buildWorkloadYAML(daemonSetName, daemonSetConfig, containers, "DaemonSet", "apps/v1");
+export function generateDaemonSetYAML(daemonSetName: string, daemonSetConfig: Record<string, any>, containers: Container[], namespace?: string): string {
+  return buildWorkloadYAML(daemonSetName, daemonSetConfig, containers, "DaemonSet", "apps/v1", namespace);
 }
 
-export function generateJobYAML(jobName: string, jobConfig: Record<string, any>, containers: Container[]): string {
+export function generateJobYAML(jobName: string, jobConfig: Record<string, any>, containers: Container[], namespace?: string): string {
   const metadata: Record<string, any> = {
     name: jobName,
   };
 
+  if (namespace) metadata.namespace = namespace;
   if (jobConfig.deletionGracePeriodSeconds) metadata.deletionGracePeriodSeconds = jobConfig.deletionGracePeriodSeconds;
 
   if (jobConfig.annotations && Object.keys(jobConfig.annotations).length > 0) {
