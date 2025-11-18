@@ -278,12 +278,24 @@ export default function CreateChart() {
   const activeWorkload = workloads.find((w) => w.id === activeWorkloadId);
 
   const handleViewYaml = () => {
-    if (activeWorkload && activeWorkload.type === "Pod") {
-      const yamlString = generatePodYAML(
+    if (!activeWorkload) return;
+
+    let yamlString = "";
+    if (activeWorkload.type === "Pod") {
+      yamlString = generatePodYAML(
         activeWorkload.name,
         activeWorkload.config,
         activeWorkload.containers
       );
+    } else if (activeWorkload.type === "Deployment") {
+      yamlString = generateDeploymentYAML(
+        activeWorkload.name,
+        activeWorkload.config,
+        activeWorkload.containers
+      );
+    }
+
+    if (yamlString) {
       setGeneratedYaml(yamlString);
       setShowYamlModal(true);
     }
@@ -1476,7 +1488,7 @@ export default function CreateChart() {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-card border border-border rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
             <div className="flex items-center justify-between p-6 border-b border-border">
-              <h3 className="text-xl font-bold text-foreground">Generated Pod YAML</h3>
+              <h3 className="text-xl font-bold text-foreground">Generated {activeWorkload?.type} YAML</h3>
               <button
                 onClick={() => setShowYamlModal(false)}
                 className="text-foreground/60 hover:text-foreground transition-colors"
