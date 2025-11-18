@@ -397,7 +397,6 @@ export function generateJobYAML(jobName: string, jobConfig: Record<string, any>,
     name: jobName,
   };
 
-  if (jobConfig.namespace) metadata.namespace = jobConfig.namespace;
   if (jobConfig.deletionGracePeriodSeconds) metadata.deletionGracePeriodSeconds = jobConfig.deletionGracePeriodSeconds;
 
   if (jobConfig.annotations && Object.keys(jobConfig.annotations).length > 0) {
