@@ -268,12 +268,14 @@ function buildWorkloadYAML(
   config: Record<string, any>,
   containers: Container[],
   kind: string,
-  apiVersion: string = "apps/v1"
+  apiVersion: string = "apps/v1",
+  namespace?: string
 ): string {
   const metadata: Record<string, any> = {
     name,
   };
 
+  if (namespace) metadata.namespace = namespace;
   if (config.deletionGracePeriodSeconds) metadata.deletionGracePeriodSeconds = config.deletionGracePeriodSeconds;
 
   if (config.annotations && Object.keys(config.annotations).length > 0) {
