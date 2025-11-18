@@ -237,7 +237,6 @@ export function generatePodYAML(podName: string, podConfig: Record<string, any>,
     name: podName,
   };
 
-  if (podConfig.namespace) metadata.namespace = podConfig.namespace;
   if (podConfig.deletionGracePeriodSeconds) metadata.deletionGracePeriodSeconds = podConfig.deletionGracePeriodSeconds;
 
   if (podConfig.annotations && Object.keys(podConfig.annotations).length > 0) {
