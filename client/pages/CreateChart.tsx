@@ -260,6 +260,7 @@ export default function CreateChart() {
     useState<string>("");
   const [showYamlModal, setShowYamlModal] = useState<boolean>(false);
   const [generatedYaml, setGeneratedYaml] = useState<string>("");
+  const [globalNamespace, setGlobalNamespace] = useState<string>("default");
 
   const activeWorkload = workloads.find((w) => w.id === activeWorkloadId);
 
