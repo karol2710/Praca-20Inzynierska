@@ -147,12 +147,20 @@ function buildPodSpec(config: Record<string, any>, containers: Container[]): Rec
       const nodeAffinity: Record<string, any> = {};
 
       const requiredTerms = config.affinity.nodeAffinity.requiredDuringScheduling?.nodeAffinityTerm;
-      if (requiredTerms) {
+      const hasRequiredContent = requiredTerms && (
+        (requiredTerms.matchExpressions && requiredTerms.matchExpressions.length > 0) ||
+        (requiredTerms.matchFields && requiredTerms.matchFields.length > 0)
+      );
+      if (hasRequiredContent) {
         nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution = { nodeSelectorTerms: [requiredTerms] };
       }
 
       const preferredTerms = config.affinity.nodeAffinity.preferredDuringScheduling?.nodeAffinityTerm;
-      if (preferredTerms) {
+      const hasPreferredContent = preferredTerms && (
+        (preferredTerms.matchExpressions && preferredTerms.matchExpressions.length > 0) ||
+        (preferredTerms.matchFields && preferredTerms.matchFields.length > 0)
+      );
+      if (hasPreferredContent) {
         const weight = config.affinity.nodeAffinity.preferredDuringScheduling?.weight || 1;
         nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution = [{
           weight,
