@@ -108,7 +108,6 @@ interface PodConfig {
 
 interface WorkloadConfig extends PodConfig {
   // Deployment
-  deploymentNamespace?: string;
   deploymentLabels?: Record<string, string>;
   deploymentAnnotations?: Record<string, string>;
   deploymentDeletionGracePeriodSeconds?: number;
@@ -117,7 +116,6 @@ interface WorkloadConfig extends PodConfig {
   deploymentTemplate?: any;
 
   // ReplicaSet
-  replicaSetNamespace?: string;
   replicaSetLabels?: Record<string, string>;
   replicaSetAnnotations?: Record<string, string>;
   replicaSetDeletionGracePeriodSeconds?: number;
@@ -126,7 +124,6 @@ interface WorkloadConfig extends PodConfig {
   replicaSetTemplate?: any;
 
   // StatefulSet
-  statefulSetNamespace?: string;
   statefulSetLabels?: Record<string, string>;
   statefulSetAnnotations?: Record<string, string>;
   statefulSetDeletionGracePeriodSeconds?: number;
@@ -136,7 +133,6 @@ interface WorkloadConfig extends PodConfig {
 
 
   // Job
-  jobNamespace?: string;
   jobLabels?: Record<string, string>;
   jobAnnotations?: Record<string, string>;
   jobDeletionGracePeriodSeconds?: number;
@@ -145,7 +141,6 @@ interface WorkloadConfig extends PodConfig {
   jobTemplate?: any;
 
   // CronJob
-  cronJobNamespace?: string;
   cronJobLabels?: Record<string, string>;
   cronJobAnnotations?: Record<string, string>;
   cronJobDeletionGracePeriodSeconds?: number;
