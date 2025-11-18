@@ -385,7 +385,169 @@ export function generateReplicaSetYAML(replicaSetName: string, replicaSetConfig:
 }
 
 export function generateStatefulSetYAML(statefulSetName: string, statefulSetConfig: Record<string, any>, containers: Container[]): string {
-  return buildWorkloadYAML(statefulSetName, statefulSetConfig, containers, "StatefulSet", "apps/v1");
+  const metadata: Record<string, any> = {
+    name: statefulSetName,
+  };
+
+  if (statefulSetConfig.deletionGracePeriodSeconds) metadata.deletionGracePeriodSeconds = statefulSetConfig.deletionGracePeriodSeconds;
+
+  if (statefulSetConfig.annotations && Object.keys(statefulSetConfig.annotations).length > 0) {
+    metadata.annotations = statefulSetConfig.annotations;
+  }
+
+  if (statefulSetConfig.labels && Object.keys(statefulSetConfig.labels).length > 0) {
+    metadata.labels = statefulSetConfig.labels;
+  }
+
+  if (statefulSetConfig.ownerReferences && statefulSetConfig.ownerReferences.length > 0) {
+    metadata.ownerReferences = statefulSetConfig.ownerReferences;
+  }
+
+  const spec: Record<string, any> = {};
+
+  if (statefulSetConfig.spec?.replicas !== undefined) spec.replicas = statefulSetConfig.spec.replicas;
+  if (statefulSetConfig.spec?.minReadySeconds !== undefined) spec.minReadySeconds = statefulSetConfig.spec.minReadySeconds;
+  if (statefulSetConfig.spec?.revisionHistoryLimit !== undefined) spec.revisionHistoryLimit = statefulSetConfig.spec.revisionHistoryLimit;
+
+  if (statefulSetConfig.spec?.ordinals) {
+    const ordinals: Record<string, any> = {};
+    if (statefulSetConfig.spec.ordinals.start !== undefined) ordinals.start = statefulSetConfig.spec.ordinals.start;
+    if (Object.keys(ordinals).length > 0) spec.ordinals = ordinals;
+  }
+
+  if (statefulSetConfig.spec?.persistentVolumeClaimRetentionPolicy) {
+    const pvcRetention: Record<string, any> = {};
+    if (statefulSetConfig.spec.persistentVolumeClaimRetentionPolicy.whenDeleted) {
+      pvcRetention.whenDeleted = statefulSetConfig.spec.persistentVolumeClaimRetentionPolicy.whenDeleted;
+    }
+    if (statefulSetConfig.spec.persistentVolumeClaimRetentionPolicy.whenScaled) {
+      pvcRetention.whenScaled = statefulSetConfig.spec.persistentVolumeClaimRetentionPolicy.whenScaled;
+    }
+    if (Object.keys(pvcRetention).length > 0) {
+      spec.persistentVolumeClaimRetentionPolicy = pvcRetention;
+    }
+  }
+
+  if (statefulSetConfig.spec?.selector) {
+    spec.selector = statefulSetConfig.spec.selector;
+  }
+
+  if (statefulSetConfig.spec?.serviceName) spec.serviceName = statefulSetConfig.spec.serviceName;
+  if (statefulSetConfig.spec?.podManagementPolicy) spec.podManagementPolicy = statefulSetConfig.spec.podManagementPolicy;
+
+  if (statefulSetConfig.spec?.updateStrategy) {
+    const updateStrategy: Record<string, any> = {};
+    if (statefulSetConfig.spec.updateStrategy.type) updateStrategy.type = statefulSetConfig.spec.updateStrategy.type;
+    if (statefulSetConfig.spec.updateStrategy.rollingUpdate) {
+      const rollingUpdate: Record<string, any> = {};
+      if (statefulSetConfig.spec.updateStrategy.rollingUpdate.maxUnavailable !== undefined) {
+        rollingUpdate.maxUnavailable = statefulSetConfig.spec.updateStrategy.rollingUpdate.maxUnavailable;
+      }
+      if (statefulSetConfig.spec.updateStrategy.rollingUpdate.partition !== undefined) {
+        rollingUpdate.partition = statefulSetConfig.spec.updateStrategy.rollingUpdate.partition;
+      }
+      if (Object.keys(rollingUpdate).length > 0) {
+        updateStrategy.rollingUpdate = rollingUpdate;
+      }
+    }
+    if (Object.keys(updateStrategy).length > 0) {
+      spec.updateStrategy = updateStrategy;
+    }
+  }
+
+  if (statefulSetConfig.template) {
+    spec.template = {
+      metadata: {},
+      spec: cleanEmptyValues(buildPodSpec(statefulSetConfig.template, containers)),
+    };
+
+    if (statefulSetConfig.template.labels && Object.keys(statefulSetConfig.template.labels).length > 0) {
+      spec.template.metadata.labels = statefulSetConfig.template.labels;
+    }
+
+    if (statefulSetConfig.template.annotations && Object.keys(statefulSetConfig.template.annotations).length > 0) {
+      spec.template.metadata.annotations = statefulSetConfig.template.annotations;
+    }
+
+    spec.template.metadata = cleanEmptyValues(spec.template.metadata);
+  }
+
+  if (statefulSetConfig.spec?.volumeClaimTemplates && statefulSetConfig.spec.volumeClaimTemplates.length > 0) {
+    spec.volumeClaimTemplates = statefulSetConfig.spec.volumeClaimTemplates.map((template: Record<string, any>) => {
+      const vctMetadata: Record<string, any> = {};
+
+      if (template.metadata?.name) vctMetadata.name = template.metadata.name;
+      if (template.metadata?.deletionGracePeriodSeconds) {
+        vctMetadata.deletionGracePeriodSeconds = template.metadata.deletionGracePeriodSeconds;
+      }
+      if (template.metadata?.annotations && Object.keys(template.metadata.annotations).length > 0) {
+        vctMetadata.annotations = template.metadata.annotations;
+      }
+      if (template.metadata?.labels && Object.keys(template.metadata.labels).length > 0) {
+        vctMetadata.labels = template.metadata.labels;
+      }
+      if (template.metadata?.ownerReferences && template.metadata.ownerReferences.length > 0) {
+        vctMetadata.ownerReferences = template.metadata.ownerReferences;
+      }
+
+      const vctSpec: Record<string, any> = {};
+
+      if (template.spec?.accessModes && template.spec.accessModes.length > 0) {
+        vctSpec.accessModes = template.spec.accessModes;
+      }
+      if (template.spec?.storageClassName) vctSpec.storageClassName = template.spec.storageClassName;
+      if (template.spec?.volumeName) vctSpec.volumeName = template.spec.volumeName;
+      if (template.spec?.volumeMode) vctSpec.volumeMode = template.spec.volumeMode;
+      if (template.spec?.volumeAttributesClassName) vctSpec.volumeAttributesClassName = template.spec.volumeAttributesClassName;
+
+      if (template.spec?.resources) {
+        const resources: Record<string, any> = {};
+        if (template.spec.resources.limits && Object.keys(template.spec.resources.limits).length > 0) {
+          resources.limits = template.spec.resources.limits;
+        }
+        if (template.spec.resources.requests && Object.keys(template.spec.resources.requests).length > 0) {
+          resources.requests = template.spec.resources.requests;
+        }
+        if (Object.keys(resources).length > 0) vctSpec.resources = resources;
+      }
+
+      if (template.spec?.dataSource) {
+        const dataSource: Record<string, any> = {};
+        if (template.spec.dataSource.apiGroup) dataSource.apiGroup = template.spec.dataSource.apiGroup;
+        if (template.spec.dataSource.kind) dataSource.kind = template.spec.dataSource.kind;
+        if (template.spec.dataSource.name) dataSource.name = template.spec.dataSource.name;
+        if (Object.keys(dataSource).length > 0) vctSpec.dataSource = dataSource;
+      }
+
+      if (template.spec?.dataSourceRef) {
+        const dataSourceRef: Record<string, any> = {};
+        if (template.spec.dataSourceRef.apiGroup) dataSourceRef.apiGroup = template.spec.dataSourceRef.apiGroup;
+        if (template.spec.dataSourceRef.kind) dataSourceRef.kind = template.spec.dataSourceRef.kind;
+        if (template.spec.dataSourceRef.name) dataSourceRef.name = template.spec.dataSourceRef.name;
+        if (template.spec.dataSourceRef.namespace) dataSourceRef.namespace = template.spec.dataSourceRef.namespace;
+        if (Object.keys(dataSourceRef).length > 0) vctSpec.dataSourceRef = dataSourceRef;
+      }
+
+      if (template.spec?.selector) {
+        vctSpec.selector = template.spec.selector;
+      }
+
+      return cleanEmptyValues({
+        metadata: cleanEmptyValues(vctMetadata),
+        spec: cleanEmptyValues(vctSpec),
+      });
+    });
+  }
+
+  const yaml: Record<string, any> = {
+    apiVersion: "apps/v1",
+    kind: "StatefulSet",
+    metadata: cleanEmptyValues(metadata),
+    spec: cleanEmptyValues(spec),
+  };
+
+  const cleaned = cleanEmptyValues(yaml);
+  return YAML.dump(cleaned, { indent: 2 });
 }
 
 export function generateDaemonSetYAML(daemonSetName: string, daemonSetConfig: Record<string, any>, containers: Container[]): string {
