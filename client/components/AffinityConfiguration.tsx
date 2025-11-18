@@ -475,7 +475,7 @@ export default function AffinityConfiguration({
       <div className="space-y-3 p-4 bg-muted/30 rounded-lg border border-border">
         <div className="flex items-center justify-between">
           <h5 className="font-medium text-foreground text-sm">{title}</h5>
-          {onDelete && (
+          {onDelete && term && (
             <button
               onClick={onDelete}
               className="text-destructive hover:opacity-70 text-xs"
@@ -486,26 +486,20 @@ export default function AffinityConfiguration({
           )}
         </div>
 
-        {term ? (
-          <>
-            <PodAffinityTermComponent term={initialTerm} onUpdate={onTermChange} />
+        <PodAffinityTermComponent term={initialTerm} onUpdate={onTermChange} />
 
-            {showWeight && (
-              <div>
-                <label className="block text-xs font-medium text-foreground mb-1">Weight</label>
-                <input
-                  type="number"
-                  min="1"
-                  max="100"
-                  value={initialTerm.weight || 1}
-                  onChange={(e) => onTermChange({ ...initialTerm, weight: parseInt(e.target.value) || 1 })}
-                  className="input-field text-sm"
-                />
-              </div>
-            )}
-          </>
-        ) : (
-          <p className="text-xs text-muted-foreground">Not configured</p>
+        {showWeight && (
+          <div>
+            <label className="block text-xs font-medium text-foreground mb-1">Weight</label>
+            <input
+              type="number"
+              min="1"
+              max="100"
+              value={initialTerm.weight || 1}
+              onChange={(e) => onTermChange({ ...initialTerm, weight: parseInt(e.target.value) || 1 })}
+              className="input-field text-sm"
+            />
+          </div>
         )}
       </div>
     );
