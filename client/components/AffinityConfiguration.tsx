@@ -637,6 +637,7 @@ export default function AffinityConfiguration({
     showWeight,
     weight,
     onWeightChange,
+    onDelete,
   }: {
     title: string;
     matchExpressions: NodeAffinityExpr[];
@@ -646,9 +647,24 @@ export default function AffinityConfiguration({
     showWeight?: boolean;
     weight?: number;
     onWeightChange?: (weight: number) => void;
-  }) => (
+    onDelete?: () => void;
+  }) => {
+    const hasConfig = matchExpressions.length > 0 || matchFields.length > 0 || weight !== undefined;
+
+    return (
     <div className="space-y-3 p-4 bg-muted/30 rounded-lg border border-border">
-      <h5 className="font-medium text-foreground text-sm">{title}</h5>
+      <div className="flex items-center justify-between">
+        <h5 className="font-medium text-foreground text-sm">{title}</h5>
+        {onDelete && hasConfig && (
+          <button
+            onClick={onDelete}
+            className="text-destructive hover:opacity-70 text-xs"
+            title="Clear this affinity section"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
+      </div>
 
       <div className="space-y-3">
         <ExpressionFieldComponent
@@ -678,7 +694,8 @@ export default function AffinityConfiguration({
         </div>
       )}
     </div>
-  );
+    );
+  };
 
   const AffinityTypeSection = ({
     type,
@@ -765,6 +782,12 @@ export default function AffinityConfiguration({
                     requiredDuringScheduling: { nodeAffinityTerm: { matchExpressions: currentExprs, matchFields: fields } },
                   });
                 }}
+                onDelete={() => {
+                  onConfigChange({
+                    ...config,
+                    requiredDuringScheduling: undefined,
+                  });
+                }}
               />
 
               <NodeAffinitySchedulingSection
@@ -795,6 +818,12 @@ export default function AffinityConfiguration({
                   onConfigChange({
                     ...config,
                     preferredDuringScheduling: { nodeAffinityTerm: { matchExpressions: currentExprs, matchFields: currentFields, weight } },
+                  });
+                }}
+                onDelete={() => {
+                  onConfigChange({
+                    ...config,
+                    preferredDuringScheduling: undefined,
                   });
                 }}
               />
