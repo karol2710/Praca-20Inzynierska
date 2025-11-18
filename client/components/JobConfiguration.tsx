@@ -74,6 +74,7 @@ interface JobConfig {
 interface JobConfigurationProps {
   config: JobConfig;
   onConfigChange: (key: keyof JobConfig, value: any) => void;
+  globalNamespace?: string;
 }
 
 interface ConfigSection {
