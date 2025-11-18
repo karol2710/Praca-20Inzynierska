@@ -33,6 +33,7 @@ interface DeploymentStrategy {
 }
 
 interface DeploymentSpec {
+  replicas?: number;
   minReadySeconds?: number;
   progressDeadlineSeconds?: number;
   revisionHistoryLimit?: number;
@@ -378,8 +379,30 @@ export default function DeploymentConfiguration({ config, onConfigChange }: Depl
           {/* Spec Section Content */}
           {expandedSections.has(section.id) && section.id === "spec" && (
             <div className="px-4 py-4 border-t border-border bg-muted/10 space-y-4">
-              {/* Min Ready Seconds */}
+              {/* Replicas */}
               <div>
+                <label htmlFor="replicas" className="block text-sm font-medium text-foreground mb-2">
+                  Replicas
+                </label>
+                <input
+                  id="replicas"
+                  type="number"
+                  value={config.spec?.replicas || ""}
+                  onChange={(e) =>
+                    onConfigChange("spec", {
+                      ...config.spec,
+                      replicas: e.target.value ? parseInt(e.target.value) : undefined,
+                    })
+                  }
+                  placeholder="1"
+                  className="input-field"
+                  min="0"
+                />
+                <p className="text-xs text-foreground/50 mt-1">Number of desired pods</p>
+              </div>
+
+              {/* Min Ready Seconds */}
+              <div className="border-t border-border pt-4">
                 <label htmlFor="minReadySeconds" className="block text-sm font-medium text-foreground mb-2">
                   Min Ready Seconds
                 </label>
