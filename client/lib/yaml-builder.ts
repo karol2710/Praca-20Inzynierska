@@ -263,47 +263,53 @@ export function generatePodYAML(podName: string, podConfig: Record<string, any>,
   return YAML.dump(cleaned, { indent: 2 });
 }
 
-export function generateDeploymentYAML(deploymentName: string, deploymentConfig: Record<string, any>, containers: Container[]): string {
+function buildWorkloadYAML(
+  name: string,
+  config: Record<string, any>,
+  containers: Container[],
+  kind: string,
+  apiVersion: string = "apps/v1"
+): string {
   const metadata: Record<string, any> = {
-    name: deploymentName,
+    name,
   };
 
-  if (deploymentConfig.namespace) metadata.namespace = deploymentConfig.namespace;
-  if (deploymentConfig.deletionGracePeriodSeconds) metadata.deletionGracePeriodSeconds = deploymentConfig.deletionGracePeriodSeconds;
+  if (config.namespace) metadata.namespace = config.namespace;
+  if (config.deletionGracePeriodSeconds) metadata.deletionGracePeriodSeconds = config.deletionGracePeriodSeconds;
 
-  if (deploymentConfig.annotations && Object.keys(deploymentConfig.annotations).length > 0) {
-    metadata.annotations = deploymentConfig.annotations;
+  if (config.annotations && Object.keys(config.annotations).length > 0) {
+    metadata.annotations = config.annotations;
   }
 
-  if (deploymentConfig.labels && Object.keys(deploymentConfig.labels).length > 0) {
-    metadata.labels = deploymentConfig.labels;
+  if (config.labels && Object.keys(config.labels).length > 0) {
+    metadata.labels = config.labels;
   }
 
-  if (deploymentConfig.ownerReferences && deploymentConfig.ownerReferences.length > 0) {
-    metadata.ownerReferences = deploymentConfig.ownerReferences;
+  if (config.ownerReferences && config.ownerReferences.length > 0) {
+    metadata.ownerReferences = config.ownerReferences;
   }
 
   const spec: Record<string, any> = {};
 
-  if (deploymentConfig.spec?.replicas !== undefined) spec.replicas = deploymentConfig.spec.replicas;
-  if (deploymentConfig.spec?.minReadySeconds !== undefined) spec.minReadySeconds = deploymentConfig.spec.minReadySeconds;
-  if (deploymentConfig.spec?.progressDeadlineSeconds !== undefined) spec.progressDeadlineSeconds = deploymentConfig.spec.progressDeadlineSeconds;
-  if (deploymentConfig.spec?.revisionHistoryLimit !== undefined) spec.revisionHistoryLimit = deploymentConfig.spec.revisionHistoryLimit;
+  if (config.spec?.replicas !== undefined) spec.replicas = config.spec.replicas;
+  if (config.spec?.minReadySeconds !== undefined) spec.minReadySeconds = config.spec.minReadySeconds;
+  if (config.spec?.progressDeadlineSeconds !== undefined) spec.progressDeadlineSeconds = config.spec.progressDeadlineSeconds;
+  if (config.spec?.revisionHistoryLimit !== undefined) spec.revisionHistoryLimit = config.spec.revisionHistoryLimit;
 
-  if (deploymentConfig.spec?.selector) {
-    spec.selector = deploymentConfig.spec.selector;
+  if (config.spec?.selector) {
+    spec.selector = config.spec.selector;
   }
 
-  if (deploymentConfig.spec?.strategy) {
+  if (config.spec?.strategy) {
     const strategy: Record<string, any> = {};
-    if (deploymentConfig.spec.strategy.type) strategy.type = deploymentConfig.spec.strategy.type;
-    if (deploymentConfig.spec.strategy.rollingUpdate) {
+    if (config.spec.strategy.type) strategy.type = config.spec.strategy.type;
+    if (config.spec.strategy.rollingUpdate) {
       const rollingUpdate: Record<string, any> = {};
-      if (deploymentConfig.spec.strategy.rollingUpdate.maxSurge !== undefined) {
-        rollingUpdate.maxSurge = deploymentConfig.spec.strategy.rollingUpdate.maxSurge;
+      if (config.spec.strategy.rollingUpdate.maxSurge !== undefined) {
+        rollingUpdate.maxSurge = config.spec.strategy.rollingUpdate.maxSurge;
       }
-      if (deploymentConfig.spec.strategy.rollingUpdate.maxUnavailable !== undefined) {
-        rollingUpdate.maxUnavailable = deploymentConfig.spec.strategy.rollingUpdate.maxUnavailable;
+      if (config.spec.strategy.rollingUpdate.maxUnavailable !== undefined) {
+        rollingUpdate.maxUnavailable = config.spec.strategy.rollingUpdate.maxUnavailable;
       }
       if (Object.keys(rollingUpdate).length > 0) {
         strategy.rollingUpdate = rollingUpdate;
@@ -314,34 +320,76 @@ export function generateDeploymentYAML(deploymentName: string, deploymentConfig:
     }
   }
 
-  if (deploymentConfig.template) {
+  if (config.spec?.updateStrategy) {
+    const updateStrategy: Record<string, any> = {};
+    if (config.spec.updateStrategy.type) updateStrategy.type = config.spec.updateStrategy.type;
+    if (config.spec.updateStrategy.rollingUpdate) {
+      const rollingUpdate: Record<string, any> = {};
+      if (config.spec.updateStrategy.rollingUpdate.maxSurge !== undefined) {
+        rollingUpdate.maxSurge = config.spec.updateStrategy.rollingUpdate.maxSurge;
+      }
+      if (config.spec.updateStrategy.rollingUpdate.maxUnavailable !== undefined) {
+        rollingUpdate.maxUnavailable = config.spec.updateStrategy.rollingUpdate.maxUnavailable;
+      }
+      if (config.spec.updateStrategy.rollingUpdate.partition !== undefined) {
+        rollingUpdate.partition = config.spec.updateStrategy.rollingUpdate.partition;
+      }
+      if (Object.keys(rollingUpdate).length > 0) {
+        updateStrategy.rollingUpdate = rollingUpdate;
+      }
+    }
+    if (Object.keys(updateStrategy).length > 0) {
+      spec.updateStrategy = updateStrategy;
+    }
+  }
+
+  if (config.spec?.serviceName) spec.serviceName = config.spec.serviceName;
+  if (config.spec?.podManagementPolicy) spec.podManagementPolicy = config.spec.podManagementPolicy;
+
+  if (config.template) {
     spec.template = {
       metadata: {},
-      spec: cleanEmptyValues(buildPodSpec(deploymentConfig.template, containers)),
+      spec: cleanEmptyValues(buildPodSpec(config.template, containers)),
     };
 
-    if (deploymentConfig.template.labels && Object.keys(deploymentConfig.template.labels).length > 0) {
-      spec.template.metadata.labels = deploymentConfig.template.labels;
+    if (config.template.labels && Object.keys(config.template.labels).length > 0) {
+      spec.template.metadata.labels = config.template.labels;
     }
 
-    if (deploymentConfig.template.annotations && Object.keys(deploymentConfig.template.annotations).length > 0) {
-      spec.template.metadata.annotations = deploymentConfig.template.annotations;
+    if (config.template.annotations && Object.keys(config.template.annotations).length > 0) {
+      spec.template.metadata.annotations = config.template.annotations;
     }
 
-    if (deploymentConfig.template.namespace) {
-      spec.template.metadata.namespace = deploymentConfig.template.namespace;
+    if (config.template.namespace) {
+      spec.template.metadata.namespace = config.template.namespace;
     }
 
     spec.template.metadata = cleanEmptyValues(spec.template.metadata);
   }
 
   const yaml: Record<string, any> = {
-    apiVersion: "apps/v1",
-    kind: "Deployment",
+    apiVersion,
+    kind,
     metadata: cleanEmptyValues(metadata),
     spec: cleanEmptyValues(spec),
   };
 
   const cleaned = cleanEmptyValues(yaml);
   return YAML.dump(cleaned, { indent: 2 });
+}
+
+export function generateDeploymentYAML(deploymentName: string, deploymentConfig: Record<string, any>, containers: Container[]): string {
+  return buildWorkloadYAML(deploymentName, deploymentConfig, containers, "Deployment", "apps/v1");
+}
+
+export function generateReplicaSetYAML(replicaSetName: string, replicaSetConfig: Record<string, any>, containers: Container[]): string {
+  return buildWorkloadYAML(replicaSetName, replicaSetConfig, containers, "ReplicaSet", "apps/v1");
+}
+
+export function generateStatefulSetYAML(statefulSetName: string, statefulSetConfig: Record<string, any>, containers: Container[]): string {
+  return buildWorkloadYAML(statefulSetName, statefulSetConfig, containers, "StatefulSet", "apps/v1");
+}
+
+export function generateDaemonSetYAML(daemonSetName: string, daemonSetConfig: Record<string, any>, containers: Container[]): string {
+  return buildWorkloadYAML(daemonSetName, daemonSetConfig, containers, "DaemonSet", "apps/v1");
 }
