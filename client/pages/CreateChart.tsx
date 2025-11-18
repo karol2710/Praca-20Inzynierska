@@ -277,57 +277,87 @@ export default function CreateChart() {
 
   const activeWorkload = workloads.find((w) => w.id === activeWorkloadId);
 
+  const transformWorkloadConfig = (type: string, config: Record<string, any>) => {
+    if (type === "Pod") return config;
+
+    const prefix = type === "Deployment" ? "deployment"
+      : type === "ReplicaSet" ? "replicaSet"
+      : type === "StatefulSet" ? "statefulSet"
+      : type === "DaemonSet" ? "daemonSet"
+      : type === "Job" ? "job"
+      : type === "CronJob" ? "cronJob"
+      : "";
+
+    if (!prefix) return config;
+
+    const transformed: Record<string, any> = {};
+
+    for (const [key, value] of Object.entries(config)) {
+      if (key.startsWith(prefix)) {
+        const newKey = key.slice(prefix.length);
+        const lowerKey = newKey.charAt(0).toLowerCase() + newKey.slice(1);
+        transformed[lowerKey] = value;
+      } else {
+        transformed[key] = value;
+      }
+    }
+
+    return transformed;
+  };
+
   const handleViewYaml = () => {
     if (!activeWorkload) return;
 
+    const transformedConfig = transformWorkloadConfig(activeWorkload.type, activeWorkload.config);
     let yamlString = "";
+
     switch (activeWorkload.type) {
       case "Pod":
         yamlString = generatePodYAML(
           activeWorkload.name,
-          activeWorkload.config,
+          transformedConfig,
           activeWorkload.containers
         );
         break;
       case "Deployment":
         yamlString = generateDeploymentYAML(
           activeWorkload.name,
-          activeWorkload.config,
+          transformedConfig,
           activeWorkload.containers
         );
         break;
       case "ReplicaSet":
         yamlString = generateReplicaSetYAML(
           activeWorkload.name,
-          activeWorkload.config,
+          transformedConfig,
           activeWorkload.containers
         );
         break;
       case "StatefulSet":
         yamlString = generateStatefulSetYAML(
           activeWorkload.name,
-          activeWorkload.config,
+          transformedConfig,
           activeWorkload.containers
         );
         break;
       case "DaemonSet":
         yamlString = generateDaemonSetYAML(
           activeWorkload.name,
-          activeWorkload.config,
+          transformedConfig,
           activeWorkload.containers
         );
         break;
       case "Job":
         yamlString = generateJobYAML(
           activeWorkload.name,
-          activeWorkload.config,
+          transformedConfig,
           activeWorkload.containers
         );
         break;
       case "CronJob":
         yamlString = generateCronJobYAML(
           activeWorkload.name,
-          activeWorkload.config,
+          transformedConfig,
           activeWorkload.containers
         );
         break;
