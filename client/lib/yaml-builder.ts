@@ -379,15 +379,15 @@ function buildWorkloadYAML(
   return YAML.dump(cleaned, { indent: 2 });
 }
 
-export function generateDeploymentYAML(deploymentName: string, deploymentConfig: Record<string, any>, containers: Container[]): string {
-  return buildWorkloadYAML(deploymentName, deploymentConfig, containers, "Deployment", "apps/v1");
+export function generateDeploymentYAML(deploymentName: string, deploymentConfig: Record<string, any>, containers: Container[], namespace?: string): string {
+  return buildWorkloadYAML(deploymentName, deploymentConfig, containers, "Deployment", "apps/v1", namespace);
 }
 
-export function generateReplicaSetYAML(replicaSetName: string, replicaSetConfig: Record<string, any>, containers: Container[]): string {
-  return buildWorkloadYAML(replicaSetName, replicaSetConfig, containers, "ReplicaSet", "apps/v1");
+export function generateReplicaSetYAML(replicaSetName: string, replicaSetConfig: Record<string, any>, containers: Container[], namespace?: string): string {
+  return buildWorkloadYAML(replicaSetName, replicaSetConfig, containers, "ReplicaSet", "apps/v1", namespace);
 }
 
-export function generateStatefulSetYAML(statefulSetName: string, statefulSetConfig: Record<string, any>, containers: Container[]): string {
+export function generateStatefulSetYAML(statefulSetName: string, statefulSetConfig: Record<string, any>, containers: Container[], namespace?: string): string {
   const metadata: Record<string, any> = {
     name: statefulSetName,
   };
