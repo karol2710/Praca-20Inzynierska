@@ -46,6 +46,15 @@ interface PodFailurePolicy {
   rules?: PodFailurePolicyRule[];
 }
 
+interface SuccessPolicyRule {
+  succeededCount?: number;
+  succeededIndexes?: string;
+}
+
+interface SuccessPolicy {
+  rules?: SuccessPolicyRule[];
+}
+
 interface JobSpec {
   activeDeadlineSeconds?: number;
   backoffLimit?: number;
@@ -58,6 +67,7 @@ interface JobSpec {
   podFailurePolicy?: PodFailurePolicy;
   podReplacementPolicy?: string;
   selector?: LabelSelector;
+  successPolicy?: SuccessPolicy;
   ttlSecondsAfterFinished?: number;
 }
 
@@ -791,6 +801,107 @@ export default function JobConfiguration({ config, onConfigChange }: JobConfigur
                   min="0"
                 />
                 <p className="text-xs text-foreground/50 mt-1">Seconds after which a finished job is deleted automatically</p>
+              </div>
+
+              {/* Success Policy */}
+              <div className="border-t border-border pt-4">
+                <div className="flex items-center justify-between mb-4">
+                  <label className="block text-sm font-medium text-foreground">Success Policy</label>
+                  <button
+                    onClick={() => {
+                      const rules = [...(config.spec?.successPolicy?.rules || [])];
+                      rules.push({
+                        succeededCount: undefined,
+                        succeededIndexes: undefined,
+                      });
+                      onConfigChange("spec", {
+                        ...config.spec,
+                        successPolicy: { rules },
+                      });
+                    }}
+                    className="text-primary hover:opacity-70 text-sm"
+                  >
+                    + Add Rule
+                  </button>
+                </div>
+                <p className="text-xs text-foreground/50 mb-4">Rules for determining job success criteria</p>
+
+                {(config.spec?.successPolicy?.rules || []).length > 0 ? (
+                  <div className="space-y-4">
+                    {(config.spec?.successPolicy?.rules || []).map((rule, rIdx) => (
+                      <div key={rIdx} className="p-4 bg-muted/20 border border-border rounded-lg space-y-3">
+                        {/* Succeeded Count */}
+                        <div>
+                          <label htmlFor={`succeededCount-${rIdx}`} className="block text-sm font-medium text-foreground mb-2">
+                            Succeeded Count
+                          </label>
+                          <input
+                            id={`succeededCount-${rIdx}`}
+                            type="number"
+                            value={rule.succeededCount ?? ""}
+                            onChange={(e) => {
+                              const rules = [...(config.spec?.successPolicy?.rules || [])];
+                              rules[rIdx] = {
+                                ...rule,
+                                succeededCount: e.target.value ? parseInt(e.target.value) : undefined,
+                              };
+                              onConfigChange("spec", {
+                                ...config.spec,
+                                successPolicy: { rules },
+                              });
+                            }}
+                            placeholder="1"
+                            className="input-field"
+                            min="0"
+                          />
+                          <p className="text-xs text-foreground/50 mt-1">Number of pods that must succeed for the job to be successful</p>
+                        </div>
+
+                        {/* Succeeded Indexes */}
+                        <div className="border-t border-border pt-3">
+                          <label htmlFor={`succeededIndexes-${rIdx}`} className="block text-sm font-medium text-foreground mb-2">
+                            Succeeded Indexes
+                          </label>
+                          <input
+                            id={`succeededIndexes-${rIdx}`}
+                            type="text"
+                            value={rule.succeededIndexes || ""}
+                            onChange={(e) => {
+                              const rules = [...(config.spec?.successPolicy?.rules || [])];
+                              rules[rIdx] = {
+                                ...rule,
+                                succeededIndexes: e.target.value || undefined,
+                              };
+                              onConfigChange("spec", {
+                                ...config.spec,
+                                successPolicy: { rules },
+                              });
+                            }}
+                            placeholder="0-5,8,10-15"
+                            className="input-field"
+                          />
+                          <p className="text-xs text-foreground/50 mt-1">Index ranges that must succeed (e.g., 0-5, 8, 10-15)</p>
+                        </div>
+
+                        <button
+                          onClick={() => {
+                            const rules = (config.spec?.successPolicy?.rules || []).filter((_, i) => i !== rIdx);
+                            onConfigChange("spec", {
+                              ...config.spec,
+                              successPolicy: rules.length > 0 ? { rules } : undefined,
+                            });
+                          }}
+                          className="w-full text-xs text-destructive hover:bg-destructive/10 py-1.5 rounded transition-colors flex items-center justify-center gap-1"
+                        >
+                          <X className="w-4 h-4" />
+                          Remove Rule
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-foreground/60 text-sm py-2 text-center">No success policy rules added yet</p>
+                )}
               </div>
 
               {/* Pod Failure Policy */}
