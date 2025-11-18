@@ -128,7 +128,7 @@ function buildPodSpec(config: Record<string, any>, containers: Container[]): Rec
 
   if (config.dnsConfig) {
     const dnsConfig: Record<string, any> = {};
-    if (config.dnsConfig.nameservers && config.dnsConfig.nameservers.length > 0) dnsConfig.nameservers = config.dnsConfig.nameservers;
+    if (config.dnsConfig.nameServers && config.dnsConfig.nameServers.length > 0) dnsConfig.nameservers = config.dnsConfig.nameServers;
     if (config.dnsConfig.searches && config.dnsConfig.searches.length > 0) dnsConfig.searches = config.dnsConfig.searches;
     if (config.dnsConfig.options && config.dnsConfig.options.length > 0) dnsConfig.options = config.dnsConfig.options;
     if (Object.keys(dnsConfig).length > 0) spec.dnsConfig = dnsConfig;
