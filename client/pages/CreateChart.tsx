@@ -843,7 +843,7 @@ export default function CreateChart() {
                       <div className="flex items-center justify-between mb-6">
                         <h2 className="text-xl font-bold text-foreground">Configure "{activeWorkload.name}" ({activeWorkload.type})</h2>
                         <div className="flex items-center gap-2">
-                          {activeWorkload.type === "Pod" && (
+                          {["Pod", "Deployment", "ReplicaSet", "StatefulSet", "DaemonSet", "Job", "CronJob"].includes(activeWorkload.type) && (
                             <button
                               onClick={handleViewYaml}
                               className="flex items-center gap-2 px-3 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity text-sm font-medium"
