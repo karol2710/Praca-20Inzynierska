@@ -73,6 +73,7 @@ interface CronJobConfigurationProps {
   onConfigChange: (key: keyof CronJobConfig, value: any) => void;
   jobConfig?: any;
   onJobConfigChange?: (key: string, value: any) => void;
+  globalNamespace?: string;
 }
 
 interface ConfigSection {
