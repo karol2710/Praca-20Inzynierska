@@ -189,8 +189,24 @@ export default function JobConfiguration({ config, onConfigChange }: JobConfigur
           {/* Metadata Section Content */}
           {expandedSections.has(section.id) && section.id === "metadata" && (
             <div className="px-4 py-4 border-t border-border bg-muted/10 space-y-4">
-              {/* Labels */}
+              {/* Namespace */}
               <div>
+                <label htmlFor="namespace" className="block text-sm font-medium text-foreground mb-2">
+                  Namespace
+                </label>
+                <input
+                  id="namespace"
+                  type="text"
+                  value={globalNamespace || ""}
+                  disabled
+                  placeholder="default"
+                  className="input-field bg-muted cursor-not-allowed"
+                />
+                <p className="text-xs text-foreground/50 mt-1">Set in Global Configuration</p>
+              </div>
+
+              {/* Labels */}
+              <div className="border-t border-border pt-4">
                 <label className="block text-sm font-medium text-foreground mb-2">Labels</label>
                 {renderTagsField(
                   config.labels,
