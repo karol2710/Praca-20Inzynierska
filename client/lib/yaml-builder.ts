@@ -446,7 +446,6 @@ export function generateCronJobYAML(cronJobName: string, cronJobConfig: Record<s
     name: cronJobName,
   };
 
-  if (cronJobConfig.namespace) metadata.namespace = cronJobConfig.namespace;
   if (cronJobConfig.deletionGracePeriodSeconds) metadata.deletionGracePeriodSeconds = cronJobConfig.deletionGracePeriodSeconds;
 
   if (cronJobConfig.annotations && Object.keys(cronJobConfig.annotations).length > 0) {
