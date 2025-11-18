@@ -10,7 +10,7 @@ import JobConfiguration from "@/components/JobConfiguration";
 import CronJobConfiguration from "@/components/CronJobConfiguration";
 import ResourceConfiguration from "@/components/ResourceConfiguration";
 import { Upload, Plus, X, Zap, Copy, Download } from "lucide-react";
-import { generatePodYAML } from "@/lib/yaml-builder";
+import { generatePodYAML, generateDeploymentYAML } from "@/lib/yaml-builder";
 
 type ChartMode = "standard" | "advanced";
 type InputType = "file" | "repo";
