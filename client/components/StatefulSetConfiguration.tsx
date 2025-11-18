@@ -25,7 +25,6 @@ interface LabelSelector {
 interface PodConfig {
   labels?: Record<string, string>;
   annotations?: Record<string, string>;
-  namespace?: string;
   [key: string]: any;
 }
 
