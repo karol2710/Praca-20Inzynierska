@@ -650,6 +650,25 @@ export default function CreateChart() {
             <p className="text-lg text-foreground/60">Choose between Standard or Advanced deployment approach</p>
           </div>
 
+          {/* Global Configuration */}
+          <div className="max-w-4xl mx-auto mb-12 bg-card border border-border rounded-xl p-8">
+            <h2 className="text-xl font-bold text-foreground mb-6">Global Configuration</h2>
+            <div>
+              <label htmlFor="globalNamespace" className="block text-sm font-medium text-foreground mb-2">
+                Namespace
+              </label>
+              <input
+                id="globalNamespace"
+                type="text"
+                value={globalNamespace}
+                onChange={(e) => setGlobalNamespace(e.target.value || "")}
+                placeholder="default"
+                className="input-field w-full"
+              />
+              <p className="text-xs text-foreground/50 mt-2">This namespace will be applied to all workloads and resources</p>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-12">
             <div
               onClick={() => setMode("standard")}
