@@ -317,6 +317,20 @@ export default function CreateChart() {
           activeWorkload.containers
         );
         break;
+      case "Job":
+        yamlString = generateJobYAML(
+          activeWorkload.name,
+          activeWorkload.config,
+          activeWorkload.containers
+        );
+        break;
+      case "CronJob":
+        yamlString = generateCronJobYAML(
+          activeWorkload.name,
+          activeWorkload.config,
+          activeWorkload.containers
+        );
+        break;
     }
 
     if (yamlString) {
