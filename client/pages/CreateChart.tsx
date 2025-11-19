@@ -961,11 +961,11 @@ export default function CreateChart() {
                             <PodConfiguration
                               config={{
                                 namespace: globalNamespace,
-                                labels: activeWorkload.config.podLabels,
-                                annotations: activeWorkload.config.podAnnotations,
+                                labels: activeWorkload.config.labels,
+                                annotations: activeWorkload.config.annotations,
                                 deletionGracePeriodSeconds: activeWorkload.config.podDeletionGracePeriodSeconds,
                                 ownerReferences: activeWorkload.config.podOwnerReferences,
-                                name: activeWorkload.config.podName,
+                                name: activeWorkload.config.name,
                                 containers: activeWorkload.config.containers,
                                 initContainers: activeWorkload.config.initContainers,
                                 ephemeralContainers: activeWorkload.config.ephemeralContainers,
@@ -998,7 +998,7 @@ export default function CreateChart() {
                               }}
                               globalNamespace={globalNamespace}
                               onConfigChange={(key, value) => {
-                                const metadataKeys = ['labels', 'annotations', 'deletionGracePeriodSeconds', 'ownerReferences'];
+                                const metadataKeys = ['deletionGracePeriodSeconds', 'ownerReferences'];
                                 if (metadataKeys.includes(key)) {
                                   const configKey = 'pod' + key.charAt(0).toUpperCase() + key.slice(1);
                                   updateWorkloadConfig(activeWorkload.id, configKey, value);
