@@ -1724,6 +1724,7 @@ export default function StatefulSetConfiguration({ config, onConfigChange }: Sta
                     [key]: value,
                   });
                 }}
+                isTemplate={true}
               />
             </div>
           )}
