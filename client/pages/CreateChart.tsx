@@ -288,6 +288,42 @@ export default function CreateChart() {
       }
     }
 
+    // For CronJob, include the Job Template configuration
+    if (type === "CronJob") {
+      if (!transformed.spec) {
+        transformed.spec = {};
+      }
+
+      // Build Job Template from job-prefixed config keys
+      const jobTemplate: Record<string, any> = {};
+      const jobSpec: Record<string, any> = {};
+      const jobMetadata: Record<string, any> = {};
+
+      for (const [key, value] of Object.entries(config)) {
+        if (key.startsWith("job")) {
+          const jobKey = key.slice(3); // Remove "job" prefix
+          const lowerKey = jobKey.charAt(0).toLowerCase() + jobKey.slice(1);
+
+          if (lowerKey === "spec") {
+            Object.assign(jobSpec, value);
+          } else if (lowerKey === "template") {
+            jobTemplate.template = value;
+          } else if (lowerKey === "labels" || lowerKey === "annotations" || lowerKey === "namespace") {
+            jobMetadata[lowerKey] = value;
+          }
+        }
+      }
+
+      // Assemble the job template structure
+      if (Object.keys(jobTemplate).length > 0 || Object.keys(jobSpec).length > 0 || Object.keys(jobMetadata).length > 0) {
+        transformed.spec.jobTemplate = {
+          metadata: jobMetadata,
+          spec: jobSpec,
+          ...jobTemplate,
+        };
+      }
+    }
+
     return transformed;
   };
 
@@ -690,7 +726,7 @@ export default function CreateChart() {
                 <li>✓ Pre-configured templates</li>
                 <li>✓ Best practices built-in</li>
                 <li>✓ Quick setup</li>
-                <li>✓ Suitable for common use cases</li>
+                <li>��� Suitable for common use cases</li>
               </ul>
             </div>
 
