@@ -195,6 +195,7 @@ interface PodConfigurationProps {
   config: PodConfig;
   onConfigChange: (key: keyof PodConfig, value: any) => void;
   globalNamespace?: string;
+  isTemplate?: boolean;
 }
 
 interface ConfigSection {
