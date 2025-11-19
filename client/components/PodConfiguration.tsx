@@ -367,6 +367,58 @@ export default function PodConfiguration({ config, onConfigChange, isTemplate }:
     });
   };
 
+  const renderTagsField = (
+    value: Record<string, string> | undefined,
+    onChange: (value: Record<string, string> | undefined) => void,
+    label: string,
+    placeholder: string
+  ) => {
+    const tags = value || {};
+    return (
+      <div className="space-y-2">
+        <div className="flex flex-wrap gap-2">
+          {Object.entries(tags).map(([key, val], idx) => (
+            <div
+              key={idx}
+              className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm flex items-center gap-2"
+            >
+              {key}={val}
+              <button
+                onClick={() => {
+                  const newTags = { ...tags };
+                  delete newTags[key];
+                  onChange(Object.keys(newTags).length > 0 ? newTags : undefined);
+                }}
+                className="text-primary hover:opacity-70"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+        <input
+          type="text"
+          placeholder={placeholder}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              const input = e.currentTarget;
+              const newValue = input.value.trim();
+              if (newValue && newValue.includes("=")) {
+                const [k, v] = newValue.split("=", 2);
+                if (k && v) {
+                  onChange({ ...tags, [k]: v });
+                  input.value = "";
+                }
+              }
+            }
+          }}
+          className="input-field"
+        />
+        <p className="text-xs text-foreground/50">Format: key=value (press Enter to add)</p>
+      </div>
+    );
+  };
+
   const renderField = (field: ConfigField) => {
     const value = config[field.key];
 
@@ -423,46 +475,11 @@ export default function PodConfiguration({ config, onConfigChange, isTemplate }:
         );
 
       case "tags":
-        return (
-          <div className="space-y-2">
-            <div className="flex flex-wrap gap-2">
-              {Array.isArray(value)
-                ? value.map((tag, idx) => (
-                    <div
-                      key={idx}
-                      className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm flex items-center gap-2"
-                    >
-                      {tag}
-                      <button
-                        onClick={() => {
-                          const newValue = (value as string[]).filter((_, i) => i !== idx);
-                          onConfigChange(field.key, newValue.length > 0 ? newValue : undefined);
-                        }}
-                        className="text-primary hover:opacity-70"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  ))
-                : null}
-            </div>
-            <input
-              type="text"
-              placeholder={`Add ${field.label} (key=value)`}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  const input = e.currentTarget;
-                  const newValue = input.value.trim();
-                  if (newValue) {
-                    const currentArray = Array.isArray(value) ? (value as string[]) : [];
-                    onConfigChange(field.key, [...currentArray, newValue]);
-                    input.value = "";
-                  }
-                }
-              }}
-              className="input-field"
-            />
-          </div>
+        return renderTagsField(
+          value as Record<string, string> | undefined,
+          (newValue) => onConfigChange(field.key, newValue),
+          field.label,
+          `Add ${field.label} (key=value)`
         );
 
       default:
