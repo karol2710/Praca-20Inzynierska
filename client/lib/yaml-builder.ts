@@ -580,6 +580,44 @@ export function generateJobYAML(jobName: string, jobConfig: Record<string, any>,
 
   const spec: Record<string, any> = {};
 
+  if (jobConfig.spec?.activeDeadlineSeconds !== undefined) spec.activeDeadlineSeconds = jobConfig.spec.activeDeadlineSeconds;
+  if (jobConfig.spec?.backoffLimit !== undefined) spec.backoffLimit = jobConfig.spec.backoffLimit;
+  if (jobConfig.spec?.backoffLimitPerIndex !== undefined) spec.backoffLimitPerIndex = jobConfig.spec.backoffLimitPerIndex;
+  if (jobConfig.spec?.completionMode) spec.completionMode = jobConfig.spec.completionMode;
+  if (jobConfig.spec?.completions !== undefined) spec.completions = jobConfig.spec.completions;
+  if (jobConfig.spec?.manualSelector !== undefined) spec.manualSelector = jobConfig.spec.manualSelector;
+  if (jobConfig.spec?.maxFailedIndexes !== undefined) spec.maxFailedIndexes = jobConfig.spec.maxFailedIndexes;
+  if (jobConfig.spec?.parallelism !== undefined) spec.parallelism = jobConfig.spec.parallelism;
+  if (jobConfig.spec?.podReplacementPolicy) spec.podReplacementPolicy = jobConfig.spec.podReplacementPolicy;
+  if (jobConfig.spec?.ttlSecondsAfterFinished !== undefined) spec.ttlSecondsAfterFinished = jobConfig.spec.ttlSecondsAfterFinished;
+
+  if (jobConfig.spec?.selector) {
+    spec.selector = jobConfig.spec.selector;
+  }
+
+  if (jobConfig.spec?.podFailurePolicy?.rules && jobConfig.spec.podFailurePolicy.rules.length > 0) {
+    spec.podFailurePolicy = {
+      rules: jobConfig.spec.podFailurePolicy.rules.map((rule: Record<string, any>) => {
+        const cleanedRule: Record<string, any> = {};
+        if (rule.action) cleanedRule.action = rule.action;
+        if (rule.onExitCodes) cleanedRule.onExitCodes = rule.onExitCodes;
+        if (rule.onPodConditions) cleanedRule.onPodConditions = rule.onPodConditions;
+        return cleanEmptyValues(cleanedRule);
+      }),
+    };
+  }
+
+  if (jobConfig.spec?.successPolicy?.rules && jobConfig.spec.successPolicy.rules.length > 0) {
+    spec.successPolicy = {
+      rules: jobConfig.spec.successPolicy.rules.map((rule: Record<string, any>) => {
+        const cleanedRule: Record<string, any> = {};
+        if (rule.succeededCount !== undefined) cleanedRule.succeededCount = rule.succeededCount;
+        if (rule.succeededIndexes) cleanedRule.succeededIndexes = rule.succeededIndexes;
+        return cleanEmptyValues(cleanedRule);
+      }),
+    };
+  }
+
   if (jobConfig.template) {
     spec.template = {
       metadata: {},
