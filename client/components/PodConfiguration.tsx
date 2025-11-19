@@ -342,7 +342,7 @@ const configSections: ConfigSection[] = [
   },
 ];
 
-export default function PodConfiguration({ config, onConfigChange }: PodConfigurationProps) {
+export default function PodConfiguration({ config, onConfigChange, isTemplate }: PodConfigurationProps) {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
 
   const toggleSection = (sectionId: string) => {
@@ -353,6 +353,18 @@ export default function PodConfiguration({ config, onConfigChange }: PodConfigur
       newExpanded.add(sectionId);
     }
     setExpandedSections(newExpanded);
+  };
+
+  const getFilteredSections = () => {
+    return configSections.map((section) => {
+      if (section.id === "metadata" && isTemplate) {
+        return {
+          ...section,
+          fields: section.fields.filter((field) => field.key !== "name"),
+        };
+      }
+      return section;
+    });
   };
 
   const renderField = (field: ConfigField) => {
