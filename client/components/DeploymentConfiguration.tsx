@@ -749,6 +749,7 @@ export default function DeploymentConfiguration({ config, onConfigChange }: Depl
                     [key]: value,
                   });
                 }}
+                isTemplate={true}
               />
             </div>
           )}
