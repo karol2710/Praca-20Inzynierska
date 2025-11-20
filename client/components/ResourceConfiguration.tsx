@@ -4747,7 +4747,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                         />
                                         <input
                                           type="text"
-                                          value={filter.requestMirror?.backendRef?.namespace || ""}
+                                          value={filter.requestMirror?.backendRef?.namespace || globalNamespace || ""}
                                           onChange={(e) => {
                                             const updated = [...((config.spec as GRPCRouteSpec)?.rules || [])];
                                             const filters = [...(updated[rIdx]?.filters || [])];
@@ -4764,7 +4764,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                             updated[rIdx] = { ...rule, filters };
                                             onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
                                           }}
-                                          placeholder="Namespace"
+                                          placeholder={globalNamespace || "Namespace"}
                                           className="input-field text-xs"
                                         />
                                         <input
@@ -4927,7 +4927,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                     <label className="block text-xs font-medium text-foreground mb-1">Namespace</label>
                                     <input
                                       type="text"
-                                      value={backend.namespace || ""}
+                                      value={backend.namespace || globalNamespace || ""}
                                       onChange={(e) => {
                                         const updated = [...((config.spec as GRPCRouteSpec)?.rules || [])];
                                         const backends = [...(updated[rIdx]?.backendRefs || [])];
@@ -4935,7 +4935,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                         updated[rIdx] = { ...rule, backendRefs: backends };
                                         onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
                                       }}
-                                      placeholder="default"
+                                      placeholder={globalNamespace || "default"}
                                       className="input-field text-xs"
                                     />
                                   </div>
@@ -5495,7 +5495,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                               />
                                               <input
                                                 type="text"
-                                                value={bFilter.requestMirror?.backendRef?.namespace || ""}
+                                                value={bFilter.requestMirror?.backendRef?.namespace || globalNamespace || ""}
                                                 onChange={(e) => {
                                                   const updated = [...((config.spec as GRPCRouteSpec)?.rules || [])];
                                                   const backends = [...(updated[rIdx]?.backendRefs || [])];
@@ -5505,7 +5505,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                                   updated[rIdx] = { ...rule, backendRefs: backends };
                                                   onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
                                                 }}
-                                                placeholder="Namespace"
+                                                placeholder={globalNamespace || "Namespace"}
                                                 className="input-field text-xs"
                                               />
                                               <input
