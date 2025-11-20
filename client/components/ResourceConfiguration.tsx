@@ -1549,7 +1549,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                             }}
                                             className="text-destructive hover:opacity-70 text-xs"
                                           >
-                                            ×
+                                            ��
                                           </button>
                                         </div>
                                       ))}
@@ -2878,27 +2878,9 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                               />
                                               <input
                                                 type="text"
-                                                value={bFilter.requestMirror?.backendRef?.namespace || ""}
-                                                onChange={(e) => {
-                                                  const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
-                                                  const backends = [...(updated[rIdx]?.backendRefs || [])];
-                                                  const filters = [...(backends[bIdx]?.filters || [])];
-                                                  filters[bfIdx] = {
-                                                    ...bFilter,
-                                                    requestMirror: {
-                                                      ...bFilter.requestMirror,
-                                                      backendRef: {
-                                                        ...bFilter.requestMirror?.backendRef,
-                                                        namespace: e.target.value || undefined,
-                                                      },
-                                                    },
-                                                  };
-                                                  backends[bIdx] = { ...backend, filters };
-                                                  updated[rIdx] = { ...rule, backendRefs: backends };
-                                                  onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
-                                                }}
-                                                placeholder="Namespace"
-                                                className="input-field text-xs"
+                                                value={globalNamespace || ""}
+                                                disabled
+                                                className="input-field text-xs opacity-60 cursor-not-allowed"
                                               />
                                               <input
                                                 type="number"
