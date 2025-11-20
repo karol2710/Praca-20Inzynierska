@@ -655,12 +655,12 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                 <input
                   id="namespace"
                   type="text"
-                  value={config.namespace || ""}
-                  onChange={(e) => onConfigChange("namespace", e.target.value || undefined)}
+                  value={globalNamespace || ""}
+                  disabled
                   placeholder="default"
-                  className="input-field"
+                  className="input-field bg-muted cursor-not-allowed"
                 />
-                <p className="text-xs text-foreground/50 mt-1">Kubernetes namespace</p>
+                <p className="text-xs text-foreground/50 mt-1">Set in Global Configuration</p>
               </div>
 
               {/* Labels */}
