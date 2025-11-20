@@ -3495,18 +3495,13 @@ export default function ResourceConfiguration({ config, onConfigChange }: Resour
                   id="serviceType"
                   value={config.spec?.type || "ClusterIP"}
                   onChange={(e) => {
-                    const newType = e.target.value as "ClusterIP" | "NodePort" | "ExternalName";
+                    const newType = e.target.value as "ClusterIP" | "ExternalName";
                     const updatedSpec = { ...(config.spec || {}), type: newType };
-                    if (newType === "ExternalName") {
-                      updatedSpec.clusterIP = undefined;
-                      updatedSpec.clusterIPs = undefined;
-                    }
                     onConfigChange("spec", updatedSpec);
                   }}
                   className="input-field"
                 >
                   <option value="ClusterIP">ClusterIP</option>
-                  <option value="NodePort">NodePort</option>
                   <option value="ExternalName">ExternalName</option>
                 </select>
                 <p className="text-xs text-foreground/50 mt-1">Service type determines how the service is exposed</p>
