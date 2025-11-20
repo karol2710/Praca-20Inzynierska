@@ -404,6 +404,17 @@ export default function CreateChart() {
     }
   };
 
+  const handleViewResourceYaml = () => {
+    if (!activeResource) return;
+
+    const yamlString = generateResourceYAML(activeResource.name, activeResource.type, activeResource, globalNamespace);
+
+    if (yamlString) {
+      setGeneratedYaml(yamlString);
+      setShowYamlModal(true);
+    }
+  };
+
   const handleCopyYaml = () => {
     navigator.clipboard.writeText(generatedYaml);
   };
