@@ -470,6 +470,16 @@ export default function CreateChart() {
         };
       }
 
+      // Initialize spec for Secret with default type and data
+      if (selectedResourceType === "Secret") {
+        newResource.spec = {
+          type: "Opaque",
+          stringData: {
+            "key": "value",
+          },
+        };
+      }
+
       setResources([...resources, newResource]);
       setNewResourceName("");
     }
