@@ -1056,6 +1056,39 @@ export function generateResourceYAML(resourceName: string, resourceType: string,
         return cleanedItem;
       }).filter((item: Record<string, any>) => Object.keys(item).length > 0);
     }
+  } else if (resourceType === "RuntimeClass" && resourceConfig.spec) {
+    // RuntimeClass-specific spec fields
+    const runtimeClassSpec = resourceConfig.spec;
+
+    if (runtimeClassSpec.handler !== undefined) spec.handler = runtimeClassSpec.handler;
+
+    if (runtimeClassSpec.overhead && Object.keys(runtimeClassSpec.overhead).length > 0) {
+      const overhead: Record<string, any> = {};
+      if (runtimeClassSpec.overhead.podFixed && Object.keys(runtimeClassSpec.overhead.podFixed).length > 0) {
+        overhead.podFixed = runtimeClassSpec.overhead.podFixed;
+      }
+      if (Object.keys(overhead).length > 0) {
+        spec.overhead = overhead;
+      }
+    }
+
+    if (runtimeClassSpec.scheduling) {
+      const scheduling: Record<string, any> = {};
+      if (runtimeClassSpec.scheduling.tolerations && Array.isArray(runtimeClassSpec.scheduling.tolerations) && runtimeClassSpec.scheduling.tolerations.length > 0) {
+        scheduling.tolerations = runtimeClassSpec.scheduling.tolerations.map((tol: any) => {
+          const cleanedTol: Record<string, any> = {};
+          if (tol.key) cleanedTol.key = tol.key;
+          if (tol.operator) cleanedTol.operator = tol.operator;
+          if (tol.value) cleanedTol.value = tol.value;
+          if (tol.effect) cleanedTol.effect = tol.effect;
+          if (tol.tolerationSeconds !== undefined) cleanedTol.tolerationSeconds = tol.tolerationSeconds;
+          return cleanedTol;
+        }).filter((tol: Record<string, any>) => Object.keys(tol).length > 0);
+      }
+      if (Object.keys(scheduling).length > 0) {
+        spec.scheduling = scheduling;
+      }
+    }
   } else {
     // For other resource types, use spec as-is
     if (resourceConfig.spec) {
