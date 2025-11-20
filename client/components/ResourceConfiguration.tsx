@@ -8419,7 +8419,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                 <input
                   id="driverName"
                   type="text"
-                  value="driver.longhorn.io"
+                  value={(config.spec as VolumeAttributesClassSpec)?.driverName || ""}
                   disabled
                   className="input-field text-sm opacity-60 cursor-not-allowed"
                 />
