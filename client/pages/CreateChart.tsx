@@ -499,6 +499,13 @@ export default function CreateChart() {
         };
       }
 
+      // Initialize spec for RuntimeClass with default handler
+      if (selectedResourceType === "RuntimeClass") {
+        newResource.spec = {
+          handler: "runc",
+        };
+      }
+
       setResources([...resources, newResource]);
       setNewResourceName("");
     }
