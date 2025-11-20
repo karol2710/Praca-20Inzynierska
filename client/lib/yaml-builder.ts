@@ -1036,7 +1036,7 @@ export function generateResourceYAML(resourceName: string, resourceType: string,
     }
 
     if (secretSpec.data && Object.keys(secretSpec.data).length > 0) {
-      spec.data = secretSpec.data;
+      spec.data = addTrailingNewlinesToMultilineValues(secretSpec.data);
     }
   } else {
     // For other resource types, use spec as-is
