@@ -1052,5 +1052,5 @@ export function generateResourceYAML(resourceName: string, resourceType: string,
   };
 
   const cleaned = cleanEmptyValues(yaml);
-  return YAML.dump(cleaned, { indent: 2 });
+  return YAML.dump(cleaned, yamlDumpOptions);
 }
