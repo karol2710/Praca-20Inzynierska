@@ -472,7 +472,7 @@ export default function CreateChart() {
           if (r.id !== activeResource.id) return r;
 
           // Handle metadata fields at top level
-          const metadataFields = ["name", "namespace", "labels", "annotations", "deletionGracePeriodSeconds", "ownerReferences"];
+          const metadataFields = ["name", "labels", "annotations", "deletionGracePeriodSeconds", "ownerReferences"];
 
           if (metadataFields.includes(key)) {
             return { ...r, [key]: value };
