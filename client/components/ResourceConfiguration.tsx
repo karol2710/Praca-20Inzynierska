@@ -9039,25 +9039,6 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
               <div className="border-t border-border pt-4">
                 <label className="block text-sm font-medium text-foreground mb-3">Scheduling</label>
 
-                {/* Node Selector */}
-                <div className="mb-4">
-                  <label className="block text-xs font-medium text-foreground/70 mb-2">Node Selector</label>
-                  {renderTagsField(
-                    (config.spec as RuntimeClassSpec)?.scheduling?.nodeSelector,
-                    (value) => {
-                      onConfigChange("spec", {
-                        ...(config.spec as RuntimeClassSpec || {}),
-                        scheduling: {
-                          ...(config.spec as RuntimeClassSpec)?.scheduling,
-                          nodeSelector: value,
-                        },
-                      });
-                    },
-                    "RuntimeClass Node Selector",
-                    "Add node selector (key=value)"
-                  )}
-                </div>
-
                 {/* Tolerations */}
                 <div className="border-t border-border/30 pt-4">
                   <div className="flex items-center justify-between mb-3">
