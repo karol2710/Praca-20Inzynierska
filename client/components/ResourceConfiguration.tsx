@@ -8398,18 +8398,9 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                     <input
                       id="dataSourceRef-namespace"
                       type="text"
-                      value={(config.spec as PersistentVolumeClaimSpec)?.dataSourceRef?.namespace || ""}
-                      onChange={(e) => {
-                        onConfigChange("spec", {
-                          ...(config.spec as PersistentVolumeClaimSpec || {}),
-                          dataSourceRef: {
-                            ...(config.spec as PersistentVolumeClaimSpec)?.dataSourceRef,
-                            namespace: e.target.value || undefined,
-                          },
-                        });
-                      }}
-                      placeholder="e.g., default"
-                      className="input-field text-sm"
+                      value={globalNamespace || ""}
+                      disabled
+                      className="input-field text-sm opacity-60 cursor-not-allowed"
                     />
                   </div>
                 </div>
