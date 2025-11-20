@@ -183,15 +183,14 @@ interface ServicePort {
 }
 
 interface ServiceSpec {
-  type?: "ClusterIP" | "NodePort" | "ExternalName";
-  clusterIP?: string;
-  clusterIPs?: string[];
+  type?: "ClusterIP" | "ExternalName";
   externalName?: string;
   ipFamilyPolicy?: string;
   ports?: ServicePort[];
   publishNotReadyAddresses?: boolean;
   selector?: Record<string, string>;
   sessionAffinity?: "ClientIP" | "None";
+  sessionAffinityTimeout?: number;
   trafficDistribution?: string;
 }
 
