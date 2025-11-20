@@ -8413,12 +8413,22 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
             <div className="px-4 py-4 border-t border-border bg-muted/10 space-y-4">
               {/* Driver Name */}
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
+                <label htmlFor="driverName" className="block text-sm font-medium text-foreground mb-2">
                   Driver Name
                 </label>
-                <div className="p-3 bg-muted/30 border border-border rounded text-sm text-foreground">
-                  driver.longhorn.io
-                </div>
+                <input
+                  id="driverName"
+                  type="text"
+                  value={(config.spec as VolumeAttributesClassSpec)?.driverName || ""}
+                  onChange={(e) => {
+                    onConfigChange("spec", {
+                      ...(config.spec as VolumeAttributesClassSpec || {}),
+                      driverName: e.target.value || undefined,
+                    });
+                  }}
+                  placeholder="e.g., driver.longhorn.io"
+                  className="input-field text-sm"
+                />
                 <p className="text-xs text-foreground/50 mt-1">Storage driver implementation</p>
               </div>
 
