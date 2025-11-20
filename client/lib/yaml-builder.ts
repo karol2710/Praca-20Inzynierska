@@ -568,7 +568,7 @@ export function generateStatefulSetYAML(statefulSetName: string, statefulSetConf
   };
 
   const cleaned = cleanEmptyValues(yaml);
-  return YAML.dump(cleaned, { indent: 2 });
+  return YAML.dump(cleaned, yamlDumpOptions);
 }
 
 export function generateDaemonSetYAML(daemonSetName: string, daemonSetConfig: Record<string, any>, containers: Container[], namespace?: string): string {
@@ -660,7 +660,7 @@ export function generateJobYAML(jobName: string, jobConfig: Record<string, any>,
   };
 
   const cleaned = cleanEmptyValues(yaml);
-  return YAML.dump(cleaned, { indent: 2 });
+  return YAML.dump(cleaned, yamlDumpOptions);
 }
 
 export function generateCronJobYAML(cronJobName: string, cronJobConfig: Record<string, any>, containers: Container[], namespace?: string): string {
@@ -779,7 +779,7 @@ export function generateCronJobYAML(cronJobName: string, cronJobConfig: Record<s
   };
 
   const cleaned = cleanEmptyValues(yaml);
-  return YAML.dump(cleaned, { indent: 2 });
+  return YAML.dump(cleaned, yamlDumpOptions);
 }
 
 export function generateResourceYAML(resourceName: string, resourceType: string, resourceConfig: Record<string, any>, namespace?: string): string {
