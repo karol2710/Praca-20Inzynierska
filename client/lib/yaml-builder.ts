@@ -1023,6 +1023,21 @@ export function generateResourceYAML(resourceName: string, resourceType: string,
     if (configMapSpec.binaryData && Object.keys(configMapSpec.binaryData).length > 0) {
       spec.binaryData = configMapSpec.binaryData;
     }
+  } else if (resourceType === "Secret" && resourceConfig.spec) {
+    // Secret-specific spec fields
+    const secretSpec = resourceConfig.spec;
+
+    if (secretSpec.type !== undefined) spec.type = secretSpec.type;
+
+    if (secretSpec.immutable !== undefined) spec.immutable = secretSpec.immutable;
+
+    if (secretSpec.stringData && Object.keys(secretSpec.stringData).length > 0) {
+      spec.stringData = addTrailingNewlinesToMultilineValues(secretSpec.stringData);
+    }
+
+    if (secretSpec.data && Object.keys(secretSpec.data).length > 0) {
+      spec.data = secretSpec.data;
+    }
   } else {
     // For other resource types, use spec as-is
     if (resourceConfig.spec) {
