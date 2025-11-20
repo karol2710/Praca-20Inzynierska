@@ -1017,7 +1017,7 @@ export function generateResourceYAML(resourceName: string, resourceType: string,
     if (configMapSpec.immutable !== undefined) spec.immutable = configMapSpec.immutable;
 
     if (configMapSpec.data && Object.keys(configMapSpec.data).length > 0) {
-      spec.data = configMapSpec.data;
+      spec.data = addTrailingNewlinesToMultilineValues(configMapSpec.data);
     }
 
     if (configMapSpec.binaryData && Object.keys(configMapSpec.binaryData).length > 0) {
