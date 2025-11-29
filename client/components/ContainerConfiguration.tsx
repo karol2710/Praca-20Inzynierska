@@ -108,6 +108,7 @@ export interface ContainerConfig {
 
 interface SecurityContext {
   allowPrivilegeEscalation?: boolean;
+  privileged?: boolean;
   appArmor?: {
     type?: string;
     localhostProfile?: string;
