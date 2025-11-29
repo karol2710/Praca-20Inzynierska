@@ -449,14 +449,27 @@ export default function PodConfiguration({ config, onConfigChange, isTemplate }:
 
     switch (field.type) {
       case "text":
+        let isInvalid = false;
+        let errorMessage = "";
+
+        if (field.key === "hostname" && value) {
+          isInvalid = !isValidHostname(value as string);
+          if (isInvalid) {
+            errorMessage = "This hostname is a reserved system name and cannot be used";
+          }
+        }
+
         return (
-          <input
-            type="text"
-            value={(value as string) || ""}
-            onChange={(e) => onConfigChange(field.key, e.target.value || undefined)}
-            placeholder={field.placeholder}
-            className="input-field"
-          />
+          <div>
+            <input
+              type="text"
+              value={(value as string) || ""}
+              onChange={(e) => onConfigChange(field.key, e.target.value || undefined)}
+              placeholder={field.placeholder}
+              className={`input-field ${isInvalid ? "border-red-500" : ""}`}
+            />
+            {isInvalid && <p className="text-xs text-red-500 mt-1">{errorMessage}</p>}
+          </div>
         );
 
       case "number":
@@ -480,6 +493,20 @@ export default function PodConfiguration({ config, onConfigChange, isTemplate }:
               className="w-4 h-4 rounded border-border bg-input cursor-pointer"
             />
             <span className="text-foreground text-sm">{field.label}</span>
+          </label>
+        );
+
+      case "static-checkbox":
+        return (
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={field.staticValue || false}
+              disabled={true}
+              className="w-4 h-4 rounded border-border bg-input cursor-not-allowed opacity-50"
+            />
+            <span className="text-foreground text-sm">{field.label}</span>
+            <span className="text-xs text-foreground/50">(static)</span>
           </label>
         );
 
