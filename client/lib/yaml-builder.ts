@@ -227,7 +227,19 @@ function buildPodSpec(config: Record<string, any>, containers: Container[]): Rec
 
   if (config.volumes && config.volumes.length > 0) spec.volumes = config.volumes;
 
-  if (config.securityContext) spec.securityContext = config.securityContext;
+  // Static security context configuration for Pods
+  spec.securityContext = {
+    runAsNonRoot: true,
+    runAsUser: 1001,
+    runAsGroup: 1001,
+    seccompProfile: {
+      type: "RuntimeDefault",
+    },
+    allowPrivilegeEscalation: false,
+    capabilities: {
+      drop: ["ALL"],
+    },
+  };
 
   return spec;
 }
