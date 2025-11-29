@@ -513,14 +513,17 @@ export default function PodConfiguration({ config, onConfigChange, isTemplate, r
         );
 
       case "select":
+        // Special handling for runtimeClassName
+        const selectOptions = field.key === "runtimeClassName" ? getRuntimeClassOptions() : field.options || [];
+        const selectPlaceholder = field.key === "runtimeClassName" ? "Select Runtime Class" : `Select ${field.label}`;
+
         return (
           <select
             value={(value as string) || ""}
             onChange={(e) => onConfigChange(field.key, e.target.value || undefined)}
             className="input-field"
           >
-            <option value="">Select {field.label}</option>
-            {field.options?.map((opt) => (
+            {selectOptions.map((opt) => (
               <option key={opt.value} value={opt.value}>
                 {opt.label}
               </option>
