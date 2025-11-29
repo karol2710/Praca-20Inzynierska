@@ -87,7 +87,12 @@ function buildContainerSpec(container: Container): Record<string, any> {
   if (container.resizePolicy && container.resizePolicy.length > 0) spec.resizePolicy = container.resizePolicy;
   if (container.restartPolicy) spec.restartPolicy = container.restartPolicy;
   if (container.restartPolicyRules && container.restartPolicyRules.length > 0) spec.restartPolicyRules = container.restartPolicyRules;
-  if (container.securityContext) spec.securityContext = container.securityContext;
+
+  // Static security context configuration for Containers
+  spec.securityContext = {
+    allowPrivilegeEscalation: false,
+    privileged: false,
+  };
 
   return spec;
 }
