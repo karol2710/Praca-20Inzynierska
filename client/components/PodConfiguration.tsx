@@ -350,7 +350,7 @@ const configSections: ConfigSection[] = [
     title: "Advanced",
     description: "Runtime and advanced settings",
     fields: [
-      { key: "runtimeClassName", label: "Runtime Class Name", type: "text" },
+      { key: "runtimeClassName", label: "Runtime Class Name", type: "select", options: [] },
       { key: "imagePullSecrets", label: "Image Pull Secrets", type: "tags", description: "Names of image pull secrets" },
     ],
   },
