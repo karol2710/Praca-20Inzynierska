@@ -2037,23 +2037,6 @@ export default function ContainerConfiguration({
                         className="input-field text-sm"
                       />
                     </div>
-                    <div>
-                      <label className="block text-xs font-medium text-foreground mb-1">Mount Propagation</label>
-                      <select
-                        value={mount.mountPropagation || ""}
-                        onChange={(e) => {
-                          const updated = [...(container.volumeMounts || [])];
-                          updated[idx] = { ...mount, mountPropagation: e.target.value || undefined };
-                          onConfigChange("volumeMounts", updated);
-                        }}
-                        className="input-field text-sm"
-                      >
-                        <option value="">None</option>
-                        <option value="HostToContainer">HostToContainer</option>
-                        <option value="Bidirectional">Bidirectional</option>
-                      </select>
-                    </div>
-                    <div></div>
                   </div>
 
                   <div className="flex gap-3">
