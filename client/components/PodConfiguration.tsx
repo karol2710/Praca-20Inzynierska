@@ -220,6 +220,27 @@ interface ConfigField {
   staticValue?: boolean;
 }
 
+// System hostnames that should not be allowed
+const SYSTEM_HOSTNAMES = new Set([
+  "localhost",
+  "127.0.0.1",
+  "::1",
+  "0.0.0.0",
+  "::",
+  "localhost.localdomain",
+  "localhost4",
+  "localhost4.localdomain4",
+  "localhost6",
+  "localhost6.localdomain6",
+  "broadcasthost",
+]);
+
+const isValidHostname = (hostname: string): boolean => {
+  if (!hostname) return true;
+  const lowerHostname = hostname.toLowerCase();
+  return !SYSTEM_HOSTNAMES.has(lowerHostname);
+};
+
 const configSections: ConfigSection[] = [
   {
     id: "metadata",
