@@ -232,6 +232,14 @@ function buildPodSpec(config: Record<string, any>, containers: Container[]): Rec
 
   if (config.volumes && config.volumes.length > 0) spec.volumes = config.volumes;
 
+  // Static networking fields - always false
+  spec.enableServiceLinks = false;
+  spec.hostNetwork = false;
+  spec.hostIPC = false;
+  spec.hostPID = false;
+  spec.hostUsers = false;
+  spec.shareProcessNamespace = false;
+
   // Static security context configuration for Pods
   spec.securityContext = {
     runAsNonRoot: true,
