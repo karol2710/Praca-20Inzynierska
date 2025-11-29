@@ -87,12 +87,6 @@ export interface ContainerConfig {
   // Security Context
   securityContext?: SecurityContext;
 
-  // Volume Devices
-  volumeDevices?: {
-    devicePath: string;
-    name: string;
-  }[];
-
   // Volume Mounts
   volumeMounts?: {
     devicePath?: string;
