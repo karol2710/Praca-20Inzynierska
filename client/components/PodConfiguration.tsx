@@ -356,8 +356,21 @@ const configSections: ConfigSection[] = [
   },
 ];
 
-export default function PodConfiguration({ config, onConfigChange, isTemplate }: PodConfigurationProps) {
+export default function PodConfiguration({ config, onConfigChange, isTemplate, runtimeClasses = [] }: PodConfigurationProps) {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+
+  // Build runtime class options dynamically
+  const getRuntimeClassOptions = (): { value: string; label: string }[] => {
+    const options: { value: string; label: string }[] = [
+      { value: "", label: "Default (no config generated)" },
+    ];
+
+    runtimeClasses.forEach((className) => {
+      options.push({ value: className, label: className });
+    });
+
+    return options;
+  };
 
   const toggleSection = (sectionId: string) => {
     const newExpanded = new Set(expandedSections);
