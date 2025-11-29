@@ -201,6 +201,7 @@ interface PodConfigurationProps {
   onConfigChange: (key: keyof PodConfig, value: any) => void;
   globalNamespace?: string;
   isTemplate?: boolean;
+  runtimeClasses?: string[];
 }
 
 interface ConfigSection {
