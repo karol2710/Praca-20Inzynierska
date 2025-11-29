@@ -27,6 +27,11 @@ interface PodSecurityContext {
     name: string;
     value: string;
   }[];
+  allowPrivilegeEscalation?: boolean;
+  capabilities?: {
+    add?: string[];
+    drop?: string[];
+  };
 }
 
 interface Toleration {
