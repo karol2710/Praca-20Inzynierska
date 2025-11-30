@@ -681,8 +681,79 @@ export default function CreateChart() {
     return !!(container.name && container.image);
   };
 
+  // Validation functions for security
+  const validateRepositoryInput = (input: string): { valid: boolean; error?: string } => {
+    const trimmed = input.trim();
+
+    if (trimmed.length === 0) {
+      return { valid: false, error: "Repository is required" };
+    }
+    if (trimmed.length > 500) {
+      return { valid: false, error: "Repository input too long (max 500 characters)" };
+    }
+
+    const parts = trimmed.split(/\s+/);
+    if (parts.length !== 2) {
+      return { valid: false, error: "Repository format must be: 'name https://url'" };
+    }
+
+    const [name, url] = parts;
+
+    // Validate name (alphanumeric, hyphens, underscores only)
+    if (!/^[a-zA-Z0-9_-]+$/.test(name)) {
+      return { valid: false, error: "Repository name contains invalid characters" };
+    }
+
+    // Validate URL format
+    try {
+      new URL(url);
+      if (!url.startsWith("https://")) {
+        return { valid: false, error: "Repository URL must use HTTPS" };
+      }
+    } catch {
+      return { valid: false, error: "Invalid repository URL" };
+    }
+
+    return { valid: true };
+  };
+
+  const validateHelmInstallInput = (input: string): { valid: boolean; error?: string } => {
+    const trimmed = input.trim();
+
+    if (trimmed.length === 0) {
+      return { valid: false, error: "Helm install command is required" };
+    }
+    if (trimmed.length > 1000) {
+      return { valid: false, error: "Helm install command too long (max 1000 characters)" };
+    }
+
+    // Disallow shell metacharacters and dangerous patterns
+    const dangerousPatterns = [';', '|', '&', '$', '`', '(', ')', '{', '}', '<', '>', '\n', '\r'];
+    for (const pattern of dangerousPatterns) {
+      if (trimmed.includes(pattern)) {
+        return { valid: false, error: "Helm command contains invalid characters" };
+      }
+    }
+
+    return { valid: true };
+  };
+
   const handleStandardSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // Validate inputs before sending
+    const repoValidation = validateRepositoryInput(repository);
+    if (!repoValidation.valid) {
+      setDeploymentError(repoValidation.error || "Invalid repository");
+      return;
+    }
+
+    const helmValidation = validateHelmInstallInput(helmInstall);
+    if (!helmValidation.valid) {
+      setDeploymentError(helmValidation.error || "Invalid Helm command");
+      return;
+    }
+
     setIsCreating(true);
     setDeploymentResult("");
     setDeploymentError("");
@@ -696,8 +767,8 @@ export default function CreateChart() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          repository,
-          helmInstall,
+          repository: repository.trim(),
+          helmInstall: helmInstall.trim(),
         }),
       });
 
