@@ -813,6 +813,28 @@ export default function CreateChart() {
   };
 
   const handleAdvancedSubmit = async () => {
+    // Validate that at least one workload exists
+    if (workloads.length === 0) {
+      setAdvancedDeploymentError("At least one workload is required");
+      return;
+    }
+
+    // Prepare deployment configuration
+    const deploymentConfig = {
+      workloads,
+      resources,
+      globalNamespace,
+      requestsPerSecond,
+      resourceQuota,
+    };
+
+    setPendingDeploymentConfig(deploymentConfig);
+    setShowDeploymentModal(true);
+  };
+
+  const handleDeploymentConfirm = async (options: DeploymentOptions) => {
+    if (!pendingDeploymentConfig) return;
+
     setAdvancedDeploymentResult("");
     setAdvancedDeploymentError("");
     setIsCreating(true);
@@ -826,8 +848,8 @@ export default function CreateChart() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          workloads,
-          resources,
+          ...pendingDeploymentConfig,
+          deploymentOptions: options,
         }),
       });
 
@@ -835,6 +857,13 @@ export default function CreateChart() {
 
       if (response.ok && data.success) {
         setAdvancedDeploymentResult(data.output);
+        setShowDeploymentModal(false);
+        setPendingDeploymentConfig(null);
+
+        // Redirect to deployments page after success
+        setTimeout(() => {
+          window.location.href = "/deployments";
+        }, 2000);
       } else if (response.status === 401) {
         setAdvancedDeploymentError("Authentication failed. Please log in again.");
         setTimeout(() => {
