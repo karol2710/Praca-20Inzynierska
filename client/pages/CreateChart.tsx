@@ -1861,15 +1861,7 @@ export default function CreateChart() {
           namespace={globalNamespace}
           configurationItems={[
             ...workloads.map((w) => ({ label: `Workload: ${w.type}`, value: w.name })),
-            { label: "Namespace", value: globalNamespace },
-            { label: "Domain", value: globalDomain || "Not configured" },
-            ...(requestsPerSecond ? [{ label: "Rate Limit (req/s)", value: requestsPerSecond }] : []),
-            ...(resourceQuota.requestsCPU ? [{ label: "Resource CPU Request", value: resourceQuota.requestsCPU }] : []),
-            ...(resourceQuota.requestsMemory ? [{ label: "Resource Memory Request", value: resourceQuota.requestsMemory }] : []),
-            ...(resourceQuota.limitsCPU ? [{ label: "Resource CPU Limit", value: resourceQuota.limitsCPU }] : []),
-            ...(resourceQuota.limitsMemory ? [{ label: "Resource Memory Limit", value: resourceQuota.limitsMemory }] : []),
-            ...(resourceQuota.requestsStorage ? [{ label: "Storage Request", value: resourceQuota.requestsStorage }] : []),
-            ...(resourceQuota.persistentVolumeClaimsLimit ? [{ label: "PVC Limit", value: resourceQuota.persistentVolumeClaimsLimit }] : []),
+            ...resources.map((r) => ({ label: `Resource: ${r.type}`, value: r.name })),
           ]}
           generatedYaml={generatedYaml}
           onConfirm={handleDeploymentConfirm}
