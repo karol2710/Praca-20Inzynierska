@@ -859,12 +859,19 @@ export default function CreateChart() {
       { userCreatedClusterIPNames: clusterIPNames }
     );
 
-    const yaml = combineYamlDocuments(templateResult);
+    // For display: only show ClusterIP and HTTPRoute
+    const displayYaml = combineYamlDocuments(templateResult);
+    setGeneratedYaml(displayYaml);
 
-    setGeneratedYaml(yaml);
+    // Store all templates for deployment
+    const allYaml = combineAllYamlDocuments(templateResult);
+
     setAdvancedDeploymentError(""); // Clear any previous errors
     setAdvancedDeploymentResult("");
-    setPendingDeploymentConfig(deploymentConfig);
+    setPendingDeploymentConfig({
+      ...deploymentConfig,
+      _allYaml: allYaml, // Store full YAML for backend
+    });
     setShowDeploymentModal(true);
   };
 
