@@ -27,8 +27,6 @@ export default function DeploymentConfirmModal({
 }: DeploymentConfirmModalProps) {
   const [isDeploying, setIsDeploying] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [createHTTPRoute, setCreateHTTPRoute] = useState(true);
-  const [createClusterIPService, setCreateClusterIPService] = useState(true);
   const [environment, setEnvironment] = useState<"staging" | "production">("production");
   const [editedYaml, setEditedYaml] = useState<string>(generatedYaml || "");
   const [copiedYaml, setCopiedYaml] = useState(false);
@@ -38,8 +36,8 @@ export default function DeploymentConfirmModal({
       setIsDeploying(true);
       setError(null);
       await onConfirm({
-        createHTTPRoute,
-        createClusterIPService,
+        createHTTPRoute: true,
+        createClusterIPService: true,
         environment,
         generatedYaml: editedYaml,
       });
