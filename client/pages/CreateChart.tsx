@@ -881,28 +881,28 @@ export default function CreateChart() {
     setAdvancedDeploymentResult("");
     setAdvancedDeploymentError("");
 
-    // Get the user-edited YAML (ClusterIP and HTTPRoute only)
-    const userEditedYaml = options.generatedYaml || generatedYaml;
-
-    // Get all templates (includes everything for backend deployment)
-    const allTemplatesYaml = pendingDeploymentConfig._allYaml || "";
-
-    // For display/logging: show what user edited
-    // For backend: send all templates
-    const deploymentPayload = {
-      ...pendingDeploymentConfig,
-      deploymentOptions: options,
-      generatedYaml: userEditedYaml, // User-editable portion (ClusterIP, HTTPRoute)
-      _fullYaml: allTemplatesYaml, // Backend deploys all templates
-    };
-
-    // Remove internal field before sending
-    const { _allYaml, ...payloadToSend } = deploymentPayload;
-
-    // Temporary debug: Log what will be sent to cluster
-    debugDeploymentPayload(payloadToSend);
-
     try {
+      // Get the user-edited YAML (ClusterIP and HTTPRoute only)
+      const userEditedYaml = options.generatedYaml || generatedYaml;
+
+      // Get all templates (includes everything for backend deployment)
+      const allTemplatesYaml = pendingDeploymentConfig._allYaml || "";
+
+      // For display/logging: show what user edited
+      // For backend: send all templates
+      const deploymentPayload = {
+        ...pendingDeploymentConfig,
+        deploymentOptions: options,
+        generatedYaml: userEditedYaml, // User-editable portion (ClusterIP, HTTPRoute)
+        _fullYaml: allTemplatesYaml, // Backend deploys all templates
+      };
+
+      // Remove internal field before sending
+      const { _allYaml, ...payloadToSend } = deploymentPayload;
+
+      // Temporary debug: Log what will be sent to cluster
+      debugDeploymentPayload(payloadToSend);
+
       const token = localStorage.getItem("token");
       const response = await fetch("/api/deploy-advanced", {
         method: "POST",
