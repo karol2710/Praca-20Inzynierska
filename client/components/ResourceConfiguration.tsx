@@ -3670,10 +3670,11 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                   <button
                     onClick={() => {
                       const rules = ((config.spec as GRPCRouteSpec)?.rules || []);
-                      onConfigChange("spec", {
+                      const newSpec = {
                         ...(config.spec as GRPCRouteSpec || {}),
                         rules: [...rules, { matches: [], filters: [], backendRefs: [] }],
-                      });
+                      };
+                      onConfigChange("spec", updateSpecWithHostnames(newSpec));
                     }}
                     className="text-primary hover:opacity-70 text-sm"
                   >
