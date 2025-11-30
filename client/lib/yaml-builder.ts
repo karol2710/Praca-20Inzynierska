@@ -678,8 +678,12 @@ export function generateJobYAML(jobName: string, jobConfig: Record<string, any>,
       spec: cleanEmptyValues(buildPodSpec(jobConfig.template, containers)),
     };
 
-    if (jobConfig.template.labels && Object.keys(jobConfig.template.labels).length > 0) {
-      spec.template.metadata.labels = jobConfig.template.labels;
+    // Add app label to pod template
+    const templateLabels = jobConfig.template.labels ? { ...jobConfig.template.labels } : {};
+    templateLabels.app = jobName.toLowerCase();
+
+    if (Object.keys(templateLabels).length > 0) {
+      spec.template.metadata.labels = templateLabels;
     }
 
     if (jobConfig.template.annotations && Object.keys(jobConfig.template.annotations).length > 0) {
