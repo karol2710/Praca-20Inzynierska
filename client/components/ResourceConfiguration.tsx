@@ -3697,7 +3697,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                             onChange={(e) => {
                               const updated = [...((config.spec as GRPCRouteSpec)?.rules || [])];
                               updated[rIdx] = { ...rule, sectionName: e.target.value || undefined };
-                              onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                              onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                             }}
                             placeholder="grpc"
                             className="input-field text-sm"
@@ -3715,7 +3715,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                   ...rule,
                                   matches: [...(rule.matches || []), { method: {} }],
                                 };
-                                onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                               }}
                               className="text-primary hover:opacity-70 text-xs"
                             >
@@ -3741,7 +3741,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                             method: { ...match.method, type: e.target.value || undefined },
                                           };
                                           updated[rIdx] = { ...rule, matches };
-                                          onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                          onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                         }}
                                         placeholder="Exact"
                                         className="input-field text-xs"
@@ -3760,7 +3760,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                             method: { ...match.method, service: e.target.value || undefined },
                                           };
                                           updated[rIdx] = { ...rule, matches };
-                                          onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                          onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                         }}
                                         placeholder="com.example.MyService"
                                         className="input-field text-xs"
@@ -3779,7 +3779,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                             method: { ...match.method, method: e.target.value || undefined },
                                           };
                                           updated[rIdx] = { ...rule, matches };
-                                          onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                          onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                         }}
                                         placeholder="MyMethod"
                                         className="input-field text-xs"
@@ -3801,7 +3801,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                           headers: [...(match.headers || []), { type: "", name: "", value: "" }],
                                         };
                                         updated[rIdx] = { ...rule, matches };
-                                        onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                        onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                       }}
                                       className="text-primary hover:opacity-70 text-xs"
                                     >
@@ -3820,7 +3820,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                           headers[hIdx] = { ...header, type: e.target.value || undefined };
                                           matches[mIdx] = { ...match, headers };
                                           updated[rIdx] = { ...rule, matches };
-                                          onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                          onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                         }}
                                         placeholder="Exact"
                                         className="input-field text-xs flex-1"
@@ -3835,7 +3835,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                           headers[hIdx] = { ...header, name: e.target.value || undefined };
                                           matches[mIdx] = { ...match, headers };
                                           updated[rIdx] = { ...rule, matches };
-                                          onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                          onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                         }}
                                         placeholder="Header name"
                                         className="input-field text-xs flex-1"
@@ -3850,7 +3850,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                           headers[hIdx] = { ...header, value: e.target.value || undefined };
                                           matches[mIdx] = { ...match, headers };
                                           updated[rIdx] = { ...rule, matches };
-                                          onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                          onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                         }}
                                         placeholder="Header value"
                                         className="input-field text-xs flex-1"
@@ -3865,7 +3865,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                             headers: headers.length > 0 ? headers : undefined,
                                           };
                                           updated[rIdx] = { ...rule, matches };
-                                          onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                          onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                         }}
                                         className="text-destructive hover:opacity-70 text-xs"
                                       >
@@ -3880,7 +3880,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                     const updated = [...((config.spec as GRPCRouteSpec)?.rules || [])];
                                     const matches = (updated[rIdx]?.matches || []).filter((_, i) => i !== mIdx);
                                     updated[rIdx] = { ...rule, matches: matches.length > 0 ? matches : undefined };
-                                    onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                    onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                   }}
                                   className="w-full text-xs text-destructive hover:bg-destructive/10 py-1 rounded transition-colors"
                                 >
@@ -3902,7 +3902,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                   ...rule,
                                   filters: [...(rule.filters || []), { type: "RequestHeaderModifier" }],
                                 };
-                                onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                               }}
                               className="text-primary hover:opacity-70 text-xs"
                             >
@@ -3921,7 +3921,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                       const filters = [...(updated[rIdx]?.filters || [])];
                                       filters[fIdx] = { type: e.target.value as GRPCRouteFilter["type"] };
                                       updated[rIdx] = { ...rule, filters };
-                                      onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                      onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                     }}
                                     className="input-field text-xs"
                                   >
@@ -3951,7 +3951,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                               }
                                               filters[fIdx] = { ...filter, requestHeaderModifier: { ...filter.requestHeaderModifier, set } };
                                               updated[rIdx] = { ...rule, filters };
-                                              onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                              onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                             }}
                                             placeholder="Header name"
                                             className="input-field text-xs flex-1"
@@ -3966,7 +3966,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                               set[key] = e.target.value;
                                               filters[fIdx] = { ...filter, requestHeaderModifier: { ...filter.requestHeaderModifier, set } };
                                               updated[rIdx] = { ...rule, filters };
-                                              onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                              onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                             }}
                                             placeholder="Header value"
                                             className="input-field text-xs flex-1"
@@ -3985,7 +3985,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                                 },
                                               };
                                               updated[rIdx] = { ...rule, filters };
-                                              onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                              onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                             }}
                                             className="text-destructive hover:opacity-70 text-xs"
                                           >
@@ -4005,7 +4005,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                             },
                                           };
                                           updated[rIdx] = { ...rule, filters };
-                                          onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                          onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                         }}
                                         className="text-primary hover:opacity-70 text-xs"
                                       >
@@ -4030,7 +4030,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                               }
                                               filters[fIdx] = { ...filter, requestHeaderModifier: { ...filter.requestHeaderModifier, add } };
                                               updated[rIdx] = { ...rule, filters };
-                                              onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                              onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                             }}
                                             placeholder="Header name"
                                             className="input-field text-xs flex-1"
@@ -4045,7 +4045,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                               add[key] = e.target.value;
                                               filters[fIdx] = { ...filter, requestHeaderModifier: { ...filter.requestHeaderModifier, add } };
                                               updated[rIdx] = { ...rule, filters };
-                                              onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                              onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                             }}
                                             placeholder="Header value"
                                             className="input-field text-xs flex-1"
@@ -4064,7 +4064,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                                 },
                                               };
                                               updated[rIdx] = { ...rule, filters };
-                                              onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                              onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                             }}
                                             className="text-destructive hover:opacity-70 text-xs"
                                           >
@@ -4084,7 +4084,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                             },
                                           };
                                           updated[rIdx] = { ...rule, filters };
-                                          onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                          onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                         }}
                                         className="text-primary hover:opacity-70 text-xs"
                                       >
@@ -4106,7 +4106,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                               remove[idx] = e.target.value;
                                               filters[fIdx] = { ...filter, requestHeaderModifier: { ...filter.requestHeaderModifier, remove } };
                                               updated[rIdx] = { ...rule, filters };
-                                              onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                              onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                             }}
                                             placeholder="Header name to remove"
                                             className="input-field text-xs flex-1"
@@ -4124,7 +4124,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                                 },
                                               };
                                               updated[rIdx] = { ...rule, filters };
-                                              onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                              onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                             }}
                                             className="text-destructive hover:opacity-70 text-xs"
                                           >
@@ -4144,7 +4144,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                             },
                                           };
                                           updated[rIdx] = { ...rule, filters };
-                                          onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                          onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                         }}
                                         className="text-primary hover:opacity-70 text-xs"
                                       >
@@ -4174,7 +4174,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                               }
                                               filters[fIdx] = { ...filter, responseHeaderModifier: { ...filter.responseHeaderModifier, set } };
                                               updated[rIdx] = { ...rule, filters };
-                                              onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                              onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                             }}
                                             placeholder="Header name"
                                             className="input-field text-xs flex-1"
@@ -4189,7 +4189,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                               set[key] = e.target.value;
                                               filters[fIdx] = { ...filter, responseHeaderModifier: { ...filter.responseHeaderModifier, set } };
                                               updated[rIdx] = { ...rule, filters };
-                                              onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                              onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                             }}
                                             placeholder="Header value"
                                             className="input-field text-xs flex-1"
@@ -4208,7 +4208,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                                 },
                                               };
                                               updated[rIdx] = { ...rule, filters };
-                                              onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                              onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                             }}
                                             className="text-destructive hover:opacity-70 text-xs"
                                           >
@@ -4228,7 +4228,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                             },
                                           };
                                           updated[rIdx] = { ...rule, filters };
-                                          onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                          onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                         }}
                                         className="text-primary hover:opacity-70 text-xs"
                                       >
@@ -4253,7 +4253,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                               }
                                               filters[fIdx] = { ...filter, responseHeaderModifier: { ...filter.responseHeaderModifier, add } };
                                               updated[rIdx] = { ...rule, filters };
-                                              onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                              onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                             }}
                                             placeholder="Header name"
                                             className="input-field text-xs flex-1"
@@ -4268,7 +4268,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                               add[key] = e.target.value;
                                               filters[fIdx] = { ...filter, responseHeaderModifier: { ...filter.responseHeaderModifier, add } };
                                               updated[rIdx] = { ...rule, filters };
-                                              onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                              onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                             }}
                                             placeholder="Header value"
                                             className="input-field text-xs flex-1"
@@ -4287,7 +4287,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                                 },
                                               };
                                               updated[rIdx] = { ...rule, filters };
-                                              onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                              onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                             }}
                                             className="text-destructive hover:opacity-70 text-xs"
                                           >
@@ -4307,7 +4307,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                             },
                                           };
                                           updated[rIdx] = { ...rule, filters };
-                                          onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                          onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                         }}
                                         className="text-primary hover:opacity-70 text-xs"
                                       >
@@ -4329,7 +4329,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                               remove[idx] = e.target.value;
                                               filters[fIdx] = { ...filter, responseHeaderModifier: { ...filter.responseHeaderModifier, remove } };
                                               updated[rIdx] = { ...rule, filters };
-                                              onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                              onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                             }}
                                             placeholder="Header name to remove"
                                             className="input-field text-xs flex-1"
@@ -4347,7 +4347,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                                 },
                                               };
                                               updated[rIdx] = { ...rule, filters };
-                                              onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                              onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                             }}
                                             className="text-destructive hover:opacity-70 text-xs"
                                           >
@@ -4367,7 +4367,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                             },
                                           };
                                           updated[rIdx] = { ...rule, filters };
-                                          onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                          onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                         }}
                                         className="text-primary hover:opacity-70 text-xs"
                                       >
@@ -4400,7 +4400,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                               },
                                             };
                                             updated[rIdx] = { ...rule, filters };
-                                            onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                            onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                           }}
                                           placeholder="Service name"
                                           className="input-field text-xs"
@@ -4428,7 +4428,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                               },
                                             };
                                             updated[rIdx] = { ...rule, filters };
-                                            onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                            onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                           }}
                                           placeholder="Port"
                                           className="input-field text-xs"
@@ -4452,7 +4452,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                             },
                                           };
                                           updated[rIdx] = { ...rule, filters };
-                                          onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                          onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                         }}
                                         placeholder="Percent (0-100)"
                                         min="0"
@@ -4481,7 +4481,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                               },
                                             };
                                             updated[rIdx] = { ...rule, filters };
-                                            onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                            onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                           }}
                                           placeholder="Numerator"
                                           className="input-field text-xs"
@@ -4503,7 +4503,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                               },
                                             };
                                             updated[rIdx] = { ...rule, filters };
-                                            onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                            onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                           }}
                                           placeholder="Denominator"
                                           className="input-field text-xs"
@@ -4518,7 +4518,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                     const updated = [...((config.spec as GRPCRouteSpec)?.rules || [])];
                                     const filters = (updated[rIdx]?.filters || []).filter((_, i) => i !== fIdx);
                                     updated[rIdx] = { ...rule, filters: filters.length > 0 ? filters : undefined };
-                                    onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                    onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                   }}
                                   className="w-full text-xs text-destructive hover:bg-destructive/10 py-1 rounded transition-colors"
                                 >
@@ -4540,7 +4540,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                   ...rule,
                                   backendRefs: [...(rule.backendRefs || []), { name: "" }],
                                 };
-                                onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                               }}
                               className="text-primary hover:opacity-70 text-xs"
                             >
@@ -4561,7 +4561,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                         const backends = [...(updated[rIdx]?.backendRefs || [])];
                                         backends[bIdx] = { ...backend, name: e.target.value || undefined };
                                         updated[rIdx] = { ...rule, backendRefs: backends };
-                                        onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                        onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                       }}
                                       placeholder="service-name"
                                       className="input-field text-xs"
@@ -4589,7 +4589,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                           port: e.target.value ? parseInt(e.target.value) : undefined,
                                         };
                                         updated[rIdx] = { ...rule, backendRefs: backends };
-                                        onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                        onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                       }}
                                       placeholder="50051"
                                       className="input-field text-xs"
@@ -4608,7 +4608,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                           weight: e.target.value ? parseInt(e.target.value) : undefined,
                                         };
                                         updated[rIdx] = { ...rule, backendRefs: backends };
-                                        onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                        onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                       }}
                                       placeholder="100"
                                       className="input-field text-xs"
@@ -4624,7 +4624,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                         const backends = [...(updated[rIdx]?.backendRefs || [])];
                                         backends[bIdx] = { ...backend, group: e.target.value || undefined };
                                         updated[rIdx] = { ...rule, backendRefs: backends };
-                                        onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                        onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                       }}
                                       placeholder="core"
                                       className="input-field text-xs"
@@ -4640,7 +4640,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                         const backends = [...(updated[rIdx]?.backendRefs || [])];
                                         backends[bIdx] = { ...backend, kind: e.target.value || undefined };
                                         updated[rIdx] = { ...rule, backendRefs: backends };
-                                        onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                        onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                       }}
                                       placeholder="Service"
                                       className="input-field text-xs"
@@ -4661,7 +4661,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                           filters: [...(backend.filters || []), { type: "RequestHeaderModifier" }],
                                         };
                                         updated[rIdx] = { ...rule, backendRefs: backends };
-                                        onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                        onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                       }}
                                       className="text-primary hover:opacity-70 text-xs"
                                     >
@@ -4681,7 +4681,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                             filters[bfIdx] = { type: e.target.value as GRPCRouteFilter["type"] };
                                             backends[bIdx] = { ...backend, filters };
                                             updated[rIdx] = { ...rule, backendRefs: backends };
-                                            onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                            onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                           }}
                                           className="input-field text-xs"
                                         >
@@ -4713,7 +4713,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                                     filters[bfIdx] = { ...bFilter, requestHeaderModifier: { ...bFilter.requestHeaderModifier, set } };
                                                     backends[bIdx] = { ...backend, filters };
                                                     updated[rIdx] = { ...rule, backendRefs: backends };
-                                                    onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                                    onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                                   }}
                                                   placeholder="Header name"
                                                   className="input-field text-xs flex-1"
@@ -4730,7 +4730,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                                     filters[bfIdx] = { ...bFilter, requestHeaderModifier: { ...bFilter.requestHeaderModifier, set } };
                                                     backends[bIdx] = { ...backend, filters };
                                                     updated[rIdx] = { ...rule, backendRefs: backends };
-                                                    onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                                    onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                                   }}
                                                   placeholder="Header value"
                                                   className="input-field text-xs flex-1"
@@ -4745,7 +4745,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                                     filters[bfIdx] = { ...bFilter, requestHeaderModifier: { ...bFilter.requestHeaderModifier, set: Object.keys(set).length > 0 ? set : undefined } };
                                                     backends[bIdx] = { ...backend, filters };
                                                     updated[rIdx] = { ...rule, backendRefs: backends };
-                                                    onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                                    onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                                   }}
                                                   className="text-destructive hover:opacity-70 text-xs"
                                                 >
@@ -4761,7 +4761,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                                 filters[bfIdx] = { ...bFilter, requestHeaderModifier: { ...bFilter.requestHeaderModifier, set: { ...bFilter.requestHeaderModifier?.set, "": "" } } };
                                                 backends[bIdx] = { ...backend, filters };
                                                 updated[rIdx] = { ...rule, backendRefs: backends };
-                                                onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                                onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                               }}
                                               className="text-primary hover:opacity-70 text-xs"
                                             >
@@ -4788,7 +4788,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                                     filters[bfIdx] = { ...bFilter, requestHeaderModifier: { ...bFilter.requestHeaderModifier, add } };
                                                     backends[bIdx] = { ...backend, filters };
                                                     updated[rIdx] = { ...rule, backendRefs: backends };
-                                                    onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                                    onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                                   }}
                                                   placeholder="Header name"
                                                   className="input-field text-xs flex-1"
@@ -4805,7 +4805,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                                     filters[bfIdx] = { ...bFilter, requestHeaderModifier: { ...bFilter.requestHeaderModifier, add } };
                                                     backends[bIdx] = { ...backend, filters };
                                                     updated[rIdx] = { ...rule, backendRefs: backends };
-                                                    onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                                    onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                                   }}
                                                   placeholder="Header value"
                                                   className="input-field text-xs flex-1"
@@ -4820,7 +4820,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                                     filters[bfIdx] = { ...bFilter, requestHeaderModifier: { ...bFilter.requestHeaderModifier, add: Object.keys(add).length > 0 ? add : undefined } };
                                                     backends[bIdx] = { ...backend, filters };
                                                     updated[rIdx] = { ...rule, backendRefs: backends };
-                                                    onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                                    onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                                   }}
                                                   className="text-destructive hover:opacity-70 text-xs"
                                                 >
@@ -4836,7 +4836,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                                 filters[bfIdx] = { ...bFilter, requestHeaderModifier: { ...bFilter.requestHeaderModifier, add: { ...bFilter.requestHeaderModifier?.add, "": "" } } };
                                                 backends[bIdx] = { ...backend, filters };
                                                 updated[rIdx] = { ...rule, backendRefs: backends };
-                                                onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                                onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                               }}
                                               className="text-primary hover:opacity-70 text-xs"
                                             >
@@ -4860,7 +4860,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                                     filters[bfIdx] = { ...bFilter, requestHeaderModifier: { ...bFilter.requestHeaderModifier, remove } };
                                                     backends[bIdx] = { ...backend, filters };
                                                     updated[rIdx] = { ...rule, backendRefs: backends };
-                                                    onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                                    onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                                   }}
                                                   placeholder="Header name to remove"
                                                   className="input-field text-xs flex-1"
@@ -4874,7 +4874,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                                     filters[bfIdx] = { ...bFilter, requestHeaderModifier: { ...bFilter.requestHeaderModifier, remove: remove.length > 0 ? remove : undefined } };
                                                     backends[bIdx] = { ...backend, filters };
                                                     updated[rIdx] = { ...rule, backendRefs: backends };
-                                                    onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                                    onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                                   }}
                                                   className="text-destructive hover:opacity-70 text-xs"
                                                 >
@@ -4890,7 +4890,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                                 filters[bfIdx] = { ...bFilter, requestHeaderModifier: { ...bFilter.requestHeaderModifier, remove: [...(bFilter.requestHeaderModifier?.remove || []), ""] } };
                                                 backends[bIdx] = { ...backend, filters };
                                                 updated[rIdx] = { ...rule, backendRefs: backends };
-                                                onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                                onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                               }}
                                               className="text-primary hover:opacity-70 text-xs"
                                             >
@@ -4922,7 +4922,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                                     filters[bfIdx] = { ...bFilter, responseHeaderModifier: { ...bFilter.responseHeaderModifier, set } };
                                                     backends[bIdx] = { ...backend, filters };
                                                     updated[rIdx] = { ...rule, backendRefs: backends };
-                                                    onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                                    onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                                   }}
                                                   placeholder="Header name"
                                                   className="input-field text-xs flex-1"
@@ -4939,7 +4939,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                                     filters[bfIdx] = { ...bFilter, responseHeaderModifier: { ...bFilter.responseHeaderModifier, set } };
                                                     backends[bIdx] = { ...backend, filters };
                                                     updated[rIdx] = { ...rule, backendRefs: backends };
-                                                    onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                                    onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                                   }}
                                                   placeholder="Header value"
                                                   className="input-field text-xs flex-1"
@@ -4954,7 +4954,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                                     filters[bfIdx] = { ...bFilter, responseHeaderModifier: { ...bFilter.responseHeaderModifier, set: Object.keys(set).length > 0 ? set : undefined } };
                                                     backends[bIdx] = { ...backend, filters };
                                                     updated[rIdx] = { ...rule, backendRefs: backends };
-                                                    onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                                    onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                                   }}
                                                   className="text-destructive hover:opacity-70 text-xs"
                                                 >
@@ -4970,7 +4970,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                                 filters[bfIdx] = { ...bFilter, responseHeaderModifier: { ...bFilter.responseHeaderModifier, set: { ...bFilter.responseHeaderModifier?.set, "": "" } } };
                                                 backends[bIdx] = { ...backend, filters };
                                                 updated[rIdx] = { ...rule, backendRefs: backends };
-                                                onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                                onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                               }}
                                               className="text-primary hover:opacity-70 text-xs"
                                             >
@@ -4997,7 +4997,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                                     filters[bfIdx] = { ...bFilter, responseHeaderModifier: { ...bFilter.responseHeaderModifier, add } };
                                                     backends[bIdx] = { ...backend, filters };
                                                     updated[rIdx] = { ...rule, backendRefs: backends };
-                                                    onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                                    onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                                   }}
                                                   placeholder="Header name"
                                                   className="input-field text-xs flex-1"
@@ -5014,7 +5014,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                                     filters[bfIdx] = { ...bFilter, responseHeaderModifier: { ...bFilter.responseHeaderModifier, add } };
                                                     backends[bIdx] = { ...backend, filters };
                                                     updated[rIdx] = { ...rule, backendRefs: backends };
-                                                    onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                                    onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                                   }}
                                                   placeholder="Header value"
                                                   className="input-field text-xs flex-1"
@@ -5029,7 +5029,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                                     filters[bfIdx] = { ...bFilter, responseHeaderModifier: { ...bFilter.responseHeaderModifier, add: Object.keys(add).length > 0 ? add : undefined } };
                                                     backends[bIdx] = { ...backend, filters };
                                                     updated[rIdx] = { ...rule, backendRefs: backends };
-                                                    onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                                    onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                                   }}
                                                   className="text-destructive hover:opacity-70 text-xs"
                                                 >
@@ -5045,7 +5045,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                                 filters[bfIdx] = { ...bFilter, responseHeaderModifier: { ...bFilter.responseHeaderModifier, add: { ...bFilter.responseHeaderModifier?.add, "": "" } } };
                                                 backends[bIdx] = { ...backend, filters };
                                                 updated[rIdx] = { ...rule, backendRefs: backends };
-                                                onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                                onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                               }}
                                               className="text-primary hover:opacity-70 text-xs"
                                             >
@@ -5069,7 +5069,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                                     filters[bfIdx] = { ...bFilter, responseHeaderModifier: { ...bFilter.responseHeaderModifier, remove } };
                                                     backends[bIdx] = { ...backend, filters };
                                                     updated[rIdx] = { ...rule, backendRefs: backends };
-                                                    onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                                    onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                                   }}
                                                   placeholder="Header name to remove"
                                                   className="input-field text-xs flex-1"
@@ -5083,7 +5083,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                                     filters[bfIdx] = { ...bFilter, responseHeaderModifier: { ...bFilter.responseHeaderModifier, remove: remove.length > 0 ? remove : undefined } };
                                                     backends[bIdx] = { ...backend, filters };
                                                     updated[rIdx] = { ...rule, backendRefs: backends };
-                                                    onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                                    onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                                   }}
                                                   className="text-destructive hover:opacity-70 text-xs"
                                                 >
@@ -5099,7 +5099,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                                 filters[bfIdx] = { ...bFilter, responseHeaderModifier: { ...bFilter.responseHeaderModifier, remove: [...(bFilter.responseHeaderModifier?.remove || []), ""] } };
                                                 backends[bIdx] = { ...backend, filters };
                                                 updated[rIdx] = { ...rule, backendRefs: backends };
-                                                onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                                onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                               }}
                                               className="text-primary hover:opacity-70 text-xs"
                                             >
@@ -5125,7 +5125,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                                   filters[bfIdx] = { ...bFilter, requestMirror: { ...bFilter.requestMirror, backendRef: { ...bFilter.requestMirror?.backendRef, name: e.target.value || undefined } } };
                                                   backends[bIdx] = { ...backend, filters };
                                                   updated[rIdx] = { ...rule, backendRefs: backends };
-                                                  onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                                  onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                                 }}
                                                 placeholder="Service name"
                                                 className="input-field text-xs"
@@ -5146,7 +5146,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                                   filters[bfIdx] = { ...bFilter, requestMirror: { ...bFilter.requestMirror, backendRef: { ...bFilter.requestMirror?.backendRef, port: e.target.value ? parseInt(e.target.value) : undefined } } };
                                                   backends[bIdx] = { ...backend, filters };
                                                   updated[rIdx] = { ...rule, backendRefs: backends };
-                                                  onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                                  onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                                 }}
                                                 placeholder="Port"
                                                 className="input-field text-xs"
@@ -5166,7 +5166,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                                 filters[bfIdx] = { ...bFilter, requestMirror: { ...bFilter.requestMirror, percent: e.target.value ? parseInt(e.target.value) : undefined } };
                                                 backends[bIdx] = { ...backend, filters };
                                                 updated[rIdx] = { ...rule, backendRefs: backends };
-                                                onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                                onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                               }}
                                               placeholder="Percent (0-100)"
                                               min="0"
@@ -5188,7 +5188,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                                   filters[bfIdx] = { ...bFilter, requestMirror: { ...bFilter.requestMirror, fraction: { ...bFilter.requestMirror?.fraction, numerator: e.target.value ? parseInt(e.target.value) : undefined } } };
                                                   backends[bIdx] = { ...backend, filters };
                                                   updated[rIdx] = { ...rule, backendRefs: backends };
-                                                  onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                                  onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                                 }}
                                                 placeholder="Numerator"
                                                 className="input-field text-xs"
@@ -5203,7 +5203,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                                   filters[bfIdx] = { ...bFilter, requestMirror: { ...bFilter.requestMirror, fraction: { ...bFilter.requestMirror?.fraction, denominator: e.target.value || undefined } } };
                                                   backends[bIdx] = { ...backend, filters };
                                                   updated[rIdx] = { ...rule, backendRefs: backends };
-                                                  onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                                  onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                                 }}
                                                 placeholder="Denominator"
                                                 className="input-field text-xs"
@@ -5220,7 +5220,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                           const filters = (backends[bIdx]?.filters || []).filter((_, i) => i !== bfIdx);
                                           backends[bIdx] = { ...backend, filters: filters.length > 0 ? filters : undefined };
                                           updated[rIdx] = { ...rule, backendRefs: backends };
-                                          onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                          onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                         }}
                                         className="w-full text-xs text-destructive hover:bg-destructive/10 py-1 rounded transition-colors"
                                       >
@@ -5235,7 +5235,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                     const updated = [...((config.spec as GRPCRouteSpec)?.rules || [])];
                                     const backends = (updated[rIdx]?.backendRefs || []).filter((_, i) => i !== bIdx);
                                     updated[rIdx] = { ...rule, backendRefs: backends.length > 0 ? backends : undefined };
-                                    onConfigChange("spec", { ...(config.spec as GRPCRouteSpec || {}), rules: updated });
+                                    onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as GRPCRouteSpec || {}), rules: updated }));
                                   }}
                                   className="w-full text-xs text-destructive hover:bg-destructive/10 py-1 rounded transition-colors"
                                 >
