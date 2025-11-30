@@ -358,6 +358,22 @@ spec:
 }
 
 export function combineYamlDocuments(result: TemplateGenerationResult): string {
+  // Only show ClusterIP and HTTPRoute to the user
+  const documents: string[] = [];
+
+  result.clusterIpServices.forEach((service) => {
+    documents.push(service);
+  });
+
+  if (result.httpRoute) {
+    documents.push(result.httpRoute);
+  }
+
+  return documents.join("\n---\n");
+}
+
+export function combineAllYamlDocuments(result: TemplateGenerationResult): string {
+  // Include all templates for backend deployment
   const documents: string[] = [];
 
   if (result.namespace) {
