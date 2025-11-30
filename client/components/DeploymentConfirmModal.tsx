@@ -156,7 +156,7 @@ export default function DeploymentConfirmModal({
         </div>
 
         {/* Footer */}
-        <div className="flex gap-2 p-6 border-t border-border bg-muted/5">
+        <div className="flex gap-2 p-6 border-t border-border bg-muted/5 flex-shrink-0">
           <button
             onClick={onCancel}
             disabled={isDeploying}
