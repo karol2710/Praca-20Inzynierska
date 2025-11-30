@@ -205,13 +205,37 @@ metadata:
 }
 
 function generateRateLimit(namespace: string, requestsPerSecond: string): string {
-  return `apiVersion: v1
-kind: ConfigMap
+  return `apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
 metadata:
-  name: ratelimit-config
+  name: ${namespace}-ratelimit
   namespace: ${namespace}
-data:
-  requests-per-second: "${requestsPerSecond}"`;
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: ${namespace}-route
+  rateLimit:
+    local:
+      rules:
+          limit:
+            requests: ${requestsPerSecond}
+            unit: Second
+  timeout:
+    http:
+      requestTimeout: 5s
+      connectionIdleTimeout: 30s
+  retry:
+    numRetries: 2
+    retryOn:
+      triggers:
+        - 5xx
+        - gateway-error
+        - connect-failure
+    perRetry:
+      backoff:
+        baseInterval: 100ms
+        maxInterval: 1s`;
 }
 
 function generateResourceQuota(namespace: string, quota: Record<string, any>): string {
