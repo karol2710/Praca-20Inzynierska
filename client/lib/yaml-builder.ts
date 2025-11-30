@@ -800,8 +800,12 @@ export function generateCronJobYAML(cronJobName: string, cronJobConfig: Record<s
         spec: cleanEmptyValues(buildPodSpec(cronJobConfig.spec.jobTemplate.template, containers)),
       };
 
-      if (cronJobConfig.spec.jobTemplate.template.labels && Object.keys(cronJobConfig.spec.jobTemplate.template.labels).length > 0) {
-        spec.jobTemplate.spec.template.metadata.labels = cronJobConfig.spec.jobTemplate.template.labels;
+      // Add app label to pod template
+      const templateLabels = cronJobConfig.spec.jobTemplate.template.labels ? { ...cronJobConfig.spec.jobTemplate.template.labels } : {};
+      templateLabels.app = cronJobName.toLowerCase();
+
+      if (Object.keys(templateLabels).length > 0) {
+        spec.jobTemplate.spec.template.metadata.labels = templateLabels;
       }
 
       if (cronJobConfig.spec.jobTemplate.template.annotations && Object.keys(cronJobConfig.spec.jobTemplate.template.annotations).length > 0) {
