@@ -1,10 +1,15 @@
 import { useState } from "react";
 import { AlertCircle, CheckCircle, Copy, Check } from "lucide-react";
 
+interface ConfigurationItem {
+  label: string;
+  value: string | number | boolean;
+}
+
 interface DeploymentConfirmModalProps {
   isOpen: boolean;
-  deploymentName: string;
   namespace: string;
+  configurationItems: ConfigurationItem[];
   generatedYaml?: string;
   onConfirm: (options: DeploymentOptions) => Promise<void>;
   onCancel: () => void;
@@ -19,8 +24,8 @@ export interface DeploymentOptions {
 
 export default function DeploymentConfirmModal({
   isOpen,
-  deploymentName,
   namespace,
+  configurationItems,
   generatedYaml,
   onConfirm,
   onCancel,
@@ -41,6 +46,7 @@ export default function DeploymentConfirmModal({
         environment,
         generatedYaml: editedYaml,
       });
+      setIsDeploying(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Deployment failed");
       setIsDeploying(false);
@@ -67,18 +73,18 @@ export default function DeploymentConfirmModal({
 
         {/* Content */}
         <div className="p-6 space-y-6 overflow-y-auto flex-1">
-          {/* Deployment Summary */}
-          <div className="bg-muted/20 rounded-lg p-4 space-y-2">
-            <h3 className="font-semibold text-foreground mb-3">Deployment Summary</h3>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <p className="text-foreground/50">Deployment Name</p>
-                <p className="text-foreground font-medium">{deploymentName}</p>
-              </div>
-              <div>
-                <p className="text-foreground/50">Namespace</p>
-                <p className="text-foreground font-medium">{namespace}</p>
-              </div>
+          {/* Configuration Summary */}
+          <div className="bg-muted/20 rounded-lg p-4 space-y-3">
+            <h3 className="font-semibold text-foreground mb-4">Deployment Configuration</h3>
+            <div className="space-y-3">
+              {configurationItems.map((item, idx) => (
+                <div key={idx} className="flex justify-between items-start py-2 border-b border-border/30 last:border-b-0">
+                  <p className="text-foreground/60 text-sm">{item.label}</p>
+                  <p className="text-foreground font-medium text-sm text-right">
+                    {typeof item.value === 'boolean' ? (item.value ? 'Yes' : 'No') : item.value || 'Not set'}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
 
