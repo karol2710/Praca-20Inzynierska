@@ -1849,6 +1849,7 @@ export default function CreateChart() {
                         }}
                         onConfigChange={updateResourceConfig}
                         globalNamespace={globalNamespace}
+                        globalDomain={globalDomain}
                       />
                     </div>
                   )}
