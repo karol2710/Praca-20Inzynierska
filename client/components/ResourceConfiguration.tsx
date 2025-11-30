@@ -540,6 +540,18 @@ const configSections: { [key: string]: { id: string; title: string; description:
 export default function ResourceConfiguration({ config, onConfigChange, globalNamespace, globalDomain }: ResourceConfigurationProps) {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(["metadata"]));
 
+  useEffect(() => {
+    if ((config.type === "HTTPRoute" || config.type === "GRPCRoute") && globalDomain) {
+      const spec = config.spec as HTTPRouteSpec | GRPCRouteSpec | undefined;
+      if (!spec?.hostnames || spec.hostnames.length === 0 || spec.hostnames[0] !== globalDomain) {
+        onConfigChange("spec", {
+          ...spec,
+          hostnames: [globalDomain],
+        });
+      }
+    }
+  }, [globalDomain, config.id, config.type, onConfigChange]);
+
   const toggleSection = (sectionId: string) => {
     const newExpanded = new Set(expandedSections);
     if (newExpanded.has(sectionId)) {
