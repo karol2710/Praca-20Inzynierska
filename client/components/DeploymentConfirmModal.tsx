@@ -60,15 +60,15 @@ export default function DeploymentConfirmModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-card rounded-lg max-w-2xl w-full">
+      <div className="bg-card rounded-lg max-w-2xl w-full max-h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center gap-3 p-6 border-b border-border bg-primary/5">
+        <div className="flex items-center gap-3 p-6 border-b border-border bg-primary/5 flex-shrink-0">
           <AlertCircle className="w-6 h-6 text-primary" />
           <h2 className="text-xl font-bold text-foreground">Review Deployment Configuration</h2>
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6">
+        <div className="p-6 space-y-6 overflow-y-auto flex-1">
           {/* Deployment Summary */}
           <div className="bg-muted/20 rounded-lg p-4 space-y-2">
             <h3 className="font-semibold text-foreground mb-3">Deployment Summary</h3>
