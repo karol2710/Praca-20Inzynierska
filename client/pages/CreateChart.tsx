@@ -1863,6 +1863,7 @@ export default function CreateChart() {
           isOpen={showDeploymentModal}
           deploymentName={newWorkloadName}
           namespace={globalNamespace}
+          generatedYaml={generatedYaml}
           onConfirm={handleDeploymentConfirm}
           onCancel={() => {
             setShowDeploymentModal(false);
