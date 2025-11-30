@@ -143,6 +143,41 @@ export default function DeploymentConfirmModal({
             </div>
           </div>
 
+          {/* Generated YAML */}
+          {editedYaml && (
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <label className="block text-sm font-semibold text-foreground">Generated Kubernetes YAML</label>
+                <button
+                  type="button"
+                  onClick={copyYamlToClipboard}
+                  className="flex items-center gap-2 px-3 py-1 text-xs text-foreground/70 hover:text-foreground bg-muted rounded hover:bg-muted/80 transition"
+                >
+                  {copiedYaml ? (
+                    <>
+                      <Check className="w-4 h-4" />
+                      Copied
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4" />
+                      Copy
+                    </>
+                  )}
+                </button>
+              </div>
+              <textarea
+                value={editedYaml}
+                onChange={(e) => setEditedYaml(e.target.value)}
+                className="w-full h-64 p-3 bg-muted/20 border border-border rounded-lg font-mono text-xs text-foreground focus:outline-none focus:border-primary resize-none"
+                placeholder="Generated YAML will appear here..."
+              />
+              <p className="text-xs text-foreground/50 mt-2">
+                You can edit the YAML before deployment. Changes will be applied when you deploy.
+              </p>
+            </div>
+          )}
+
           {/* Info Box */}
           <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
             <p className="text-sm text-foreground/70">
