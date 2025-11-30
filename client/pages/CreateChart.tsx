@@ -827,10 +827,30 @@ export default function CreateChart() {
       workloads,
       resources,
       globalNamespace,
+      globalDomain,
       requestsPerSecond,
       resourceQuota,
     };
 
+    // Generate YAML templates
+    const templateResult = generateTemplates(
+      workloads,
+      {
+        namespace: globalNamespace,
+        domain: globalDomain,
+        requestsPerSecond,
+        resourceQuota,
+      },
+      true, // createClusterIP - will be determined by user in modal
+      true  // createHTTPRoute - will be determined by user in modal
+    );
+
+    const yaml = combineYamlDocuments(
+      templateResult.clusterIpServices,
+      templateResult.httpRoute
+    );
+
+    setGeneratedYaml(yaml);
     setPendingDeploymentConfig(deploymentConfig);
     setShowDeploymentModal(true);
   };
