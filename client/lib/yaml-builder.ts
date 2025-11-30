@@ -274,8 +274,12 @@ export function generatePodYAML(podName: string, podConfig: Record<string, any>,
     metadata.annotations = podConfig.annotations;
   }
 
-  if (podConfig.labels && Object.keys(podConfig.labels).length > 0) {
-    metadata.labels = podConfig.labels;
+  // Add app label for pod
+  const labels = podConfig.labels ? { ...podConfig.labels } : {};
+  labels.app = podName.toLowerCase();
+
+  if (Object.keys(labels).length > 0) {
+    metadata.labels = labels;
   }
 
   if (podConfig.ownerReferences && podConfig.ownerReferences.length > 0) {
