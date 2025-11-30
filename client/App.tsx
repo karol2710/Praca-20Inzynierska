@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import CreateChart from "./pages/CreateChart";
+import Deployments from "./pages/Deployments";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
