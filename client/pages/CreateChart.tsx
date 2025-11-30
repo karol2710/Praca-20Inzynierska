@@ -279,6 +279,10 @@ export default function CreateChart() {
     requestsStorage?: string;
   }>({});
 
+  // Deployment Modal
+  const [showDeploymentModal, setShowDeploymentModal] = useState<boolean>(false);
+  const [pendingDeploymentConfig, setPendingDeploymentConfig] = useState<any>(null);
+
   const activeWorkload = workloads.find((w) => w.id === activeWorkloadId);
 
   const transformWorkloadConfig = (type: string, config: Record<string, any>) => {
