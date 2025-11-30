@@ -264,6 +264,19 @@ export default function CreateChart() {
   const [generatedYaml, setGeneratedYaml] = useState<string>("");
   const [globalNamespace, setGlobalNamespace] = useState<string>("default");
 
+  // Rate Limiting
+  const [requestsPerSecond, setRequestsPerSecond] = useState<string>("");
+
+  // Resource Quota
+  const [resourceQuota, setResourceQuota] = useState<{
+    requestsCPU?: string;
+    requestsMemory?: string;
+    limitsCPU?: string;
+    limitsMemory?: string;
+    persistentVolumeClaimsLimit?: string;
+    requestsStorage?: string;
+  }>({});
+
   const activeWorkload = workloads.find((w) => w.id === activeWorkloadId);
 
   const transformWorkloadConfig = (type: string, config: Record<string, any>) => {
