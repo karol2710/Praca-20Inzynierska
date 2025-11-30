@@ -854,50 +854,28 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
             <div className="px-4 py-4 border-t border-border bg-muted/10 space-y-4">
               {/* Hostnames */}
               <div className="border-t border-border pt-4">
-                <label className="block text-sm font-medium text-foreground mb-2">Hostnames</label>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Hostname
+                  <span className="text-foreground/50 text-xs font-normal"> (from Global Configuration)</span>
+                </label>
                 <div className="space-y-2">
-                  <div className="flex flex-wrap gap-2">
-                    {((config.spec as HTTPRouteSpec)?.hostnames || []).map((hostname, idx) => (
-                      <div
-                        key={idx}
-                        className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm flex items-center gap-2"
-                      >
-                        {hostname}
-                        <button
-                          onClick={() => {
-                            const updated = ((config.spec as HTTPRouteSpec)?.hostnames || []).filter((_, i) => i !== idx);
-                            onConfigChange("spec", {
-                              ...(config.spec as HTTPRouteSpec || {}),
-                              hostnames: updated.length > 0 ? updated : undefined,
-                            });
-                          }}
-                          className="text-primary hover:opacity-70"
-                        >
-                          ×
-                        </button>
+                  {globalDomain ? (
+                    <>
+                      <div className="flex flex-wrap gap-2">
+                        <div className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm flex items-center gap-2">
+                          {globalDomain}
+                          <span className="text-xs text-primary/70">static</span>
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                  <input
-                    type="text"
-                    placeholder="example.com (press Enter to add)"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        const input = e.currentTarget;
-                        const newHostname = input.value.trim();
-                        if (newHostname) {
-                          const updated = [...((config.spec as HTTPRouteSpec)?.hostnames || []), newHostname];
-                          onConfigChange("spec", {
-                            ...(config.spec as HTTPRouteSpec || {}),
-                            hostnames: updated,
-                          });
-                          input.value = "";
-                        }
-                      }
-                    }}
-                    className="input-field"
-                  />
-                  <p className="text-xs text-foreground/50">Hostnames that HTTPRoute should match</p>
+                      <p className="text-xs text-foreground/50">
+                        Using domain from Global Configuration. Only one hostname is allowed.
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-xs text-foreground/50 bg-muted/30 p-2 rounded">
+                      ⚠ No domain configured in Global Configuration. Please set a Domain first.
+                    </p>
+                  )}
                 </div>
               </div>
 
