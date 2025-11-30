@@ -284,7 +284,6 @@ export default function CreateChart() {
   // Deployment Modal
   const [showDeploymentModal, setShowDeploymentModal] = useState<boolean>(false);
   const [pendingDeploymentConfig, setPendingDeploymentConfig] = useState<any>(null);
-  const [generatedYaml, setGeneratedYaml] = useState<string>("");
 
   const activeWorkload = workloads.find((w) => w.id === activeWorkloadId);
 
@@ -943,7 +942,7 @@ export default function CreateChart() {
                 <li>✓ Pre-configured templates</li>
                 <li>✓ Best practices built-in</li>
                 <li>✓ Quick setup</li>
-                <li>��� Suitable for common use cases</li>
+                <li>����� Suitable for common use cases</li>
               </ul>
             </div>
 
