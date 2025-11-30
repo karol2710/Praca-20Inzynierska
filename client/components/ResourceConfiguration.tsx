@@ -922,7 +922,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                             onChange={(e) => {
                               const updated = [...((config.spec as HTTPRouteSpec)?.rules || [])];
                               updated[rIdx] = { ...rule, sectionName: e.target.value || undefined };
-                              onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                              onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as HTTPRouteSpec || {}), rules: updated }));
                             }}
                             placeholder="http"
                             className="input-field text-sm"
@@ -964,7 +964,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                           path: { ...match.path, type: e.target.value || undefined },
                                         };
                                         updated[rIdx] = { ...rule, matches };
-                                        onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                        onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as HTTPRouteSpec || {}), rules: updated }));
                                       }}
                                       placeholder="Exact, PathPrefix"
                                       className="input-field text-xs"
@@ -983,7 +983,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                           path: { ...match.path, value: e.target.value || undefined },
                                         };
                                         updated[rIdx] = { ...rule, matches };
-                                        onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                        onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as HTTPRouteSpec || {}), rules: updated }));
                                       }}
                                       placeholder="/api"
                                       className="input-field text-xs"
@@ -1001,7 +1001,7 @@ export default function ResourceConfiguration({ config, onConfigChange, globalNa
                                       const matches = [...(updated[rIdx]?.matches || [])];
                                       matches[mIdx] = { ...match, method: e.target.value || undefined };
                                       updated[rIdx] = { ...rule, matches };
-                                      onConfigChange("spec", { ...(config.spec as HTTPRouteSpec || {}), rules: updated });
+                                      onConfigChange("spec", updateSpecWithHostnames({ ...(config.spec as HTTPRouteSpec || {}), rules: updated }));
                                     }}
                                     placeholder="GET, POST, PUT, DELETE"
                                     className="input-field text-xs"
