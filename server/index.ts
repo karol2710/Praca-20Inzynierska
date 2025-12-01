@@ -2,7 +2,7 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import { handleDemo } from "./routes/demo.js";
-import { handleDeploy } from "./routes/deploy.js";
+import { handleDeploy, handleCheckSecurity } from "./routes/deploy.js";
 import { handleAdvancedDeploy } from "./routes/advanced-deploy.js";
 import {
   handleSignup,
