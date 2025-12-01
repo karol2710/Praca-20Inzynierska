@@ -12,6 +12,13 @@ interface DeployResponse {
   success: boolean;
   output: string;
   error?: string;
+  securityReport?: any;
+}
+
+interface SecurityCheckResponse {
+  success: boolean;
+  securityReport: any;
+  error?: string;
 }
 
 // Validate input format and disallow dangerous patterns
