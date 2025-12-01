@@ -75,6 +75,48 @@ const validateRepository = (input: string): { valid: boolean; name?: string; url
   return { valid: true, name, url };
 };
 
+export const handleCheckSecurity: RequestHandler = async (req, res) => {
+  const { repository, helmInstall } = req.body as DeployRequest;
+
+  // Validate inputs
+  const repoValidation = validateRepository(repository);
+  if (!repoValidation.valid) {
+    return res.status(400).json({
+      success: false,
+      securityReport: null,
+      error: "Invalid repository configuration",
+    } as SecurityCheckResponse);
+  }
+
+  const helmValidation = validateInput(helmInstall, 1000);
+  if (!helmValidation.valid) {
+    return res.status(400).json({
+      success: false,
+      securityReport: null,
+      error: "Invalid helm install command",
+    } as SecurityCheckResponse);
+  }
+
+  try {
+    // Parse helm values from command
+    const helmValues = parseHelmValues(helmInstall);
+
+    // Run security validation
+    const securityReport = validateHelmChart("", helmValues);
+
+    res.status(200).json({
+      success: true,
+      securityReport,
+    } as SecurityCheckResponse);
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      securityReport: null,
+      error: "Security check failed",
+    } as SecurityCheckResponse);
+  }
+};
+
 export const handleDeploy: RequestHandler = async (req, res) => {
   const user = (req as any).user;
   const { repository, helmInstall } = req.body as DeployRequest;
