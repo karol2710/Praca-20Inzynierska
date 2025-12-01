@@ -144,7 +144,31 @@ export const handleDeploy: RequestHandler = async (req, res) => {
     const output: string[] = [];
     const { name: repoName, url: repoUrl } = repoValidation;
 
+    // Run security validation and include report
+    const helmValues = parseHelmValues(helmInstall);
+    const securityReport = validateHelmChart("", helmValues);
+
     output.push("=== Starting Helm Deployment ===\n");
+    output.push("=== Security Validation Report ===\n");
+    output.push(`${securityReport.summary}\n`);
+
+    if (securityReport.errors.length > 0) {
+      output.push(`\n⚠️ ERRORS (${securityReport.errors.length}):\n`);
+      securityReport.errors.forEach((error: any) => {
+        output.push(`  ✗ ${error.name}: ${error.message}`);
+        output.push(`    ${error.description}\n`);
+      });
+    }
+
+    if (securityReport.warnings.length > 0) {
+      output.push(`\n⚠️ WARNINGS (${securityReport.warnings.length}):\n`);
+      securityReport.warnings.forEach((warning: any) => {
+        output.push(`  ⚠ ${warning.name}: ${warning.message}`);
+        output.push(`    ${warning.description}\n`);
+      });
+    }
+
+    output.push("\n=== Helm Repository Setup ===\n");
 
     // Step 1: Add temporary helm repo using spawnSync (safer than execSync)
     output.push(`Adding helm repository: ${repoName}`);
