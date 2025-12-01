@@ -778,25 +778,58 @@ export default function CreateChart() {
     return { valid: true };
   };
 
-  const handleStandardSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const performSecurityCheck = async (): Promise<boolean> => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch("/api/check-security", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          repository: repository.trim(),
+          helmInstall: helmInstall.trim(),
+        }),
+      });
 
-    // Validate inputs before sending
-    const repoValidation = validateRepositoryInput(repository);
-    if (!repoValidation.valid) {
-      setDeploymentError(repoValidation.error || "Invalid repository");
-      return;
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setSecurityReport(data.securityReport);
+
+        // If there are errors, show them and don't proceed
+        if (data.securityReport.errors && data.securityReport.errors.length > 0) {
+          setDeploymentError(
+            `Security check failed: ${data.securityReport.errors.length} critical error(s) found. Please fix these before deployment.`
+          );
+          return false;
+        }
+
+        // If there are warnings, show warning dialog
+        if (data.securityReport.warnings && data.securityReport.warnings.length > 0) {
+          setShowSecurityWarning(true);
+          return false;
+        }
+
+        return true;
+      } else {
+        setDeploymentError("Security check failed: " + (data.error || "Unknown error"));
+        return false;
+      }
+    } catch (error) {
+      setDeploymentError(
+        "Security check error: " + (error instanceof Error ? error.message : "Unknown error")
+      );
+      return false;
     }
+  };
 
-    const helmValidation = validateHelmInstallInput(helmInstall);
-    if (!helmValidation.valid) {
-      setDeploymentError(helmValidation.error || "Invalid Helm command");
-      return;
-    }
-
+  const proceedWithDeployment = async () => {
     setIsCreating(true);
     setDeploymentResult("");
     setDeploymentError("");
+    setShowSecurityWarning(false);
 
     try {
       const token = localStorage.getItem("token");
@@ -830,6 +863,32 @@ export default function CreateChart() {
       );
     } finally {
       setIsCreating(false);
+    }
+  };
+
+  const handleStandardSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    // Validate inputs before sending
+    const repoValidation = validateRepositoryInput(repository);
+    if (!repoValidation.valid) {
+      setDeploymentError(repoValidation.error || "Invalid repository");
+      return;
+    }
+
+    const helmValidation = validateHelmInstallInput(helmInstall);
+    if (!helmValidation.valid) {
+      setDeploymentError(helmValidation.error || "Invalid Helm command");
+      return;
+    }
+
+    setDeploymentResult("");
+    setDeploymentError("");
+
+    // Perform security check first
+    const securityCheckPassed = await performSecurityCheck();
+    if (securityCheckPassed) {
+      await proceedWithDeployment();
     }
   };
 
