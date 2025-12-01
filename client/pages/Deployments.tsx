@@ -17,7 +17,8 @@ export default function Deployments() {
   const [deployments, setDeployments] = useState<Deployment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedDeployment, setSelectedDeployment] = useState<Deployment | null>(null);
+  const [selectedDeployment, setSelectedDeployment] =
+    useState<Deployment | null>(null);
   const [showYaml, setShowYaml] = useState(false);
   const [yamlContent, setYamlContent] = useState<string>("");
 
@@ -115,8 +116,12 @@ export default function Deployments() {
         <div className="max-w-6xl mx-auto px-4 py-12">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-4xl font-bold text-foreground mb-2">Deployments</h1>
-            <p className="text-lg text-foreground/60">Manage your Kubernetes applications</p>
+            <h1 className="text-4xl font-bold text-foreground mb-2">
+              Deployments
+            </h1>
+            <p className="text-lg text-foreground/60">
+              Manage your Kubernetes applications
+            </p>
           </div>
 
           {/* Error Message */}
@@ -150,14 +155,22 @@ export default function Deployments() {
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
-                      <h3 className="text-xl font-semibold text-foreground mb-2">{deployment.name}</h3>
+                      <h3 className="text-xl font-semibold text-foreground mb-2">
+                        {deployment.name}
+                      </h3>
                       <p className="text-sm text-foreground/60">
-                        Namespace: <code className="bg-muted px-2 py-1 rounded">{deployment.namespace}</code>
+                        Namespace:{" "}
+                        <code className="bg-muted px-2 py-1 rounded">
+                          {deployment.namespace}
+                        </code>
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(deployment.status)}`}>
-                        {deployment.status.charAt(0).toUpperCase() + deployment.status.slice(1)}
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(deployment.status)}`}
+                      >
+                        {deployment.status.charAt(0).toUpperCase() +
+                          deployment.status.slice(1)}
                       </span>
                       <span className="px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
                         {deployment.environment}
@@ -168,15 +181,21 @@ export default function Deployments() {
                   <div className="grid grid-cols-4 gap-4 mb-6 py-4 border-y border-border">
                     <div>
                       <p className="text-xs text-foreground/50">Workloads</p>
-                      <p className="text-lg font-semibold text-foreground">{deployment.workloads}</p>
+                      <p className="text-lg font-semibold text-foreground">
+                        {deployment.workloads}
+                      </p>
                     </div>
                     <div>
                       <p className="text-xs text-foreground/50">Resources</p>
-                      <p className="text-lg font-semibold text-foreground">{deployment.resources}</p>
+                      <p className="text-lg font-semibold text-foreground">
+                        {deployment.resources}
+                      </p>
                     </div>
                     <div>
                       <p className="text-xs text-foreground/50">Created</p>
-                      <p className="text-sm text-foreground">{new Date(deployment.createdAt).toLocaleDateString()}</p>
+                      <p className="text-sm text-foreground">
+                        {new Date(deployment.createdAt).toLocaleDateString()}
+                      </p>
                     </div>
                     <div></div>
                   </div>
@@ -208,7 +227,9 @@ export default function Deployments() {
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
             <div className="bg-card rounded-lg max-w-4xl w-full max-h-96 overflow-hidden flex flex-col">
               <div className="flex items-center justify-between p-6 border-b border-border">
-                <h2 className="text-xl font-bold text-foreground">{selectedDeployment.name} - YAML</h2>
+                <h2 className="text-xl font-bold text-foreground">
+                  {selectedDeployment.name} - YAML
+                </h2>
                 <button
                   onClick={() => setShowYaml(false)}
                   className="text-foreground/50 hover:text-foreground"

@@ -40,7 +40,7 @@ export function generateTemplates(
   globalConfig: GlobalConfig,
   createClusterIP: boolean,
   createHTTPRoute: boolean,
-  options?: GenerateTemplatesOptions
+  options?: GenerateTemplatesOptions,
 ): TemplateGenerationResult {
   const result: TemplateGenerationResult = {
     clusterIpServices: [],
@@ -80,7 +80,7 @@ export function generateTemplates(
         const clusterIpYaml = generateClusterIPService(
           workload.name,
           globalConfig.namespace,
-          ports
+          ports,
         );
         result.clusterIpServices.push(clusterIpYaml);
       }
@@ -90,7 +90,7 @@ export function generateTemplates(
   // Generate single HTTPRoute with all workloads/ClusterIPs as backend refs
   if (createHTTPRoute) {
     const workloadsWithPorts = workloads.filter(
-      (w) => workloadPortMappings[w.name]?.length > 0
+      (w) => workloadPortMappings[w.name]?.length > 0,
     );
 
     if (workloadsWithPorts.length > 0) {
@@ -98,7 +98,7 @@ export function generateTemplates(
         workloadsWithPorts,
         globalConfig.namespace,
         globalConfig.domain,
-        options?.userCreatedClusterIPNames
+        options?.userCreatedClusterIPNames,
       );
     }
   }
@@ -108,12 +108,21 @@ export function generateTemplates(
 
   // Generate Rate Limit ConfigMap if configured
   if (globalConfig.requestsPerSecond) {
-    result.rateLimit = generateRateLimit(globalConfig.namespace, globalConfig.requestsPerSecond);
+    result.rateLimit = generateRateLimit(
+      globalConfig.namespace,
+      globalConfig.requestsPerSecond,
+    );
   }
 
   // Generate Resource Quota if configured
-  if (globalConfig.resourceQuota && Object.keys(globalConfig.resourceQuota).length > 0) {
-    result.resourceQuota = generateResourceQuota(globalConfig.namespace, globalConfig.resourceQuota);
+  if (
+    globalConfig.resourceQuota &&
+    Object.keys(globalConfig.resourceQuota).length > 0
+  ) {
+    result.resourceQuota = generateResourceQuota(
+      globalConfig.namespace,
+      globalConfig.resourceQuota,
+    );
   }
 
   // Generate Network Policy
@@ -124,7 +133,11 @@ export function generateTemplates(
 
   // Generate Certificate if domain is specified
   if (globalConfig.domain) {
-    result.certificate = generateCertificate(globalConfig.namespace, globalConfig.domain, "production");
+    result.certificate = generateCertificate(
+      globalConfig.namespace,
+      globalConfig.domain,
+      "production",
+    );
   }
 
   // Generate Backup Schedule
@@ -136,7 +149,7 @@ export function generateTemplates(
 function generateClusterIPService(
   workloadName: string,
   namespace: string,
-  ports: number[]
+  ports: number[],
 ): string {
   const serviceName = `${workloadName.toLowerCase()}-clusterip`;
   const appLabel = workloadName.toLowerCase();
@@ -144,7 +157,7 @@ function generateClusterIPService(
   const portSpecs = ports
     .map(
       (port) => `    - port: ${port}
-      targetPort: ${port}`
+      targetPort: ${port}`,
     )
     .join("\n");
 
@@ -165,14 +178,16 @@ function generateHTTPRoute(
   workloads: Workload[],
   namespace: string,
   domain: string,
-  userCreatedClusterIPNames?: string[]
+  userCreatedClusterIPNames?: string[],
 ): string {
   const routeName = `${namespace}-route`;
 
   const backendRefs = workloads
     .map((w, index) => {
       // Use user-created ClusterIP name if available, otherwise generate one
-      const serviceName = userCreatedClusterIPNames?.[index] || `${w.name.toLowerCase()}-clusterip`;
+      const serviceName =
+        userCreatedClusterIPNames?.[index] ||
+        `${w.name.toLowerCase()}-clusterip`;
       return `        - name: ${serviceName}\n          port: 80`;
     })
     .join("\n");
@@ -204,7 +219,10 @@ metadata:
   name: ${namespace}`;
 }
 
-function generateRateLimit(namespace: string, requestsPerSecond: string): string {
+function generateRateLimit(
+  namespace: string,
+  requestsPerSecond: string,
+): string {
   return `apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: BackendTrafficPolicy
 metadata:
@@ -238,7 +256,10 @@ spec:
         maxInterval: 1s`;
 }
 
-function generateResourceQuota(namespace: string, quota: Record<string, any>): string {
+function generateResourceQuota(
+  namespace: string,
+  quota: Record<string, any>,
+): string {
   const limits: Record<string, string> = {};
 
   if (quota.requestsCPU) limits["requests.cpu"] = quota.requestsCPU;
@@ -246,7 +267,8 @@ function generateResourceQuota(namespace: string, quota: Record<string, any>): s
   if (quota.limitsCPU) limits["limits.cpu"] = quota.limitsCPU;
   if (quota.limitsMemory) limits["limits.memory"] = quota.limitsMemory;
   if (quota.requestsStorage) limits["requests.storage"] = quota.requestsStorage;
-  if (quota.persistentVolumeClaimsLimit) limits["persistentvolumeclaims"] = quota.persistentVolumeClaimsLimit;
+  if (quota.persistentVolumeClaimsLimit)
+    limits["persistentvolumeclaims"] = quota.persistentVolumeClaimsLimit;
 
   const limitsYaml = Object.entries(limits)
     .map(([key, value]) => `  ${key}: ${value}`)
@@ -323,8 +345,13 @@ subjects:
     namespace: ${namespace}`;
 }
 
-function generateCertificate(namespace: string, domain: string, environment: "staging" | "production" = "production"): string {
-  const issuer = environment === "production" ? "letsencrypt-prod" : "letsencrypt-staging";
+function generateCertificate(
+  namespace: string,
+  domain: string,
+  environment: "staging" | "production" = "production",
+): string {
+  const issuer =
+    environment === "production" ? "letsencrypt-prod" : "letsencrypt-staging";
 
   return `apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -372,7 +399,9 @@ export function combineYamlDocuments(result: TemplateGenerationResult): string {
   return documents.join("\n---\n");
 }
 
-export function combineAllYamlDocuments(result: TemplateGenerationResult): string {
+export function combineAllYamlDocuments(
+  result: TemplateGenerationResult,
+): string {
   // Include all templates for backend deployment
   const documents: string[] = [];
 

@@ -1,7 +1,7 @@
 export function debugDeploymentPayload(payload: any): void {
   console.log("=== DEPLOYMENT PAYLOAD ===");
   console.log("Full Payload:", JSON.stringify(payload, null, 2));
-  
+
   console.log("\n=== WORKLOADS ===");
   if (payload.workloads && Array.isArray(payload.workloads)) {
     payload.workloads.forEach((workload: any, index: number) => {
@@ -10,7 +10,9 @@ export function debugDeploymentPayload(payload: any): void {
       if (workload.containers) {
         workload.containers.forEach((container: any) => {
           console.log(`    - ${container.name} (image: ${container.image})`);
-          console.log(`      Ports: ${container.ports?.map((p: any) => `${p.containerPort}/${p.protocol || 'TCP'}`).join(", ") || "None"}`);
+          console.log(
+            `      Ports: ${container.ports?.map((p: any) => `${p.containerPort}/${p.protocol || "TCP"}`).join(", ") || "None"}`,
+          );
         });
       }
     });
@@ -32,8 +34,12 @@ export function debugDeploymentPayload(payload: any): void {
   console.log("\n=== DEPLOYMENT OPTIONS ===");
   if (payload.deploymentOptions) {
     console.log(`Environment: ${payload.deploymentOptions.environment}`);
-    console.log(`Create ClusterIP: ${payload.deploymentOptions.createClusterIPService}`);
-    console.log(`Create HTTPRoute: ${payload.deploymentOptions.createHTTPRoute}`);
+    console.log(
+      `Create ClusterIP: ${payload.deploymentOptions.createClusterIPService}`,
+    );
+    console.log(
+      `Create HTTPRoute: ${payload.deploymentOptions.createHTTPRoute}`,
+    );
   }
 
   console.log("\n=== GENERATED YAML ===");

@@ -32,7 +32,9 @@ export default function DeploymentConfirmModal({
 }: DeploymentConfirmModalProps) {
   const [isDeploying, setIsDeploying] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [environment, setEnvironment] = useState<"staging" | "production">("production");
+  const [environment, setEnvironment] = useState<"staging" | "production">(
+    "production",
+  );
   const [editedYaml, setEditedYaml] = useState<string>(generatedYaml || "");
   const [copiedYaml, setCopiedYaml] = useState(false);
 
@@ -68,20 +70,31 @@ export default function DeploymentConfirmModal({
         {/* Header */}
         <div className="flex items-center gap-3 p-6 border-b border-border bg-primary/5 flex-shrink-0">
           <AlertCircle className="w-6 h-6 text-primary" />
-          <h2 className="text-xl font-bold text-foreground">Review Deployment Configuration</h2>
+          <h2 className="text-xl font-bold text-foreground">
+            Review Deployment Configuration
+          </h2>
         </div>
 
         {/* Content */}
         <div className="p-6 space-y-6 overflow-y-auto flex-1">
           {/* Configuration Summary */}
           <div className="bg-muted/20 rounded-lg p-4 space-y-3">
-            <h3 className="font-semibold text-foreground mb-4">Deployment Configuration</h3>
+            <h3 className="font-semibold text-foreground mb-4">
+              Deployment Configuration
+            </h3>
             <div className="space-y-3">
               {configurationItems.map((item, idx) => (
-                <div key={idx} className="flex justify-between items-start py-2 border-b border-border/30 last:border-b-0">
+                <div
+                  key={idx}
+                  className="flex justify-between items-start py-2 border-b border-border/30 last:border-b-0"
+                >
                   <p className="text-foreground/60 text-sm">{item.label}</p>
                   <p className="text-foreground font-medium text-sm text-right">
-                    {typeof item.value === 'boolean' ? (item.value ? 'Yes' : 'No') : item.value || 'Not set'}
+                    {typeof item.value === "boolean"
+                      ? item.value
+                        ? "Yes"
+                        : "No"
+                      : item.value || "Not set"}
                   </p>
                 </div>
               ))}
@@ -90,21 +103,32 @@ export default function DeploymentConfirmModal({
 
           {/* Environment Selection */}
           <div>
-            <label className="block text-sm font-semibold text-foreground mb-3">Environment</label>
+            <label className="block text-sm font-semibold text-foreground mb-3">
+              Environment
+            </label>
             <div className="space-y-2">
               {(["staging", "production"] as const).map((env) => (
-                <label key={env} className="flex items-center gap-3 p-3 border border-border rounded-lg cursor-pointer hover:bg-muted/10">
+                <label
+                  key={env}
+                  className="flex items-center gap-3 p-3 border border-border rounded-lg cursor-pointer hover:bg-muted/10"
+                >
                   <input
                     type="radio"
                     name="environment"
                     value={env}
                     checked={environment === env}
-                    onChange={(e) => setEnvironment(e.target.value as "staging" | "production")}
+                    onChange={(e) =>
+                      setEnvironment(e.target.value as "staging" | "production")
+                    }
                     className="w-4 h-4"
                   />
-                  <span className="text-foreground capitalize font-medium">{env}</span>
+                  <span className="text-foreground capitalize font-medium">
+                    {env}
+                  </span>
                   <span className="text-xs text-foreground/50">
-                    {env === "staging" ? "(Staging Certificate)" : "(Production Certificate)"}
+                    {env === "staging"
+                      ? "(Staging Certificate)"
+                      : "(Production Certificate)"}
                   </span>
                 </label>
               ))}
@@ -115,7 +139,9 @@ export default function DeploymentConfirmModal({
           {editedYaml && (
             <div>
               <div className="flex items-center justify-between mb-3">
-                <label className="block text-sm font-semibold text-foreground">Generated Kubernetes YAML</label>
+                <label className="block text-sm font-semibold text-foreground">
+                  Generated Kubernetes YAML
+                </label>
                 <button
                   type="button"
                   onClick={copyYamlToClipboard}
@@ -141,7 +167,8 @@ export default function DeploymentConfirmModal({
                 placeholder="Generated YAML will appear here..."
               />
               <p className="text-xs text-foreground/50 mt-2">
-                You can edit the YAML before deployment. Changes will be applied when you deploy.
+                You can edit the YAML before deployment. Changes will be applied
+                when you deploy.
               </p>
             </div>
           )}
@@ -149,7 +176,8 @@ export default function DeploymentConfirmModal({
           {/* Info Box */}
           <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
             <p className="text-sm text-foreground/70">
-              <strong>Certificate:</strong> A TLS certificate will be automatically generated for the {environment} environment.
+              <strong>Certificate:</strong> A TLS certificate will be
+              automatically generated for the {environment} environment.
             </p>
           </div>
 

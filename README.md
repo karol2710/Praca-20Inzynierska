@@ -27,12 +27,14 @@ The application includes user authentication, deployment history tracking, and i
 ## Features
 
 ### Standard Deployment
+
 - Deploy Helm charts from any repository
 - Automatic security validation before deployment
 - Real-time security check reports with warnings and error handling
 - One-click deployment with helm
 
 ### Advanced Deployment
+
 - Interactive builder for multiple workloads (Pod, Deployment, ReplicaSet, StatefulSet, Job, CronJob)
 - Support for Kubernetes resources (Service, HTTPRoute, GRPCRoute, ConfigMap, Secret, etc.)
 - Auto-generated YAML templates with pre-configured security defaults
@@ -41,6 +43,7 @@ The application includes user authentication, deployment history tracking, and i
 - Deploy to Rancher-managed Kubernetes clusters with kubectl
 
 ### Common Features
+
 - User accounts with JWT-based authentication
 - Deployment history and management
 - YAML download and copying
@@ -50,6 +53,7 @@ The application includes user authentication, deployment history tracking, and i
 ## Technology Stack
 
 ### Frontend
+
 - **React 18** - UI framework
 - **TypeScript** - Type-safe development
 - **Vite** - Fast module bundler
@@ -60,6 +64,7 @@ The application includes user authentication, deployment history tracking, and i
 - **Sonner** - Toast notifications
 
 ### Backend
+
 - **Node.js + Express** - HTTP server and routing
 - **TypeScript** - Type-safe backend code
 - **PostgreSQL** - Relational database
@@ -68,6 +73,7 @@ The application includes user authentication, deployment history tracking, and i
 - **Netlify Functions** - Serverless deployment option
 
 ### DevOps & Deployment
+
 - **Docker/Kubernetes** - Container orchestration targets
 - **Helm** - Package manager for Kubernetes
 - **Rancher** - Kubernetes cluster management
@@ -76,6 +82,7 @@ The application includes user authentication, deployment history tracking, and i
 ## Quick Start
 
 ### Prerequisites
+
 - Node.js 16+ and pnpm
 - PostgreSQL 12+ (for backend)
 - Helm 3+ (for standard deployments)
@@ -207,6 +214,7 @@ Return deployment status
 ### Database Schema
 
 #### Users Table
+
 ```sql
 id                    INT PRIMARY KEY
 username              VARCHAR(255) UNIQUE NOT NULL
@@ -221,6 +229,7 @@ namespace_counter     INT DEFAULT 0
 ```
 
 #### Deployments Table
+
 ```sql
 id                INT PRIMARY KEY
 user_id           INT NOT NULL REFERENCES users(id) ON DELETE CASCADE
@@ -273,20 +282,24 @@ POST /api/auth/login
 ### 2. Standard Deployment Workflow
 
 **Step 1:** Fill in deployment form
+
 - Repository: `stable https://charts.helm.sh/stable`
 - Helm Install: `helm upgrade --install my-release stable/nginx --set replicaCount=3`
 
 **Step 2:** Security check runs automatically
+
 - Parser extracts helm values
 - Validates image sources, security context, resource limits
 - Reports warnings/errors
 
 **Step 3:** Review security report
+
 - Fix critical errors if any
 - Optionally address warnings
 - Click "Proceed with Deployment"
 
 **Step 4:** Deployment executes
+
 - Backend adds helm repository
 - Runs helm upgrade --install command
 - Returns deployment output
@@ -294,24 +307,28 @@ POST /api/auth/login
 ### 3. Advanced Deployment Workflow
 
 **Step 1:** Configure global settings
+
 - Namespace: `production`
 - Domain: `example.com`
 - Rate Limiting: `1000 requests/second`
 - Resource Quota: CPU/Memory limits
 
 **Step 2:** Create workloads
+
 - Click "Create Workload"
 - Select type (Deployment, StatefulSet, etc.)
 - Configure containers, ports, environment variables
 - Add affinity rules, health checks
 
 **Step 3:** Create resources
+
 - Click "Create Resource"
 - Add Services, HTTPRoutes, ConfigMaps, Secrets
 - Services auto-linked to workloads
 - HTTPRoute uses global domain for hostnames
 
 **Step 4:** Review and deploy
+
 - View generated YAML
 - Edit YAML if needed
 - Click "Deploy Advanced Configuration"
@@ -338,9 +355,11 @@ Authorization: Bearer <token>
 ### Authentication Endpoints
 
 #### POST /api/auth/signup
+
 Create a new user account.
 
 **Request:**
+
 ```json
 {
   "username": "string",
@@ -350,6 +369,7 @@ Create a new user account.
 ```
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -363,9 +383,11 @@ Create a new user account.
 ```
 
 #### POST /api/auth/login
+
 Authenticate user and get JWT token.
 
 **Request:**
+
 ```json
 {
   "username": "string",
@@ -374,6 +396,7 @@ Authenticate user and get JWT token.
 ```
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -387,14 +410,17 @@ Authenticate user and get JWT token.
 ```
 
 #### GET /api/auth/me
+
 Get current authenticated user. Requires valid JWT token.
 
 **Headers:**
+
 ```
 Authorization: Bearer <token>
 ```
 
 **Response (200):**
+
 ```json
 {
   "id": 1,
@@ -406,9 +432,11 @@ Authorization: Bearer <token>
 ### Deployment Endpoints
 
 #### POST /api/check-security
+
 Validate Helm chart before deployment. Returns security report.
 
 **Request:**
+
 ```json
 {
   "repository": "stable https://charts.helm.sh/stable",
@@ -417,6 +445,7 @@ Validate Helm chart before deployment. Returns security report.
 ```
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -437,9 +466,11 @@ Validate Helm chart before deployment. Returns security report.
 ```
 
 #### POST /api/deploy
+
 Deploy Helm chart with security validation.
 
 **Request:**
+
 ```json
 {
   "repository": "stable https://charts.helm.sh/stable",
@@ -448,18 +479,23 @@ Deploy Helm chart with security validation.
 ```
 
 **Response (200):**
+
 ```json
 {
   "success": true,
   "output": "=== Security Validation Report ===\n...\n=== Helm Repository Setup ===\n...",
-  "securityReport": { /* security report object */ }
+  "securityReport": {
+    /* security report object */
+  }
 }
 ```
 
 #### POST /api/deploy-advanced
+
 Deploy custom Kubernetes YAML using kubectl and Rancher credentials.
 
 **Request:**
+
 ```json
 {
   "workloads": [
@@ -471,7 +507,7 @@ Deploy custom Kubernetes YAML using kubectl and Rancher credentials.
         {
           "name": "app",
           "image": "myrepo/app:v1.0.0",
-          "ports": [{"containerPort": 8080}]
+          "ports": [{ "containerPort": 8080 }]
         }
       ]
     }
@@ -483,7 +519,7 @@ Deploy custom Kubernetes YAML using kubectl and Rancher credentials.
       "type": "Service",
       "spec": {
         "type": "ClusterIP",
-        "ports": [{"port": 80, "targetPort": 8080}]
+        "ports": [{ "port": 80, "targetPort": 8080 }]
       }
     }
   ],
@@ -495,6 +531,7 @@ Deploy custom Kubernetes YAML using kubectl and Rancher credentials.
 ```
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -504,9 +541,11 @@ Deploy custom Kubernetes YAML using kubectl and Rancher credentials.
 ```
 
 #### GET /api/deployments
+
 List all deployments for authenticated user.
 
 **Response (200):**
+
 ```json
 [
   {
@@ -524,9 +563,11 @@ List all deployments for authenticated user.
 ```
 
 #### GET /api/deployments/{id}/yaml
+
 Get saved YAML configuration for a deployment.
 
 **Response (200):**
+
 ```yaml
 apiVersion: v1
 kind: Namespace
@@ -535,13 +576,14 @@ metadata:
 ---
 apiVersion: apps/v1
 kind: Deployment
-...
 ```
 
 #### DELETE /api/deployments/{id}
+
 Soft-delete a deployment (sets status to 'deleted').
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -553,12 +595,12 @@ Soft-delete a deployment (sets status to 'deleted').
 
 ### Environment Variables
 
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `DATABASE_URL` | Yes | - | PostgreSQL connection string |
-| `JWT_SECRET` | Yes | `your-secret-key-change-in-production` | Secret key for JWT signing |
-| `PING_MESSAGE` | No | `ping` | Response message for /api/ping |
-| `NODE_ENV` | No | `development` | Environment (development/production) |
+| Variable       | Required | Default                                | Description                          |
+| -------------- | -------- | -------------------------------------- | ------------------------------------ |
+| `DATABASE_URL` | Yes      | -                                      | PostgreSQL connection string         |
+| `JWT_SECRET`   | Yes      | `your-secret-key-change-in-production` | Secret key for JWT signing           |
+| `PING_MESSAGE` | No       | `ping`                                 | Response message for /api/ping       |
+| `NODE_ENV`     | No       | `development`                          | Environment (development/production) |
 
 ### Example .env File
 
@@ -582,7 +624,7 @@ Users need to configure their Rancher cluster credentials in the database:
 
 ```sql
 UPDATE users
-SET 
+SET
   rancher_api_url = 'https://your-rancher-instance.com',
   rancher_api_token = 'token-xxxxxxxxxx',
   rancher_cluster_id = 'c-xxxxx'
@@ -666,9 +708,11 @@ WHERE id = 1;
 ### Common Issues
 
 #### "Database connection failed"
+
 **Problem:** `DATABASE_URL` not set or PostgreSQL unreachable
 
 **Solution:**
+
 ```bash
 # Check DATABASE_URL is set
 echo $DATABASE_URL
@@ -681,9 +725,11 @@ docker ps | grep postgres
 ```
 
 #### "Cannot find helm/kubectl"
+
 **Problem:** Tools not in PATH when running deployments
 
 **Solution:**
+
 ```bash
 # Install Helm
 curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
@@ -699,9 +745,11 @@ kubectl version --client
 ```
 
 #### "JWT_SECRET not set" or Token verification fails
+
 **Problem:** Missing or incorrect JWT secret
 
 **Solution:**
+
 ```bash
 # Generate secure secret
 openssl rand -base64 32
@@ -714,14 +762,16 @@ pnpm run dev
 ```
 
 #### "Rancher credentials not configured"
+
 **Problem:** Advanced deployment fails with credential error
 
 **Solution:**
+
 ```bash
 # Set Rancher credentials in database
 psql $DATABASE_URL << EOF
 UPDATE users
-SET 
+SET
   rancher_api_url = 'https://your-rancher-url',
   rancher_api_token = 'token-xxxxx',
   rancher_cluster_id = 'c-xxxxx'
@@ -730,9 +780,11 @@ EOF
 ```
 
 #### "Permission denied" when running kubectl
+
 **Problem:** Server process lacks permissions for cluster access
 
 **Solution:**
+
 - Ensure kubeconfig is readable by the server process
 - Check kubectl configuration: `kubectl config view`
 - Verify Rancher token has necessary permissions

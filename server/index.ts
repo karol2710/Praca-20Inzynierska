@@ -49,7 +49,10 @@ export async function createServer() {
     res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
 
     // Feature policy
-    res.setHeader("Permissions-Policy", "geolocation=(), microphone=(), camera=()");
+    res.setHeader(
+      "Permissions-Policy",
+      "geolocation=(), microphone=(), camera=()",
+    );
 
     next();
   });
@@ -77,8 +80,16 @@ export async function createServer() {
 
   // Protected deployments management routes
   app.get("/api/deployments", authMiddleware, handleGetDeployments);
-  app.get("/api/deployments/:deploymentId/yaml", authMiddleware, handleGetDeploymentYaml);
-  app.delete("/api/deployments/:deploymentId", authMiddleware, handleDeleteDeployment);
+  app.get(
+    "/api/deployments/:deploymentId/yaml",
+    authMiddleware,
+    handleGetDeploymentYaml,
+  );
+  app.delete(
+    "/api/deployments/:deploymentId",
+    authMiddleware,
+    handleDeleteDeployment,
+  );
 
   return app;
 }

@@ -8,7 +8,8 @@ interface LayoutProps {
 export default function Layout({ children }: LayoutProps) {
   const location = useLocation();
 
-  const isAuthPage = location.pathname === "/login" || location.pathname === "/signup";
+  const isAuthPage =
+    location.pathname === "/login" || location.pathname === "/signup";
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -20,7 +21,10 @@ export default function Layout({ children }: LayoutProps) {
       <header className="border-b border-border bg-card">
         <nav className="container mx-auto px-4 h-16 flex items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 font-bold text-xl text-foreground hover:opacity-80 transition-opacity">
+          <Link
+            to="/"
+            className="flex items-center gap-2 font-bold text-xl text-foreground hover:opacity-80 transition-opacity"
+          >
             <div className="w-8 h-8 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center">
               <span className="text-primary-foreground font-bold">K</span>
             </div>
@@ -61,16 +65,10 @@ export default function Layout({ children }: LayoutProps) {
                 Deployments
               </Link>
               <div className="flex items-center gap-2">
-                <Link
-                  to="/login"
-                  className="btn-ghost text-foreground"
-                >
+                <Link to="/login" className="btn-ghost text-foreground">
                   Sign In
                 </Link>
-                <Link
-                  to="/signup"
-                  className="btn-primary"
-                >
+                <Link to="/signup" className="btn-primary">
                   Get Started
                 </Link>
               </div>
@@ -80,9 +78,7 @@ export default function Layout({ children }: LayoutProps) {
       </header>
 
       {/* Main Content */}
-      <main>
-        {children}
-      </main>
+      <main>{children}</main>
     </div>
   );
 }

@@ -28,7 +28,7 @@ export const handleGetDeployments: RequestHandler = async (req, res) => {
        FROM deployments 
        WHERE user_id = $1 
        ORDER BY created_at DESC`,
-      [user.userId]
+      [user.userId],
     );
 
     const deployments = result.rows.map((row: any) => ({
@@ -62,7 +62,7 @@ export const handleGetDeploymentYaml: RequestHandler = async (req, res) => {
     const result = await query(
       `SELECT yaml_config FROM deployments 
        WHERE id = $1 AND user_id = $2`,
-      [deploymentId, user.userId]
+      [deploymentId, user.userId],
     );
 
     if (result.rows.length === 0) {
@@ -92,7 +92,7 @@ export const handleDeleteDeployment: RequestHandler = async (req, res) => {
     const result = await query(
       `SELECT id FROM deployments 
        WHERE id = $1 AND user_id = $2`,
-      [deploymentId, user.userId]
+      [deploymentId, user.userId],
     );
 
     if (result.rows.length === 0) {
@@ -100,10 +100,9 @@ export const handleDeleteDeployment: RequestHandler = async (req, res) => {
     }
 
     // Update deployment status to deleted instead of hard delete
-    await query(
-      `UPDATE deployments SET status = 'deleted' WHERE id = $1`,
-      [deploymentId]
-    );
+    await query(`UPDATE deployments SET status = 'deleted' WHERE id = $1`, [
+      deploymentId,
+    ]);
 
     res.status(200).json({ success: true });
   } catch (error) {

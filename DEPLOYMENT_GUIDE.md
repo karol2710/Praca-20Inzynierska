@@ -20,26 +20,28 @@ Complete guide for deploying, configuring, and operating KubeChart in developmen
 ### System Requirements
 
 **Minimum:**
+
 - CPU: 2 cores
 - RAM: 2GB
 - Disk: 10GB
 
 **Recommended (Production):**
+
 - CPU: 4 cores
 - RAM: 8GB
 - Disk: 50GB
 
 ### Software Requirements
 
-| Software | Minimum | Recommended | Purpose |
-|----------|---------|-------------|---------|
-| Node.js | 16.0 | 18+ | Runtime |
-| pnpm | 7.0 | 8+ | Package manager |
-| PostgreSQL | 12 | 14+ | Database |
-| Docker | 20.10 | 24+ | Containerization |
-| kubectl | 1.20 | 1.27+ | Kubernetes access |
-| Helm | 3.0 | 3.12+ | Package management |
-| Git | 2.30 | 2.40+ | Version control |
+| Software   | Minimum | Recommended | Purpose            |
+| ---------- | ------- | ----------- | ------------------ |
+| Node.js    | 16.0    | 18+         | Runtime            |
+| pnpm       | 7.0     | 8+          | Package manager    |
+| PostgreSQL | 12      | 14+         | Database           |
+| Docker     | 20.10   | 24+         | Containerization   |
+| kubectl    | 1.20    | 1.27+       | Kubernetes access  |
+| Helm       | 3.0     | 3.12+       | Package management |
+| Git        | 2.30    | 2.40+       | Version control    |
 
 ### Required External Services
 
@@ -265,7 +267,7 @@ docker rm kubechart
 Create `docker-compose.yml`:
 
 ```yaml
-version: '3.8'
+version: "3.8"
 
 services:
   postgres:
@@ -399,47 +401,47 @@ spec:
     spec:
       serviceAccountName: kubechart
       containers:
-      - name: kubechart
-        image: your-registry/kubechart:latest
-        imagePullPolicy: Always
-        ports:
-        - name: http
-          containerPort: 3000
-        env:
-        - name: NODE_ENV
-          valueFrom:
-            configMapKeyRef:
-              name: kubechart-config
-              key: NODE_ENV
-        - name: DATABASE_URL
-          valueFrom:
-            secretKeyRef:
-              name: kubechart-secrets
-              key: DATABASE_URL
-        - name: JWT_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: kubechart-secrets
-              key: JWT_SECRET
-        resources:
-          requests:
-            cpu: 250m
-            memory: 512Mi
-          limits:
-            cpu: 500m
-            memory: 1Gi
-        livenessProbe:
-          httpGet:
-            path: /api/ping
-            port: http
-          initialDelaySeconds: 30
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /api/ping
-            port: http
-          initialDelaySeconds: 10
-          periodSeconds: 5
+        - name: kubechart
+          image: your-registry/kubechart:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 3000
+          env:
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: kubechart-config
+                  key: NODE_ENV
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: kubechart-secrets
+                  key: DATABASE_URL
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: kubechart-secrets
+                  key: JWT_SECRET
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+          livenessProbe:
+            httpGet:
+              path: /api/ping
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api/ping
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
 
 ---
 apiVersion: v1
@@ -452,9 +454,9 @@ spec:
   selector:
     app: kubechart
   ports:
-  - port: 80
-    targetPort: 3000
-    protocol: TCP
+    - port: 80
+      targetPort: 3000
+      protocol: TCP
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -470,9 +472,9 @@ metadata:
   name: kubechart
   namespace: kubechart
 rules:
-- apiGroups: [""]
-  resources: ["pods"]
-  verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -485,9 +487,9 @@ roleRef:
   kind: Role
   name: kubechart
 subjects:
-- kind: ServiceAccount
-  name: kubechart
-  namespace: kubechart
+  - kind: ServiceAccount
+    name: kubechart
+    namespace: kubechart
 ```
 
 Deploy:
@@ -515,6 +517,7 @@ kubectl port-forward svc/kubechart 3000:80 -n kubechart
    - Connect repo to Netlify
 
 2. **Configure Build Settings**
+
    ```
    Build command: pnpm run build
    Publish directory: dist/spa
@@ -522,6 +525,7 @@ kubectl port-forward svc/kubechart 3000:80 -n kubechart
    ```
 
 3. **Set Environment Variables**
+
    ```
    DATABASE_URL = postgresql://...
    JWT_SECRET = your-secret-key
@@ -673,7 +677,7 @@ openssl rand -hex 32
 # Database
 DATABASE_URL=postgresql://kubechart:password@localhost:5432/kubechart
 
-# Authentication  
+# Authentication
 JWT_SECRET=your-secret-key-min-32-chars
 
 # Environment
@@ -912,15 +916,15 @@ Configure structured logging:
 
 ```javascript
 // server/logging.ts
-import winston from 'winston';
+import winston from "winston";
 
 const logger = winston.createLogger({
-  level: process.env.LOG_LEVEL || 'info',
+  level: process.env.LOG_LEVEL || "info",
   format: winston.format.json(),
   transports: [
-    new winston.transports.File({ filename: 'error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'combined.log' })
-  ]
+    new winston.transports.File({ filename: "error.log", level: "error" }),
+    new winston.transports.File({ filename: "combined.log" }),
+  ],
 });
 
 export default logger;
@@ -935,6 +939,7 @@ export default logger;
 **Error:** `Error: connect ECONNREFUSED 127.0.0.1:5432`
 
 **Solution:**
+
 ```bash
 # Check PostgreSQL is running
 pg_isready -h localhost -p 5432
@@ -955,6 +960,7 @@ docker logs kubechart-postgres
 **Error:** `Error: invalid token` or `Error: jwt malformed`
 
 **Solution:**
+
 ```bash
 # Verify JWT_SECRET is set
 echo $JWT_SECRET
@@ -972,6 +978,7 @@ export JWT_SECRET=$(cat /tmp/jwt_secret)
 **Error:** `Error: command not found: helm` or `Error: command not found: kubectl`
 
 **Solution:**
+
 ```bash
 # Install Helm
 curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
@@ -991,10 +998,11 @@ kubectl version --client
 **Error:** `Rancher RKE2 cluster credentials not configured`
 
 **Solution:**
+
 ```sql
 -- Set Rancher credentials in database
 UPDATE users
-SET 
+SET
   rancher_api_url = 'https://your-rancher-instance.com',
   rancher_api_token = 'token-xxxxxxxxxx',
   rancher_cluster_id = 'c-xxxxx'
@@ -1009,6 +1017,7 @@ SELECT rancher_api_url, rancher_cluster_id FROM users WHERE id = 1;
 **Error:** `Error: ENOSPC: no space left on device`
 
 **Solution:**
+
 ```bash
 # Check disk usage
 df -h
@@ -1027,6 +1036,7 @@ rm /backups/kubechart-*.sql.gz  # Remove old backups
 **Error:** `JavaScript heap out of memory` or `FATAL ERROR`
 
 **Solution:**
+
 ```bash
 # Increase Node.js memory
 NODE_OPTIONS="--max-old-space-size=2048" pnpm start

@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import Layout from "@/components/Layout";
 import PodConfiguration from "@/components/PodConfiguration";
-import ContainerConfiguration, { ContainerConfig } from "@/components/ContainerConfiguration";
+import ContainerConfiguration, {
+  ContainerConfig,
+} from "@/components/ContainerConfiguration";
 import DeploymentConfiguration from "@/components/DeploymentConfiguration";
 import ReplicaSetConfiguration from "@/components/ReplicaSetConfiguration";
 import StatefulSetConfiguration from "@/components/StatefulSetConfiguration";
@@ -9,18 +11,52 @@ import JobConfiguration from "@/components/JobConfiguration";
 import CronJobConfiguration from "@/components/CronJobConfiguration";
 import ResourceConfiguration from "@/components/ResourceConfiguration";
 import GlobalConfigurationForm from "@/components/GlobalConfigurationForm";
-import DeploymentConfirmModal, { DeploymentOptions } from "@/components/DeploymentConfirmModal";
+import DeploymentConfirmModal, {
+  DeploymentOptions,
+} from "@/components/DeploymentConfirmModal";
 import { Upload, Plus, X, Zap, Copy, Download } from "lucide-react";
-import { generatePodYAML, generateDeploymentYAML, generateReplicaSetYAML, generateStatefulSetYAML, generateJobYAML, generateCronJobYAML, generateResourceYAML } from "@/lib/yaml-builder";
-import { generateTemplates, combineYamlDocuments, combineAllYamlDocuments } from "@/lib/template-generator";
+import {
+  generatePodYAML,
+  generateDeploymentYAML,
+  generateReplicaSetYAML,
+  generateStatefulSetYAML,
+  generateJobYAML,
+  generateCronJobYAML,
+  generateResourceYAML,
+} from "@/lib/yaml-builder";
+import {
+  generateTemplates,
+  combineYamlDocuments,
+  combineAllYamlDocuments,
+} from "@/lib/template-generator";
 import { debugDeploymentPayload } from "@/lib/debug-deployment";
 
 type ChartMode = "standard" | "advanced";
 type InputType = "file" | "repo";
-type WorkloadType = "Pod" | "Deployment" | "ReplicaSet" | "StatefulSet" | "Job" | "CronJob";
-type ResourceType = "Service" | "HTTPRoute" | "GRPCRoute" | "PersistentVolume" | "PersistentVolumeClaim" | "VolumeAttributesClass" | "ConfigMap" | "Secret" | "LimitRange" | "RuntimeClass";
+type WorkloadType =
+  | "Pod"
+  | "Deployment"
+  | "ReplicaSet"
+  | "StatefulSet"
+  | "Job"
+  | "CronJob";
+type ResourceType =
+  | "Service"
+  | "HTTPRoute"
+  | "GRPCRoute"
+  | "PersistentVolume"
+  | "PersistentVolumeClaim"
+  | "VolumeAttributesClass"
+  | "ConfigMap"
+  | "Secret"
+  | "LimitRange"
+  | "RuntimeClass";
 type RestartPolicy = "Always" | "OnFailure" | "Never";
-type DNSPolicy = "ClusterFirstWithHostNet" | "ClusterFirst" | "Default" | "None";
+type DNSPolicy =
+  | "ClusterFirstWithHostNet"
+  | "ClusterFirst"
+  | "Default"
+  | "None";
 
 interface Container extends ContainerConfig {
   id: string;
@@ -68,7 +104,13 @@ interface PodConfig {
     podAffinity?: any;
     podAntiAffinity?: any;
   };
-  tolerations?: { key?: string; operator?: string; value?: string; effect?: string; tolerationSeconds?: number }[];
+  tolerations?: {
+    key?: string;
+    operator?: string;
+    value?: string;
+    effect?: string;
+    tolerationSeconds?: number;
+  }[];
   topologySpreadConstraints?: {
     maxSkew: number;
     topologyKey: string;
@@ -138,7 +180,6 @@ interface WorkloadConfig extends PodConfig {
   statefulSetOwnerReferences?: OwnerReference[];
   statefulSetSpec?: any;
   statefulSetTemplate?: any;
-
 
   // Job
   jobLabels?: Record<string, string>;
@@ -214,7 +255,14 @@ interface HTTPRouteRule {
     method?: string;
   }[];
   backendRefs?: { name?: string; namespace?: string; port?: number }[];
-  filters?: { type?: string; requestHeaderModifier?: { set?: Record<string, string>; add?: Record<string, string>; remove?: string[] } }[];
+  filters?: {
+    type?: string;
+    requestHeaderModifier?: {
+      set?: Record<string, string>;
+      add?: Record<string, string>;
+      remove?: string[];
+    };
+  }[];
 }
 
 interface HTTPRouteSpec {
@@ -236,25 +284,49 @@ interface Resource {
   data?: Record<string, any>;
 }
 
-const workloadTypes: WorkloadType[] = ["Pod", "Deployment", "ReplicaSet", "StatefulSet", "Job", "CronJob"];
-const resourceTypes: ResourceType[] = ["Service", "HTTPRoute", "GRPCRoute", "PersistentVolume", "PersistentVolumeClaim", "VolumeAttributesClass", "ConfigMap", "Secret", "LimitRange", "RuntimeClass"];
+const workloadTypes: WorkloadType[] = [
+  "Pod",
+  "Deployment",
+  "ReplicaSet",
+  "StatefulSet",
+  "Job",
+  "CronJob",
+];
+const resourceTypes: ResourceType[] = [
+  "Service",
+  "HTTPRoute",
+  "GRPCRoute",
+  "PersistentVolume",
+  "PersistentVolumeClaim",
+  "VolumeAttributesClass",
+  "ConfigMap",
+  "Secret",
+  "LimitRange",
+  "RuntimeClass",
+];
 
 export default function CreateChart() {
   const [mode, setMode] = useState<ChartMode>("standard");
   const [workloads, setWorkloads] = useState<Workload[]>([]);
   const [resources, setResources] = useState<Resource[]>([]);
-  const [selectedWorkloadType, setSelectedWorkloadType] = useState<WorkloadType>("Pod");
-  const [selectedResourceType, setSelectedResourceType] = useState<ResourceType>("Service");
+  const [selectedWorkloadType, setSelectedWorkloadType] =
+    useState<WorkloadType>("Pod");
+  const [selectedResourceType, setSelectedResourceType] =
+    useState<ResourceType>("Service");
   const [newWorkloadName, setNewWorkloadName] = useState<string>("");
   const [newResourceName, setNewResourceName] = useState<string>("");
   const [activeWorkloadId, setActiveWorkloadId] = useState<string>("");
   const [activeResourceId, setActiveResourceId] = useState<string>("");
   const [editingContainerId, setEditingContainerId] = useState<string>("");
   const [editingWorkloadId, setEditingWorkloadId] = useState<string>("");
-  const [editingInitContainerId, setEditingInitContainerId] = useState<string>("");
-  const [editingInitWorkloadId, setEditingInitWorkloadId] = useState<string>("");
-  const [editingEphemeralContainerId, setEditingEphemeralContainerId] = useState<string>("");
-  const [editingEphemeralWorkloadId, setEditingEphemeralWorkloadId] = useState<string>("");
+  const [editingInitContainerId, setEditingInitContainerId] =
+    useState<string>("");
+  const [editingInitWorkloadId, setEditingInitWorkloadId] =
+    useState<string>("");
+  const [editingEphemeralContainerId, setEditingEphemeralContainerId] =
+    useState<string>("");
+  const [editingEphemeralWorkloadId, setEditingEphemeralWorkloadId] =
+    useState<string>("");
   const [isCreating, setIsCreating] = useState<boolean>(false);
   const [repository, setRepository] = useState<string>("");
   const [helmInstall, setHelmInstall] = useState<string>("");
@@ -285,12 +357,17 @@ export default function CreateChart() {
   }>({});
 
   // Deployment Modal
-  const [showDeploymentModal, setShowDeploymentModal] = useState<boolean>(false);
-  const [pendingDeploymentConfig, setPendingDeploymentConfig] = useState<any>(null);
+  const [showDeploymentModal, setShowDeploymentModal] =
+    useState<boolean>(false);
+  const [pendingDeploymentConfig, setPendingDeploymentConfig] =
+    useState<any>(null);
 
   const activeWorkload = workloads.find((w) => w.id === activeWorkloadId);
 
-  const transformWorkloadConfig = (type: string, config: Record<string, any>) => {
+  const transformWorkloadConfig = (
+    type: string,
+    config: Record<string, any>,
+  ) => {
     if (type === "Pod") {
       const transformed: Record<string, any> = {};
       for (const [key, value] of Object.entries(config)) {
@@ -305,12 +382,18 @@ export default function CreateChart() {
       return transformed;
     }
 
-    const prefix = type === "Deployment" ? "deployment"
-      : type === "ReplicaSet" ? "replicaSet"
-      : type === "StatefulSet" ? "statefulSet"
-      : type === "Job" ? "job"
-      : type === "CronJob" ? "cronJob"
-      : "";
+    const prefix =
+      type === "Deployment"
+        ? "deployment"
+        : type === "ReplicaSet"
+          ? "replicaSet"
+          : type === "StatefulSet"
+            ? "statefulSet"
+            : type === "Job"
+              ? "job"
+              : type === "CronJob"
+                ? "cronJob"
+                : "";
 
     if (!prefix) return config;
 
@@ -346,14 +429,24 @@ export default function CreateChart() {
             Object.assign(jobSpec, value);
           } else if (lowerKey === "template") {
             jobTemplate.template = value;
-          } else if (lowerKey === "labels" || lowerKey === "annotations" || lowerKey === "namespace" || lowerKey === "ownerReferences" || lowerKey === "deletionGracePeriodSeconds") {
+          } else if (
+            lowerKey === "labels" ||
+            lowerKey === "annotations" ||
+            lowerKey === "namespace" ||
+            lowerKey === "ownerReferences" ||
+            lowerKey === "deletionGracePeriodSeconds"
+          ) {
             jobMetadata[lowerKey] = value;
           }
         }
       }
 
       // Assemble the job template structure
-      if (Object.keys(jobTemplate).length > 0 || Object.keys(jobSpec).length > 0 || Object.keys(jobMetadata).length > 0) {
+      if (
+        Object.keys(jobTemplate).length > 0 ||
+        Object.keys(jobSpec).length > 0 ||
+        Object.keys(jobMetadata).length > 0
+      ) {
         transformed.spec.jobTemplate = {
           metadata: jobMetadata,
           spec: jobSpec,
@@ -368,7 +461,10 @@ export default function CreateChart() {
   const handleViewYaml = () => {
     if (!activeWorkload) return;
 
-    const transformedConfig = transformWorkloadConfig(activeWorkload.type, activeWorkload.config);
+    const transformedConfig = transformWorkloadConfig(
+      activeWorkload.type,
+      activeWorkload.config,
+    );
     let yamlString = "";
 
     switch (activeWorkload.type) {
@@ -377,7 +473,7 @@ export default function CreateChart() {
           activeWorkload.name,
           transformedConfig,
           activeWorkload.containers,
-          globalNamespace
+          globalNamespace,
         );
         break;
       case "Deployment":
@@ -385,7 +481,7 @@ export default function CreateChart() {
           activeWorkload.name,
           transformedConfig,
           activeWorkload.containers,
-          globalNamespace
+          globalNamespace,
         );
         break;
       case "ReplicaSet":
@@ -393,7 +489,7 @@ export default function CreateChart() {
           activeWorkload.name,
           transformedConfig,
           activeWorkload.containers,
-          globalNamespace
+          globalNamespace,
         );
         break;
       case "StatefulSet":
@@ -401,7 +497,7 @@ export default function CreateChart() {
           activeWorkload.name,
           transformedConfig,
           activeWorkload.containers,
-          globalNamespace
+          globalNamespace,
         );
         break;
       case "Job":
@@ -409,7 +505,7 @@ export default function CreateChart() {
           activeWorkload.name,
           transformedConfig,
           activeWorkload.containers,
-          globalNamespace
+          globalNamespace,
         );
         break;
       case "CronJob":
@@ -417,7 +513,7 @@ export default function CreateChart() {
           activeWorkload.name,
           transformedConfig,
           activeWorkload.containers,
-          globalNamespace
+          globalNamespace,
         );
         break;
     }
@@ -431,7 +527,12 @@ export default function CreateChart() {
   const handleViewResourceYaml = () => {
     if (!activeResource) return;
 
-    const yamlString = generateResourceYAML(activeResource.name, activeResource.type, activeResource, globalNamespace);
+    const yamlString = generateResourceYAML(
+      activeResource.name,
+      activeResource.type,
+      activeResource,
+      globalNamespace,
+    );
 
     if (yamlString) {
       setGeneratedYaml(yamlString);
@@ -489,7 +590,7 @@ export default function CreateChart() {
       if (selectedResourceType === "ConfigMap") {
         newResource.spec = {
           data: {
-            "key": "value",
+            key: "value",
           },
         };
       }
@@ -499,7 +600,7 @@ export default function CreateChart() {
         newResource.spec = {
           type: "Opaque",
           stringData: {
-            "key": "value",
+            key: "value",
           },
         };
       }
@@ -561,11 +662,15 @@ export default function CreateChart() {
     if (activeResourceId === id) setActiveResourceId("");
   };
 
-  const updateWorkloadConfig = (id: string, key: keyof WorkloadConfig, value: any) => {
+  const updateWorkloadConfig = (
+    id: string,
+    key: keyof WorkloadConfig,
+    value: any,
+  ) => {
     setWorkloads(
       workloads.map((w) =>
-        w.id === id ? { ...w, config: { ...w.config, [key]: value } } : w
-      )
+        w.id === id ? { ...w, config: { ...w.config, [key]: value } } : w,
+      ),
     );
   };
 
@@ -576,7 +681,13 @@ export default function CreateChart() {
           if (r.id !== activeResource.id) return r;
 
           // Handle metadata fields at top level
-          const metadataFields = ["name", "labels", "annotations", "deletionGracePeriodSeconds", "ownerReferences"];
+          const metadataFields = [
+            "name",
+            "labels",
+            "annotations",
+            "deletionGracePeriodSeconds",
+            "ownerReferences",
+          ];
 
           if (metadataFields.includes(key)) {
             return { ...r, [key]: value };
@@ -589,7 +700,7 @@ export default function CreateChart() {
 
           // Handle other fields in data
           return { ...r, data: { ...r.data, [key]: value } };
-        })
+        }),
       );
     }
   };
@@ -598,9 +709,16 @@ export default function CreateChart() {
     if (activeWorkload) {
       const updatedWorkload = {
         ...activeWorkload,
-        containers: [...activeWorkload.containers, { id: Date.now().toString(), name: "", image: "" }],
+        containers: [
+          ...activeWorkload.containers,
+          { id: Date.now().toString(), name: "", image: "" },
+        ],
       };
-      setWorkloads(workloads.map((w) => (w.id === activeWorkload.id ? updatedWorkload : w)));
+      setWorkloads(
+        workloads.map((w) =>
+          w.id === activeWorkload.id ? updatedWorkload : w,
+        ),
+      );
     }
   };
 
@@ -608,24 +726,32 @@ export default function CreateChart() {
     setWorkloads(
       workloads.map((w) =>
         w.id === workloadId
-          ? { ...w, containers: w.containers.filter((c) => c.id !== containerId) }
-          : w
-      )
+          ? {
+              ...w,
+              containers: w.containers.filter((c) => c.id !== containerId),
+            }
+          : w,
+      ),
     );
   };
 
-  const updateContainerConfig = (workloadId: string, containerId: string, key: keyof ContainerConfig, value: any) => {
+  const updateContainerConfig = (
+    workloadId: string,
+    containerId: string,
+    key: keyof ContainerConfig,
+    value: any,
+  ) => {
     setWorkloads(
       workloads.map((w) =>
         w.id === workloadId
           ? {
-            ...w,
-            containers: w.containers.map((c) =>
-              c.id === containerId ? { ...c, [key]: value } : c
-            ),
-          }
-          : w
-      )
+              ...w,
+              containers: w.containers.map((c) =>
+                c.id === containerId ? { ...c, [key]: value } : c,
+              ),
+            }
+          : w,
+      ),
     );
   };
 
@@ -633,9 +759,16 @@ export default function CreateChart() {
     if (activeWorkload) {
       const updatedConfig = {
         ...activeWorkload.config,
-        initContainers: [...(activeWorkload.config.initContainers || []), { id: Date.now().toString(), name: "", image: "" }],
+        initContainers: [
+          ...(activeWorkload.config.initContainers || []),
+          { id: Date.now().toString(), name: "", image: "" },
+        ],
       };
-      updateWorkloadConfig(activeWorkload.id, "initContainers" as keyof WorkloadConfig, updatedConfig.initContainers);
+      updateWorkloadConfig(
+        activeWorkload.id,
+        "initContainers" as keyof WorkloadConfig,
+        updatedConfig.initContainers,
+      );
     }
   };
 
@@ -644,32 +777,39 @@ export default function CreateChart() {
       workloads.map((w) =>
         w.id === workloadId
           ? {
-            ...w,
-            config: {
-              ...w.config,
-              initContainers: (w.config.initContainers || []).filter((c) => c.id !== containerId),
-            },
-          }
-          : w
-      )
+              ...w,
+              config: {
+                ...w.config,
+                initContainers: (w.config.initContainers || []).filter(
+                  (c) => c.id !== containerId,
+                ),
+              },
+            }
+          : w,
+      ),
     );
   };
 
-  const updateInitContainerConfig = (workloadId: string, containerId: string, key: keyof ContainerConfig, value: any) => {
+  const updateInitContainerConfig = (
+    workloadId: string,
+    containerId: string,
+    key: keyof ContainerConfig,
+    value: any,
+  ) => {
     setWorkloads(
       workloads.map((w) =>
         w.id === workloadId
           ? {
-            ...w,
-            config: {
-              ...w.config,
-              initContainers: (w.config.initContainers || []).map((c) =>
-                c.id === containerId ? { ...c, [key]: value } : c
-              ),
-            },
-          }
-          : w
-      )
+              ...w,
+              config: {
+                ...w.config,
+                initContainers: (w.config.initContainers || []).map((c) =>
+                  c.id === containerId ? { ...c, [key]: value } : c,
+                ),
+              },
+            }
+          : w,
+      ),
     );
   };
 
@@ -677,43 +817,60 @@ export default function CreateChart() {
     if (activeWorkload) {
       const updatedConfig = {
         ...activeWorkload.config,
-        ephemeralContainers: [...(activeWorkload.config.ephemeralContainers || []), { id: Date.now().toString(), name: "", image: "" }],
+        ephemeralContainers: [
+          ...(activeWorkload.config.ephemeralContainers || []),
+          { id: Date.now().toString(), name: "", image: "" },
+        ],
       };
-      updateWorkloadConfig(activeWorkload.id, "ephemeralContainers" as keyof WorkloadConfig, updatedConfig.ephemeralContainers);
+      updateWorkloadConfig(
+        activeWorkload.id,
+        "ephemeralContainers" as keyof WorkloadConfig,
+        updatedConfig.ephemeralContainers,
+      );
     }
   };
 
-  const deleteEphemeralContainer = (workloadId: string, containerId: string) => {
+  const deleteEphemeralContainer = (
+    workloadId: string,
+    containerId: string,
+  ) => {
     setWorkloads(
       workloads.map((w) =>
         w.id === workloadId
           ? {
-            ...w,
-            config: {
-              ...w.config,
-              ephemeralContainers: (w.config.ephemeralContainers || []).filter((c) => c.id !== containerId),
-            },
-          }
-          : w
-      )
+              ...w,
+              config: {
+                ...w.config,
+                ephemeralContainers: (
+                  w.config.ephemeralContainers || []
+                ).filter((c) => c.id !== containerId),
+              },
+            }
+          : w,
+      ),
     );
   };
 
-  const updateEphemeralContainerConfig = (workloadId: string, containerId: string, key: keyof ContainerConfig | "targetContainerName", value: any) => {
+  const updateEphemeralContainerConfig = (
+    workloadId: string,
+    containerId: string,
+    key: keyof ContainerConfig | "targetContainerName",
+    value: any,
+  ) => {
     setWorkloads(
       workloads.map((w) =>
         w.id === workloadId
           ? {
-            ...w,
-            config: {
-              ...w.config,
-              ephemeralContainers: (w.config.ephemeralContainers || []).map((c) =>
-                c.id === containerId ? { ...c, [key]: value } : c
-              ),
-            },
-          }
-          : w
-      )
+              ...w,
+              config: {
+                ...w.config,
+                ephemeralContainers: (w.config.ephemeralContainers || []).map(
+                  (c) => (c.id === containerId ? { ...c, [key]: value } : c),
+                ),
+              },
+            }
+          : w,
+      ),
     );
   };
 
@@ -722,26 +879,37 @@ export default function CreateChart() {
   };
 
   // Validation functions for security
-  const validateRepositoryInput = (input: string): { valid: boolean; error?: string } => {
+  const validateRepositoryInput = (
+    input: string,
+  ): { valid: boolean; error?: string } => {
     const trimmed = input.trim();
 
     if (trimmed.length === 0) {
       return { valid: false, error: "Repository is required" };
     }
     if (trimmed.length > 500) {
-      return { valid: false, error: "Repository input too long (max 500 characters)" };
+      return {
+        valid: false,
+        error: "Repository input too long (max 500 characters)",
+      };
     }
 
     const parts = trimmed.split(/\s+/);
     if (parts.length !== 2) {
-      return { valid: false, error: "Repository format must be: 'name https://url'" };
+      return {
+        valid: false,
+        error: "Repository format must be: 'name https://url'",
+      };
     }
 
     const [name, url] = parts;
 
     // Validate name (alphanumeric, hyphens, underscores only)
     if (!/^[a-zA-Z0-9_-]+$/.test(name)) {
-      return { valid: false, error: "Repository name contains invalid characters" };
+      return {
+        valid: false,
+        error: "Repository name contains invalid characters",
+      };
     }
 
     // Validate URL format
@@ -757,21 +925,43 @@ export default function CreateChart() {
     return { valid: true };
   };
 
-  const validateHelmInstallInput = (input: string): { valid: boolean; error?: string } => {
+  const validateHelmInstallInput = (
+    input: string,
+  ): { valid: boolean; error?: string } => {
     const trimmed = input.trim();
 
     if (trimmed.length === 0) {
       return { valid: false, error: "Helm install command is required" };
     }
     if (trimmed.length > 1000) {
-      return { valid: false, error: "Helm install command too long (max 1000 characters)" };
+      return {
+        valid: false,
+        error: "Helm install command too long (max 1000 characters)",
+      };
     }
 
     // Disallow shell metacharacters and dangerous patterns
-    const dangerousPatterns = [';', '|', '&', '$', '`', '(', ')', '{', '}', '<', '>', '\n', '\r'];
+    const dangerousPatterns = [
+      ";",
+      "|",
+      "&",
+      "$",
+      "`",
+      "(",
+      ")",
+      "{",
+      "}",
+      "<",
+      ">",
+      "\n",
+      "\r",
+    ];
     for (const pattern of dangerousPatterns) {
       if (trimmed.includes(pattern)) {
-        return { valid: false, error: "Helm command contains invalid characters" };
+        return {
+          valid: false,
+          error: "Helm command contains invalid characters",
+        };
       }
     }
 
@@ -799,27 +989,36 @@ export default function CreateChart() {
         setSecurityReport(data.securityReport);
 
         // If there are errors, show them and don't proceed
-        if (data.securityReport.errors && data.securityReport.errors.length > 0) {
+        if (
+          data.securityReport.errors &&
+          data.securityReport.errors.length > 0
+        ) {
           setDeploymentError(
-            `Security check failed: ${data.securityReport.errors.length} critical error(s) found. Please fix these before deployment.`
+            `Security check failed: ${data.securityReport.errors.length} critical error(s) found. Please fix these before deployment.`,
           );
           return false;
         }
 
         // If there are warnings, show warning dialog
-        if (data.securityReport.warnings && data.securityReport.warnings.length > 0) {
+        if (
+          data.securityReport.warnings &&
+          data.securityReport.warnings.length > 0
+        ) {
           setShowSecurityWarning(true);
           return false;
         }
 
         return true;
       } else {
-        setDeploymentError("Security check failed: " + (data.error || "Unknown error"));
+        setDeploymentError(
+          "Security check failed: " + (data.error || "Unknown error"),
+        );
         return false;
       }
     } catch (error) {
       setDeploymentError(
-        "Security check error: " + (error instanceof Error ? error.message : "Unknown error")
+        "Security check error: " +
+          (error instanceof Error ? error.message : "Unknown error"),
       );
       return false;
     }
@@ -859,7 +1058,7 @@ export default function CreateChart() {
       }
     } catch (error) {
       setDeploymentError(
-        error instanceof Error ? error.message : "An error occurred"
+        error instanceof Error ? error.message : "An error occurred",
       );
     } finally {
       setIsCreating(false);
@@ -933,7 +1132,7 @@ export default function CreateChart() {
       },
       shouldGenerateClusterIP,
       shouldGenerateHTTPRoute,
-      { userCreatedClusterIPNames: clusterIPNames }
+      { userCreatedClusterIPNames: clusterIPNames },
     );
 
     // For display: only show ClusterIP and HTTPRoute
@@ -1011,7 +1210,9 @@ export default function CreateChart() {
       }
     } catch (error) {
       setIsCreating(false);
-      throw new Error(error instanceof Error ? error.message : "An error occurred");
+      throw new Error(
+        error instanceof Error ? error.message : "An error occurred",
+      );
     }
   };
 
@@ -1020,8 +1221,12 @@ export default function CreateChart() {
       <div className="min-h-screen bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-foreground mb-4">Deploy Configuration</h1>
-            <p className="text-lg text-foreground/60">Choose between Standard or Advanced deployment approach</p>
+            <h1 className="text-4xl font-bold text-foreground mb-4">
+              Deploy Configuration
+            </h1>
+            <p className="text-lg text-foreground/60">
+              Choose between Standard or Advanced deployment approach
+            </p>
           </div>
 
           {/* Global Configuration Form Component */}
@@ -1047,8 +1252,12 @@ export default function CreateChart() {
                   : "border-border hover:border-primary/50 hover:bg-muted/5"
               }`}
             >
-              <h2 className="text-xl font-bold text-foreground mb-2">Standard</h2>
-              <p className="text-sm text-foreground/60 mb-4">Simple and Quick</p>
+              <h2 className="text-xl font-bold text-foreground mb-2">
+                Standard
+              </h2>
+              <p className="text-sm text-foreground/60 mb-4">
+                Simple and Quick
+              </p>
               <ul className="space-y-2 text-sm text-foreground/60">
                 <li>✓ Pre-configured templates</li>
                 <li>✓ Best practices built-in</li>
@@ -1065,8 +1274,12 @@ export default function CreateChart() {
                   : "border-border hover:border-primary/50 hover:bg-muted/5"
               }`}
             >
-              <h2 className="text-xl font-bold text-foreground mb-2">Advanced</h2>
-              <p className="text-sm text-foreground/60 mb-4">Full Customization</p>
+              <h2 className="text-xl font-bold text-foreground mb-2">
+                Advanced
+              </h2>
+              <p className="text-sm text-foreground/60 mb-4">
+                Full Customization
+              </p>
               <ul className="space-y-2 text-sm text-foreground/60">
                 <li>✓ Create multiple workloads</li>
                 <li>✓ Define resources</li>
@@ -1078,16 +1291,24 @@ export default function CreateChart() {
 
           {mode === "standard" && (
             <div className="space-y-6">
-              <form onSubmit={handleStandardSubmit} className="max-w-2xl mx-auto space-y-6 bg-card border border-border rounded-xl p-8">
+              <form
+                onSubmit={handleStandardSubmit}
+                className="max-w-2xl mx-auto space-y-6 bg-card border border-border rounded-xl p-8"
+              >
                 <div>
-                  <label htmlFor="repository" className="block text-sm font-semibold text-foreground mb-2">
+                  <label
+                    htmlFor="repository"
+                    className="block text-sm font-semibold text-foreground mb-2"
+                  >
                     Repository <span className="text-destructive">*</span>
                   </label>
                   <input
                     id="repository"
                     type="text"
                     value={repository}
-                    onChange={(e) => setRepository(e.target.value.slice(0, 500))}
+                    onChange={(e) =>
+                      setRepository(e.target.value.slice(0, 500))
+                    }
                     placeholder="kyverno-nirmata https://nirmata.github.io/kyverno-charts/"
                     className="input-field"
                     maxLength={500}
@@ -1095,17 +1316,24 @@ export default function CreateChart() {
                     spellCheck="false"
                     autoComplete="off"
                   />
-                  <p className="text-xs text-foreground/50 mt-1">Format: "name https://url" (HTTPS required)</p>
+                  <p className="text-xs text-foreground/50 mt-1">
+                    Format: "name https://url" (HTTPS required)
+                  </p>
                 </div>
 
                 <div>
-                  <label htmlFor="helmInstall" className="block text-sm font-semibold text-foreground mb-2">
+                  <label
+                    htmlFor="helmInstall"
+                    className="block text-sm font-semibold text-foreground mb-2"
+                  >
                     Helm Install <span className="text-destructive">*</span>
                   </label>
                   <textarea
                     id="helmInstall"
                     value={helmInstall}
-                    onChange={(e) => setHelmInstall(e.target.value.slice(0, 1000))}
+                    onChange={(e) =>
+                      setHelmInstall(e.target.value.slice(0, 1000))
+                    }
                     placeholder="my-nirmata-kyverno-operator kyverno-nirmata/nirmata-kyverno-operator --version 0.8.9-rc1"
                     className="input-field resize-none h-24"
                     maxLength={1000}
@@ -1113,7 +1341,9 @@ export default function CreateChart() {
                     spellCheck="false"
                     autoComplete="off"
                   />
-                  <p className="text-xs text-foreground/50 mt-1">Note: Some characters are not allowed for security reasons</p>
+                  <p className="text-xs text-foreground/50 mt-1">
+                    Note: Some characters are not allowed for security reasons
+                  </p>
                 </div>
 
                 <button
@@ -1121,13 +1351,17 @@ export default function CreateChart() {
                   disabled={isCreating}
                   className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isCreating ? "Deploying Configuration..." : "Deploy Configuration"}
+                  {isCreating
+                    ? "Deploying Configuration..."
+                    : "Deploy Configuration"}
                 </button>
               </form>
 
               {deploymentResult && (
                 <div className="max-w-2xl mx-auto bg-card border border-border rounded-xl p-8">
-                  <h3 className="text-lg font-bold text-foreground mb-4">Deployment Result</h3>
+                  <h3 className="text-lg font-bold text-foreground mb-4">
+                    Deployment Result
+                  </h3>
                   <pre className="bg-muted p-4 rounded-lg overflow-auto max-h-96 text-sm text-foreground whitespace-pre-wrap break-words">
                     {deploymentResult}
                   </pre>
@@ -1136,51 +1370,64 @@ export default function CreateChart() {
 
               {deploymentError && (
                 <div className="max-w-2xl mx-auto bg-card border border-destructive rounded-xl p-8">
-                  <h3 className="text-lg font-bold text-destructive mb-4">Deployment Error</h3>
+                  <h3 className="text-lg font-bold text-destructive mb-4">
+                    Deployment Error
+                  </h3>
                   <p className="text-sm text-foreground whitespace-pre-wrap break-words">
                     {deploymentError}
                   </p>
                 </div>
               )}
 
-              {securityReport && securityReport.warnings && securityReport.warnings.length > 0 && (
-                <div className="max-w-2xl mx-auto bg-card border border-yellow-500 rounded-xl p-8">
-                  <h3 className="text-lg font-bold text-yellow-600 mb-4">
-                    ⚠️ Security Warnings Found
-                  </h3>
-                  <div className="space-y-3 mb-6">
-                    {securityReport.warnings.map((warning: any, idx: number) => (
-                      <div key={idx} className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded p-3">
-                        <p className="font-semibold text-yellow-900 dark:text-yellow-100 text-sm">
-                          {warning.message}
-                        </p>
-                        <p className="text-xs text-yellow-800 dark:text-yellow-200 mt-1">
-                          {warning.description}
-                        </p>
-                      </div>
-                    ))}
+              {securityReport &&
+                securityReport.warnings &&
+                securityReport.warnings.length > 0 && (
+                  <div className="max-w-2xl mx-auto bg-card border border-yellow-500 rounded-xl p-8">
+                    <h3 className="text-lg font-bold text-yellow-600 mb-4">
+                      ⚠️ Security Warnings Found
+                    </h3>
+                    <div className="space-y-3 mb-6">
+                      {securityReport.warnings.map(
+                        (warning: any, idx: number) => (
+                          <div
+                            key={idx}
+                            className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded p-3"
+                          >
+                            <p className="font-semibold text-yellow-900 dark:text-yellow-100 text-sm">
+                              {warning.message}
+                            </p>
+                            <p className="text-xs text-yellow-800 dark:text-yellow-200 mt-1">
+                              {warning.description}
+                            </p>
+                          </div>
+                        ),
+                      )}
+                    </div>
+                    <p className="text-sm text-foreground mb-4">
+                      These warnings suggest improvements for production
+                      readiness. You can proceed with deployment or address
+                      these issues first.
+                    </p>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={proceedWithDeployment}
+                        disabled={isCreating}
+                        className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg font-semibold disabled:opacity-50"
+                      >
+                        {isCreating
+                          ? "Deploying..."
+                          : "Proceed with Deployment"}
+                      </button>
+                      <button
+                        onClick={() => setShowSecurityWarning(false)}
+                        disabled={isCreating}
+                        className="px-4 py-2 border border-border text-foreground hover:bg-muted rounded-lg font-semibold disabled:opacity-50"
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   </div>
-                  <p className="text-sm text-foreground mb-4">
-                    These warnings suggest improvements for production readiness. You can proceed with deployment or address these issues first.
-                  </p>
-                  <div className="flex gap-3">
-                    <button
-                      onClick={proceedWithDeployment}
-                      disabled={isCreating}
-                      className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg font-semibold disabled:opacity-50"
-                    >
-                      {isCreating ? "Deploying..." : "Proceed with Deployment"}
-                    </button>
-                    <button
-                      onClick={() => setShowSecurityWarning(false)}
-                      disabled={isCreating}
-                      className="px-4 py-2 border border-border text-foreground hover:bg-muted rounded-lg font-semibold disabled:opacity-50"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              )}
+                )}
             </div>
           )}
 
@@ -1193,11 +1440,15 @@ export default function CreateChart() {
                 <div className="space-y-8">
                   {/* Create Workload Section */}
                   <div className="bg-card border border-border rounded-xl p-8">
-                    <h2 className="text-xl font-bold text-foreground mb-6">Create Workload</h2>
+                    <h2 className="text-xl font-bold text-foreground mb-6">
+                      Create Workload
+                    </h2>
                     <div className="space-y-4 mb-6">
                       {/* Workload Type Selection */}
                       <div>
-                        <label className="block text-sm font-semibold text-foreground mb-3">Workload Type</label>
+                        <label className="block text-sm font-semibold text-foreground mb-3">
+                          Workload Type
+                        </label>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                           {workloadTypes.map((type) => (
                             <button
@@ -1217,7 +1468,10 @@ export default function CreateChart() {
 
                       {/* Workload Name */}
                       <div>
-                        <label htmlFor="workloadName" className="block text-sm font-semibold text-foreground mb-2">
+                        <label
+                          htmlFor="workloadName"
+                          className="block text-sm font-semibold text-foreground mb-2"
+                        >
                           Workload Name
                         </label>
                         <input
@@ -1261,9 +1515,12 @@ export default function CreateChart() {
                             }`}
                           >
                             <div>
-                              <p className="font-semibold text-foreground">{workload.name || "Unnamed"}</p>
+                              <p className="font-semibold text-foreground">
+                                {workload.name || "Unnamed"}
+                              </p>
                               <p className="text-sm text-foreground/60">
-                                {workload.type} • {workload.containers.length} container(s)
+                                {workload.type} • {workload.containers.length}{" "}
+                                container(s)
                               </p>
                             </div>
                             <button
@@ -1285,9 +1542,20 @@ export default function CreateChart() {
                   {activeWorkload && (
                     <div className="bg-card border border-border rounded-xl p-8">
                       <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-xl font-bold text-foreground">Configure "{activeWorkload.name}" ({activeWorkload.type})</h2>
+                        <h2 className="text-xl font-bold text-foreground">
+                          Configure "{activeWorkload.name}" (
+                          {activeWorkload.type})
+                        </h2>
                         <div className="flex items-center gap-2">
-                          {["Pod", "Deployment", "ReplicaSet", "StatefulSet", "DaemonSet", "Job", "CronJob"].includes(activeWorkload.type) && (
+                          {[
+                            "Pod",
+                            "Deployment",
+                            "ReplicaSet",
+                            "StatefulSet",
+                            "DaemonSet",
+                            "Job",
+                            "CronJob",
+                          ].includes(activeWorkload.type) && (
                             <button
                               onClick={handleViewYaml}
                               className="flex items-center gap-2 px-3 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity text-sm font-medium"
@@ -1308,11 +1576,15 @@ export default function CreateChart() {
 
                       {/* Type-specific Configuration */}
                       <div className="space-y-4 mb-8 p-6 bg-muted/30 rounded-lg border border-border">
-                        <h3 className="font-semibold text-foreground mb-4">Configuration</h3>
+                        <h3 className="font-semibold text-foreground mb-4">
+                          Configuration
+                        </h3>
 
                         {activeWorkload.type === "Pod" && (
                           <div className="space-y-4">
-                            <p className="text-foreground/60 text-sm font-medium mb-4">Pod Configuration</p>
+                            <p className="text-foreground/60 text-sm font-medium mb-4">
+                              Pod Configuration
+                            </p>
                             {(() => {
                               const runtimeClasses = resources
                                 .filter((r) => r.type === "RuntimeClass")
@@ -1323,49 +1595,89 @@ export default function CreateChart() {
                                   config={{
                                     namespace: globalNamespace,
                                     labels: activeWorkload.config.labels,
-                                    annotations: activeWorkload.config.annotations,
-                                    deletionGracePeriodSeconds: activeWorkload.config.podDeletionGracePeriodSeconds,
-                                    ownerReferences: activeWorkload.config.podOwnerReferences,
+                                    annotations:
+                                      activeWorkload.config.annotations,
+                                    deletionGracePeriodSeconds:
+                                      activeWorkload.config
+                                        .podDeletionGracePeriodSeconds,
+                                    ownerReferences:
+                                      activeWorkload.config.podOwnerReferences,
                                     name: activeWorkload.config.name,
-                                    containers: activeWorkload.config.containers,
-                                    initContainers: activeWorkload.config.initContainers,
-                                    ephemeralContainers: activeWorkload.config.ephemeralContainers,
+                                    containers:
+                                      activeWorkload.config.containers,
+                                    initContainers:
+                                      activeWorkload.config.initContainers,
+                                    ephemeralContainers:
+                                      activeWorkload.config.ephemeralContainers,
                                     volumes: activeWorkload.config.volumes,
-                                    podDeathTime: activeWorkload.config.podDeathTime,
-                                    terminationGracePeriodSeconds: activeWorkload.config.terminationGracePeriodSeconds,
-                                    restartPolicy: activeWorkload.config.restartPolicy,
+                                    podDeathTime:
+                                      activeWorkload.config.podDeathTime,
+                                    terminationGracePeriodSeconds:
+                                      activeWorkload.config
+                                        .terminationGracePeriodSeconds,
+                                    restartPolicy:
+                                      activeWorkload.config.restartPolicy,
                                     nodeName: activeWorkload.config.nodeName,
                                     priority: activeWorkload.config.priority,
-                                    priorityClassName: activeWorkload.config.priorityClassName,
-                                    serviceAccountName: activeWorkload.config.serviceAccountName,
-                                    automountServiceAccountToken: activeWorkload.config.automountServiceAccountToken,
+                                    priorityClassName:
+                                      activeWorkload.config.priorityClassName,
+                                    serviceAccountName:
+                                      activeWorkload.config.serviceAccountName,
+                                    automountServiceAccountToken:
+                                      activeWorkload.config
+                                        .automountServiceAccountToken,
                                     hostname: activeWorkload.config.hostname,
                                     subdomain: activeWorkload.config.subdomain,
                                     dnsPolicy: activeWorkload.config.dnsPolicy,
-                                    enableServiceLinks: activeWorkload.config.enableServiceLinks,
+                                    enableServiceLinks:
+                                      activeWorkload.config.enableServiceLinks,
                                     hostIPC: activeWorkload.config.hostIPC,
-                                    hostNetwork: activeWorkload.config.hostNetwork,
+                                    hostNetwork:
+                                      activeWorkload.config.hostNetwork,
                                     hostPID: activeWorkload.config.hostPID,
                                     hostUsers: activeWorkload.config.hostUsers,
-                                    shareProcessNamespace: activeWorkload.config.shareProcessNamespace,
+                                    shareProcessNamespace:
+                                      activeWorkload.config
+                                        .shareProcessNamespace,
                                     dnsConfig: activeWorkload.config.dnsConfig,
-                                    hostAliases: activeWorkload.config.hostAliases,
-                                    tolerations: activeWorkload.config.tolerations,
-                                    topologySpreadConstraints: activeWorkload.config.topologySpreadConstraints,
+                                    hostAliases:
+                                      activeWorkload.config.hostAliases,
+                                    tolerations:
+                                      activeWorkload.config.tolerations,
+                                    topologySpreadConstraints:
+                                      activeWorkload.config
+                                        .topologySpreadConstraints,
                                     affinity: activeWorkload.config.affinity,
-                                    imagePullSecrets: activeWorkload.config.imagePullSecrets,
-                                    runtimeClassName: activeWorkload.config.runtimeClassName,
-                                    securityContext: activeWorkload.config.securityContext,
+                                    imagePullSecrets:
+                                      activeWorkload.config.imagePullSecrets,
+                                    runtimeClassName:
+                                      activeWorkload.config.runtimeClassName,
+                                    securityContext:
+                                      activeWorkload.config.securityContext,
                                   }}
                                   globalNamespace={globalNamespace}
                                   runtimeClasses={runtimeClasses}
                                   onConfigChange={(key, value) => {
-                                    const metadataKeys = ['deletionGracePeriodSeconds', 'ownerReferences'];
+                                    const metadataKeys = [
+                                      "deletionGracePeriodSeconds",
+                                      "ownerReferences",
+                                    ];
                                     if (metadataKeys.includes(key)) {
-                                      const configKey = 'pod' + key.charAt(0).toUpperCase() + key.slice(1);
-                                      updateWorkloadConfig(activeWorkload.id, configKey, value);
+                                      const configKey =
+                                        "pod" +
+                                        key.charAt(0).toUpperCase() +
+                                        key.slice(1);
+                                      updateWorkloadConfig(
+                                        activeWorkload.id,
+                                        configKey,
+                                        value,
+                                      );
                                     } else {
-                                      updateWorkloadConfig(activeWorkload.id, key, value);
+                                      updateWorkloadConfig(
+                                        activeWorkload.id,
+                                        key,
+                                        value,
+                                      );
                                     }
                                   }}
                                 />
@@ -1376,26 +1688,47 @@ export default function CreateChart() {
 
                         {activeWorkload.type === "Deployment" && (
                           <div className="space-y-4">
-                            <p className="text-foreground/60 text-sm font-medium mb-4">Deployment Configuration</p>
+                            <p className="text-foreground/60 text-sm font-medium mb-4">
+                              Deployment Configuration
+                            </p>
                             <DeploymentConfiguration
                               config={{
                                 namespace: globalNamespace,
                                 labels: activeWorkload.config.deploymentLabels,
-                                annotations: activeWorkload.config.deploymentAnnotations,
-                                deletionGracePeriodSeconds: activeWorkload.config.deploymentDeletionGracePeriodSeconds,
-                                ownerReferences: activeWorkload.config.deploymentOwnerReferences,
+                                annotations:
+                                  activeWorkload.config.deploymentAnnotations,
+                                deletionGracePeriodSeconds:
+                                  activeWorkload.config
+                                    .deploymentDeletionGracePeriodSeconds,
+                                ownerReferences:
+                                  activeWorkload.config
+                                    .deploymentOwnerReferences,
                                 spec: activeWorkload.config.deploymentSpec,
-                                template: activeWorkload.config.deploymentTemplate,
+                                template:
+                                  activeWorkload.config.deploymentTemplate,
                               }}
                               globalNamespace={globalNamespace}
                               onConfigChange={(key, value) => {
                                 if (key === "spec") {
-                                  updateWorkloadConfig(activeWorkload.id, "deploymentSpec", value);
+                                  updateWorkloadConfig(
+                                    activeWorkload.id,
+                                    "deploymentSpec",
+                                    value,
+                                  );
                                 } else if (key === "template") {
-                                  updateWorkloadConfig(activeWorkload.id, "deploymentTemplate", value);
+                                  updateWorkloadConfig(
+                                    activeWorkload.id,
+                                    "deploymentTemplate",
+                                    value,
+                                  );
                                 } else {
-                                  const configKey: keyof WorkloadConfig = `deployment${key.charAt(0).toUpperCase() + key.slice(1)}` as any;
-                                  updateWorkloadConfig(activeWorkload.id, configKey, value);
+                                  const configKey: keyof WorkloadConfig =
+                                    `deployment${key.charAt(0).toUpperCase() + key.slice(1)}` as any;
+                                  updateWorkloadConfig(
+                                    activeWorkload.id,
+                                    configKey,
+                                    value,
+                                  );
                                 }
                               }}
                             />
@@ -1404,26 +1737,47 @@ export default function CreateChart() {
 
                         {activeWorkload.type === "ReplicaSet" && (
                           <div className="space-y-4">
-                            <p className="text-foreground/60 text-sm font-medium mb-4">ReplicaSet Configuration</p>
+                            <p className="text-foreground/60 text-sm font-medium mb-4">
+                              ReplicaSet Configuration
+                            </p>
                             <ReplicaSetConfiguration
                               config={{
                                 namespace: globalNamespace,
                                 labels: activeWorkload.config.replicaSetLabels,
-                                annotations: activeWorkload.config.replicaSetAnnotations,
-                                deletionGracePeriodSeconds: activeWorkload.config.replicaSetDeletionGracePeriodSeconds,
-                                ownerReferences: activeWorkload.config.replicaSetOwnerReferences,
+                                annotations:
+                                  activeWorkload.config.replicaSetAnnotations,
+                                deletionGracePeriodSeconds:
+                                  activeWorkload.config
+                                    .replicaSetDeletionGracePeriodSeconds,
+                                ownerReferences:
+                                  activeWorkload.config
+                                    .replicaSetOwnerReferences,
                                 spec: activeWorkload.config.replicaSetSpec,
-                                template: activeWorkload.config.replicaSetTemplate,
+                                template:
+                                  activeWorkload.config.replicaSetTemplate,
                               }}
                               globalNamespace={globalNamespace}
                               onConfigChange={(key, value) => {
                                 if (key === "spec") {
-                                  updateWorkloadConfig(activeWorkload.id, "replicaSetSpec", value);
+                                  updateWorkloadConfig(
+                                    activeWorkload.id,
+                                    "replicaSetSpec",
+                                    value,
+                                  );
                                 } else if (key === "template") {
-                                  updateWorkloadConfig(activeWorkload.id, "replicaSetTemplate", value);
+                                  updateWorkloadConfig(
+                                    activeWorkload.id,
+                                    "replicaSetTemplate",
+                                    value,
+                                  );
                                 } else {
-                                  const configKey: keyof WorkloadConfig = `replicaSet${key.charAt(0).toUpperCase() + key.slice(1)}` as any;
-                                  updateWorkloadConfig(activeWorkload.id, configKey, value);
+                                  const configKey: keyof WorkloadConfig =
+                                    `replicaSet${key.charAt(0).toUpperCase() + key.slice(1)}` as any;
+                                  updateWorkloadConfig(
+                                    activeWorkload.id,
+                                    configKey,
+                                    value,
+                                  );
                                 }
                               }}
                             />
@@ -1432,26 +1786,47 @@ export default function CreateChart() {
 
                         {activeWorkload.type === "StatefulSet" && (
                           <div className="space-y-4">
-                            <p className="text-foreground/60 text-sm font-medium mb-4">StatefulSet Configuration</p>
+                            <p className="text-foreground/60 text-sm font-medium mb-4">
+                              StatefulSet Configuration
+                            </p>
                             <StatefulSetConfiguration
                               config={{
                                 namespace: globalNamespace,
                                 labels: activeWorkload.config.statefulSetLabels,
-                                annotations: activeWorkload.config.statefulSetAnnotations,
-                                deletionGracePeriodSeconds: activeWorkload.config.statefulSetDeletionGracePeriodSeconds,
-                                ownerReferences: activeWorkload.config.statefulSetOwnerReferences,
+                                annotations:
+                                  activeWorkload.config.statefulSetAnnotations,
+                                deletionGracePeriodSeconds:
+                                  activeWorkload.config
+                                    .statefulSetDeletionGracePeriodSeconds,
+                                ownerReferences:
+                                  activeWorkload.config
+                                    .statefulSetOwnerReferences,
                                 spec: activeWorkload.config.statefulSetSpec,
-                                template: activeWorkload.config.statefulSetTemplate,
+                                template:
+                                  activeWorkload.config.statefulSetTemplate,
                               }}
                               globalNamespace={globalNamespace}
                               onConfigChange={(key, value) => {
                                 if (key === "spec") {
-                                  updateWorkloadConfig(activeWorkload.id, "statefulSetSpec", value);
+                                  updateWorkloadConfig(
+                                    activeWorkload.id,
+                                    "statefulSetSpec",
+                                    value,
+                                  );
                                 } else if (key === "template") {
-                                  updateWorkloadConfig(activeWorkload.id, "statefulSetTemplate", value);
+                                  updateWorkloadConfig(
+                                    activeWorkload.id,
+                                    "statefulSetTemplate",
+                                    value,
+                                  );
                                 } else {
-                                  const configKey: keyof WorkloadConfig = `statefulSet${key.charAt(0).toUpperCase() + key.slice(1)}` as any;
-                                  updateWorkloadConfig(activeWorkload.id, configKey, value);
+                                  const configKey: keyof WorkloadConfig =
+                                    `statefulSet${key.charAt(0).toUpperCase() + key.slice(1)}` as any;
+                                  updateWorkloadConfig(
+                                    activeWorkload.id,
+                                    configKey,
+                                    value,
+                                  );
                                 }
                               }}
                             />
@@ -1460,26 +1835,45 @@ export default function CreateChart() {
 
                         {activeWorkload.type === "Job" && (
                           <div className="space-y-4">
-                            <p className="text-foreground/60 text-sm font-medium mb-4">Job Configuration</p>
+                            <p className="text-foreground/60 text-sm font-medium mb-4">
+                              Job Configuration
+                            </p>
                             <JobConfiguration
                               config={{
                                 namespace: globalNamespace,
                                 labels: activeWorkload.config.jobLabels,
-                                annotations: activeWorkload.config.jobAnnotations,
-                                deletionGracePeriodSeconds: activeWorkload.config.jobDeletionGracePeriodSeconds,
-                                ownerReferences: activeWorkload.config.jobOwnerReferences,
+                                annotations:
+                                  activeWorkload.config.jobAnnotations,
+                                deletionGracePeriodSeconds:
+                                  activeWorkload.config
+                                    .jobDeletionGracePeriodSeconds,
+                                ownerReferences:
+                                  activeWorkload.config.jobOwnerReferences,
                                 spec: activeWorkload.config.jobSpec,
                                 template: activeWorkload.config.jobTemplate,
                               }}
                               globalNamespace={globalNamespace}
                               onConfigChange={(key, value) => {
                                 if (key === "spec") {
-                                  updateWorkloadConfig(activeWorkload.id, "jobSpec", value);
+                                  updateWorkloadConfig(
+                                    activeWorkload.id,
+                                    "jobSpec",
+                                    value,
+                                  );
                                 } else if (key === "template") {
-                                  updateWorkloadConfig(activeWorkload.id, "jobTemplate", value);
+                                  updateWorkloadConfig(
+                                    activeWorkload.id,
+                                    "jobTemplate",
+                                    value,
+                                  );
                                 } else {
-                                  const configKey: keyof WorkloadConfig = `job${key.charAt(0).toUpperCase() + key.slice(1)}` as any;
-                                  updateWorkloadConfig(activeWorkload.id, configKey, value);
+                                  const configKey: keyof WorkloadConfig =
+                                    `job${key.charAt(0).toUpperCase() + key.slice(1)}` as any;
+                                  updateWorkloadConfig(
+                                    activeWorkload.id,
+                                    configKey,
+                                    value,
+                                  );
                                 }
                               }}
                             />
@@ -1488,42 +1882,74 @@ export default function CreateChart() {
 
                         {activeWorkload.type === "CronJob" && (
                           <div className="space-y-4">
-                            <p className="text-foreground/60 text-sm font-medium mb-4">CronJob Configuration</p>
+                            <p className="text-foreground/60 text-sm font-medium mb-4">
+                              CronJob Configuration
+                            </p>
                             <CronJobConfiguration
                               config={{
                                 namespace: globalNamespace,
                                 labels: activeWorkload.config.cronJobLabels,
-                                annotations: activeWorkload.config.cronJobAnnotations,
-                                deletionGracePeriodSeconds: activeWorkload.config.cronJobDeletionGracePeriodSeconds,
-                                ownerReferences: activeWorkload.config.cronJobOwnerReferences,
+                                annotations:
+                                  activeWorkload.config.cronJobAnnotations,
+                                deletionGracePeriodSeconds:
+                                  activeWorkload.config
+                                    .cronJobDeletionGracePeriodSeconds,
+                                ownerReferences:
+                                  activeWorkload.config.cronJobOwnerReferences,
                                 spec: activeWorkload.config.cronJobSpec,
                               }}
                               globalNamespace={globalNamespace}
                               onConfigChange={(key, value) => {
                                 if (key === "spec") {
-                                  updateWorkloadConfig(activeWorkload.id, "cronJobSpec", value);
+                                  updateWorkloadConfig(
+                                    activeWorkload.id,
+                                    "cronJobSpec",
+                                    value,
+                                  );
                                 } else {
-                                  const configKey: keyof WorkloadConfig = `cronJob${key.charAt(0).toUpperCase() + key.slice(1)}` as any;
-                                  updateWorkloadConfig(activeWorkload.id, configKey, value);
+                                  const configKey: keyof WorkloadConfig =
+                                    `cronJob${key.charAt(0).toUpperCase() + key.slice(1)}` as any;
+                                  updateWorkloadConfig(
+                                    activeWorkload.id,
+                                    configKey,
+                                    value,
+                                  );
                                 }
                               }}
                               jobConfig={{
                                 namespace: globalNamespace,
                                 labels: activeWorkload.config.jobLabels,
-                                annotations: activeWorkload.config.jobAnnotations,
-                                deletionGracePeriodSeconds: activeWorkload.config.jobDeletionGracePeriodSeconds,
-                                ownerReferences: activeWorkload.config.jobOwnerReferences,
+                                annotations:
+                                  activeWorkload.config.jobAnnotations,
+                                deletionGracePeriodSeconds:
+                                  activeWorkload.config
+                                    .jobDeletionGracePeriodSeconds,
+                                ownerReferences:
+                                  activeWorkload.config.jobOwnerReferences,
                                 spec: activeWorkload.config.jobSpec,
                                 template: activeWorkload.config.jobTemplate,
                               }}
                               onJobConfigChange={(key, value) => {
                                 if (key === "spec") {
-                                  updateWorkloadConfig(activeWorkload.id, "jobSpec", value);
+                                  updateWorkloadConfig(
+                                    activeWorkload.id,
+                                    "jobSpec",
+                                    value,
+                                  );
                                 } else if (key === "template") {
-                                  updateWorkloadConfig(activeWorkload.id, "jobTemplate", value);
+                                  updateWorkloadConfig(
+                                    activeWorkload.id,
+                                    "jobTemplate",
+                                    value,
+                                  );
                                 } else {
-                                  const configKey: keyof WorkloadConfig = `job${key.charAt(0).toUpperCase() + key.slice(1)}` as any;
-                                  updateWorkloadConfig(activeWorkload.id, configKey, value);
+                                  const configKey: keyof WorkloadConfig =
+                                    `job${key.charAt(0).toUpperCase() + key.slice(1)}` as any;
+                                  updateWorkloadConfig(
+                                    activeWorkload.id,
+                                    configKey,
+                                    value,
+                                  );
                                 }
                               }}
                             />
@@ -1534,7 +1960,9 @@ export default function CreateChart() {
                       {/* Init Containers Section */}
                       <div className="mb-8">
                         <div className="flex items-center justify-between mb-4">
-                          <h3 className="font-semibold text-foreground">Init Containers</h3>
+                          <h3 className="font-semibold text-foreground">
+                            Init Containers
+                          </h3>
                           <button
                             onClick={addInitContainer}
                             className="text-primary hover:opacity-70 text-sm flex items-center gap-1"
@@ -1544,59 +1972,78 @@ export default function CreateChart() {
                           </button>
                         </div>
 
-                        {(activeWorkload.config.initContainers || []).length > 0 ? (
+                        {(activeWorkload.config.initContainers || []).length >
+                        0 ? (
                           <div className="space-y-3">
-                            {(activeWorkload.config.initContainers || []).map((container) => {
-                              const isValid = isContainerConfigValid(container);
-                              return (
-                                <div
-                                  key={container.id}
-                                  className={`p-4 bg-muted/20 border-2 rounded-lg transition-all cursor-pointer ${
-                                    editingInitContainerId === container.id && editingInitWorkloadId === activeWorkload.id
-                                      ? "border-primary bg-primary/5"
-                                      : "border-border hover:border-primary/30"
-                                  }`}
-                                >
+                            {(activeWorkload.config.initContainers || []).map(
+                              (container) => {
+                                const isValid =
+                                  isContainerConfigValid(container);
+                                return (
                                   <div
-                                    onClick={() => {
-                                      setEditingInitContainerId(container.id);
-                                      setEditingInitWorkloadId(activeWorkload.id);
-                                    }}
-                                    className="flex items-center justify-between"
+                                    key={container.id}
+                                    className={`p-4 bg-muted/20 border-2 rounded-lg transition-all cursor-pointer ${
+                                      editingInitContainerId === container.id &&
+                                      editingInitWorkloadId ===
+                                        activeWorkload.id
+                                        ? "border-primary bg-primary/5"
+                                        : "border-border hover:border-primary/30"
+                                    }`}
                                   >
-                                    <div>
-                                      <p className="font-semibold text-foreground">
-                                        {container.name || "(unnamed)"}
-                                      </p>
-                                      <p className="text-sm text-foreground/60">{container.image || "No image"}</p>
-                                      {!isValid && (
-                                        <p className="text-sm text-destructive font-medium mt-1">Minimal config not set</p>
-                                      )}
-                                    </div>
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        deleteInitContainer(activeWorkload.id, container.id);
-                                        setEditingInitContainerId("");
+                                    <div
+                                      onClick={() => {
+                                        setEditingInitContainerId(container.id);
+                                        setEditingInitWorkloadId(
+                                          activeWorkload.id,
+                                        );
                                       }}
-                                      className="text-destructive hover:bg-destructive/10 p-1 rounded hover:opacity-75 transition-opacity"
+                                      className="flex items-center justify-between"
                                     >
-                                      <X className="w-5 h-5" />
-                                    </button>
+                                      <div>
+                                        <p className="font-semibold text-foreground">
+                                          {container.name || "(unnamed)"}
+                                        </p>
+                                        <p className="text-sm text-foreground/60">
+                                          {container.image || "No image"}
+                                        </p>
+                                        {!isValid && (
+                                          <p className="text-sm text-destructive font-medium mt-1">
+                                            Minimal config not set
+                                          </p>
+                                        )}
+                                      </div>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          deleteInitContainer(
+                                            activeWorkload.id,
+                                            container.id,
+                                          );
+                                          setEditingInitContainerId("");
+                                        }}
+                                        className="text-destructive hover:bg-destructive/10 p-1 rounded hover:opacity-75 transition-opacity"
+                                      >
+                                        <X className="w-5 h-5" />
+                                      </button>
+                                    </div>
                                   </div>
-                                </div>
-                              );
-                            })}
+                                );
+                              },
+                            )}
                           </div>
                         ) : (
-                          <p className="text-foreground/60 text-sm py-4">No init containers added yet</p>
+                          <p className="text-foreground/60 text-sm py-4">
+                            No init containers added yet
+                          </p>
                         )}
                       </div>
 
                       {/* Containers Section */}
                       <div className="mb-8">
                         <div className="flex items-center justify-between mb-4">
-                          <h3 className="font-semibold text-foreground">Containers</h3>
+                          <h3 className="font-semibold text-foreground">
+                            Containers
+                          </h3>
                           <button
                             onClick={addContainer}
                             className="text-primary hover:opacity-70 text-sm flex items-center gap-1"
@@ -1614,7 +2061,8 @@ export default function CreateChart() {
                                 <div
                                   key={container.id}
                                   className={`p-4 bg-muted/20 border-2 rounded-lg transition-all cursor-pointer ${
-                                    editingContainerId === container.id && editingWorkloadId === activeWorkload.id
+                                    editingContainerId === container.id &&
+                                    editingWorkloadId === activeWorkload.id
                                       ? "border-primary bg-primary/5"
                                       : "border-border hover:border-primary/30"
                                   }`}
@@ -1630,15 +2078,22 @@ export default function CreateChart() {
                                       <p className="font-semibold text-foreground">
                                         {container.name || "(unnamed)"}
                                       </p>
-                                      <p className="text-sm text-foreground/60">{container.image || "No image"}</p>
+                                      <p className="text-sm text-foreground/60">
+                                        {container.image || "No image"}
+                                      </p>
                                       {!isValid && (
-                                        <p className="text-sm text-destructive font-medium mt-1">Minimal config not set</p>
+                                        <p className="text-sm text-destructive font-medium mt-1">
+                                          Minimal config not set
+                                        </p>
                                       )}
                                     </div>
                                     <button
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        deleteContainer(activeWorkload.id, container.id);
+                                        deleteContainer(
+                                          activeWorkload.id,
+                                          container.id,
+                                        );
                                         setEditingContainerId("");
                                       }}
                                       className="text-destructive hover:bg-destructive/10 p-1 rounded hover:opacity-75 transition-opacity"
@@ -1651,66 +2106,99 @@ export default function CreateChart() {
                             })}
                           </div>
                         ) : (
-                          <p className="text-foreground/60 text-sm py-4">No containers added yet</p>
+                          <p className="text-foreground/60 text-sm py-4">
+                            No containers added yet
+                          </p>
                         )}
                       </div>
 
                       {/* Container Configuration */}
-                      {editingContainerId && editingWorkloadId === activeWorkload.id && (
-                        <div className="mb-8 p-6 bg-muted/30 rounded-lg border border-border">
-                          <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-semibold text-foreground">
-                              Configure Container: {activeWorkload.containers.find((c) => c.id === editingContainerId)?.name || "(unnamed)"}
-                            </h3>
-                            <button
-                              onClick={() => {
-                                setEditingContainerId("");
-                                setEditingWorkloadId("");
-                              }}
-                              className="text-foreground/60 hover:text-foreground"
-                            >
-                              <X className="w-5 h-5" />
-                            </button>
+                      {editingContainerId &&
+                        editingWorkloadId === activeWorkload.id && (
+                          <div className="mb-8 p-6 bg-muted/30 rounded-lg border border-border">
+                            <div className="flex items-center justify-between mb-4">
+                              <h3 className="font-semibold text-foreground">
+                                Configure Container:{" "}
+                                {activeWorkload.containers.find(
+                                  (c) => c.id === editingContainerId,
+                                )?.name || "(unnamed)"}
+                              </h3>
+                              <button
+                                onClick={() => {
+                                  setEditingContainerId("");
+                                  setEditingWorkloadId("");
+                                }}
+                                className="text-foreground/60 hover:text-foreground"
+                              >
+                                <X className="w-5 h-5" />
+                              </button>
+                            </div>
+                            <ContainerConfiguration
+                              container={
+                                activeWorkload.containers.find(
+                                  (c) => c.id === editingContainerId,
+                                ) || {}
+                              }
+                              onConfigChange={(key, value) =>
+                                updateContainerConfig(
+                                  activeWorkload.id,
+                                  editingContainerId,
+                                  key,
+                                  value,
+                                )
+                              }
+                            />
                           </div>
-                          <ContainerConfiguration
-                            container={activeWorkload.containers.find((c) => c.id === editingContainerId) || {}}
-                            onConfigChange={(key, value) =>
-                              updateContainerConfig(activeWorkload.id, editingContainerId, key, value)
-                            }
-                          />
-                        </div>
-                      )}
+                        )}
 
                       {/* Init Container Configuration */}
-                      {editingInitContainerId && editingInitWorkloadId === activeWorkload.id && (
-                        <div className="mb-8 p-6 bg-muted/30 rounded-lg border border-border">
-                          <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-semibold text-foreground">
-                              Configure Init Container: {(activeWorkload.config.initContainers || []).find((c) => c.id === editingInitContainerId)?.name || "(unnamed)"}
-                            </h3>
-                            <button
-                              onClick={() => {
-                                setEditingInitContainerId("");
-                                setEditingInitWorkloadId("");
-                              }}
-                              className="text-foreground/60 hover:text-foreground"
-                            >
-                              <X className="w-5 h-5" />
-                            </button>
+                      {editingInitContainerId &&
+                        editingInitWorkloadId === activeWorkload.id && (
+                          <div className="mb-8 p-6 bg-muted/30 rounded-lg border border-border">
+                            <div className="flex items-center justify-between mb-4">
+                              <h3 className="font-semibold text-foreground">
+                                Configure Init Container:{" "}
+                                {(
+                                  activeWorkload.config.initContainers || []
+                                ).find((c) => c.id === editingInitContainerId)
+                                  ?.name || "(unnamed)"}
+                              </h3>
+                              <button
+                                onClick={() => {
+                                  setEditingInitContainerId("");
+                                  setEditingInitWorkloadId("");
+                                }}
+                                className="text-foreground/60 hover:text-foreground"
+                              >
+                                <X className="w-5 h-5" />
+                              </button>
+                            </div>
+                            <ContainerConfiguration
+                              container={
+                                (
+                                  activeWorkload.config.initContainers || []
+                                ).find(
+                                  (c) => c.id === editingInitContainerId,
+                                ) || {}
+                              }
+                              onConfigChange={(key, value) =>
+                                updateInitContainerConfig(
+                                  activeWorkload.id,
+                                  editingInitContainerId,
+                                  key,
+                                  value,
+                                )
+                              }
+                            />
                           </div>
-                          <ContainerConfiguration
-                            container={(activeWorkload.config.initContainers || []).find((c) => c.id === editingInitContainerId) || {}}
-                            onConfigChange={(key, value) =>
-                              updateInitContainerConfig(activeWorkload.id, editingInitContainerId, key, value)
-                            }
-                          />
-                        </div>
-                      )}
+                        )}
 
                       {/* Ephemeral Containers Section */}
                       <div className="mb-8">
                         <div className="flex items-center justify-between mb-4">
-                          <h3 className="font-semibold text-foreground">Ephemeral Containers</h3>
+                          <h3 className="font-semibold text-foreground">
+                            Ephemeral Containers
+                          </h3>
                           <button
                             onClick={addEphemeralContainer}
                             className="text-primary hover:opacity-70 text-sm flex items-center gap-1"
@@ -1720,23 +2208,33 @@ export default function CreateChart() {
                           </button>
                         </div>
 
-                        {(activeWorkload.config.ephemeralContainers || []).length > 0 ? (
+                        {(activeWorkload.config.ephemeralContainers || [])
+                          .length > 0 ? (
                           <div className="space-y-3">
-                            {(activeWorkload.config.ephemeralContainers || []).map((container) => {
+                            {(
+                              activeWorkload.config.ephemeralContainers || []
+                            ).map((container) => {
                               const isValid = isContainerConfigValid(container);
                               return (
                                 <div
                                   key={container.id}
                                   className={`p-4 bg-muted/20 border-2 rounded-lg transition-all cursor-pointer ${
-                                    editingEphemeralContainerId === container.id && editingEphemeralWorkloadId === activeWorkload.id
+                                    editingEphemeralContainerId ===
+                                      container.id &&
+                                    editingEphemeralWorkloadId ===
+                                      activeWorkload.id
                                       ? "border-primary bg-primary/5"
                                       : "border-border hover:border-primary/30"
                                   }`}
                                 >
                                   <div
                                     onClick={() => {
-                                      setEditingEphemeralContainerId(container.id);
-                                      setEditingEphemeralWorkloadId(activeWorkload.id);
+                                      setEditingEphemeralContainerId(
+                                        container.id,
+                                      );
+                                      setEditingEphemeralWorkloadId(
+                                        activeWorkload.id,
+                                      );
                                     }}
                                     className="flex items-center justify-between"
                                   >
@@ -1744,18 +2242,28 @@ export default function CreateChart() {
                                       <p className="font-semibold text-foreground">
                                         {container.name || "(unnamed)"}
                                       </p>
-                                      <p className="text-sm text-foreground/60">{container.image || "No image"}</p>
+                                      <p className="text-sm text-foreground/60">
+                                        {container.image || "No image"}
+                                      </p>
                                       {container.targetContainerName && (
-                                        <p className="text-xs text-foreground/50 mt-1">Target: {container.targetContainerName}</p>
+                                        <p className="text-xs text-foreground/50 mt-1">
+                                          Target:{" "}
+                                          {container.targetContainerName}
+                                        </p>
                                       )}
                                       {!isValid && (
-                                        <p className="text-sm text-destructive font-medium mt-1">Minimal config not set</p>
+                                        <p className="text-sm text-destructive font-medium mt-1">
+                                          Minimal config not set
+                                        </p>
                                       )}
                                     </div>
                                     <button
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        deleteEphemeralContainer(activeWorkload.id, container.id);
+                                        deleteEphemeralContainer(
+                                          activeWorkload.id,
+                                          container.id,
+                                        );
                                         setEditingEphemeralContainerId("");
                                       }}
                                       className="text-destructive hover:bg-destructive/10 p-1 rounded hover:opacity-75 transition-opacity"
@@ -1768,74 +2276,103 @@ export default function CreateChart() {
                             })}
                           </div>
                         ) : (
-                          <p className="text-foreground/60 text-sm py-4">No ephemeral containers added yet</p>
+                          <p className="text-foreground/60 text-sm py-4">
+                            No ephemeral containers added yet
+                          </p>
                         )}
                       </div>
 
                       {/* Ephemeral Container Configuration */}
-                      {editingEphemeralContainerId && editingEphemeralWorkloadId === activeWorkload.id && (
-                        <div className="mb-8 p-6 bg-muted/30 rounded-lg border border-border">
-                          <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-semibold text-foreground">
-                              Configure Ephemeral Container: {(activeWorkload.config.ephemeralContainers || []).find((c) => c.id === editingEphemeralContainerId)?.name || "(unnamed)"}
-                            </h3>
-                            <button
-                              onClick={() => {
-                                setEditingEphemeralContainerId("");
-                                setEditingEphemeralWorkloadId("");
-                              }}
-                              className="text-foreground/60 hover:text-foreground"
-                            >
-                              <X className="w-5 h-5" />
-                            </button>
-                          </div>
+                      {editingEphemeralContainerId &&
+                        editingEphemeralWorkloadId === activeWorkload.id && (
+                          <div className="mb-8 p-6 bg-muted/30 rounded-lg border border-border">
+                            <div className="flex items-center justify-between mb-4">
+                              <h3 className="font-semibold text-foreground">
+                                Configure Ephemeral Container:{" "}
+                                {(
+                                  activeWorkload.config.ephemeralContainers ||
+                                  []
+                                ).find(
+                                  (c) => c.id === editingEphemeralContainerId,
+                                )?.name || "(unnamed)"}
+                              </h3>
+                              <button
+                                onClick={() => {
+                                  setEditingEphemeralContainerId("");
+                                  setEditingEphemeralWorkloadId("");
+                                }}
+                                className="text-foreground/60 hover:text-foreground"
+                              >
+                                <X className="w-5 h-5" />
+                              </button>
+                            </div>
 
-                          <div className="space-y-6">
-                            {/* Target Container Name */}
-                            <div>
-                              <label className="block text-sm font-medium text-foreground mb-2">Target Container Name</label>
-                              <select
-                                value={(
-                                  (activeWorkload.config.ephemeralContainers || []).find(
-                                    (c) => c.id === editingEphemeralContainerId
-                                  )?.targetContainerName || ""
-                                )}
-                                onChange={(e) =>
+                            <div className="space-y-6">
+                              {/* Target Container Name */}
+                              <div>
+                                <label className="block text-sm font-medium text-foreground mb-2">
+                                  Target Container Name
+                                </label>
+                                <select
+                                  value={
+                                    (
+                                      activeWorkload.config
+                                        .ephemeralContainers || []
+                                    ).find(
+                                      (c) =>
+                                        c.id === editingEphemeralContainerId,
+                                    )?.targetContainerName || ""
+                                  }
+                                  onChange={(e) =>
+                                    updateEphemeralContainerConfig(
+                                      activeWorkload.id,
+                                      editingEphemeralContainerId,
+                                      "targetContainerName",
+                                      e.target.value || undefined,
+                                    )
+                                  }
+                                  className="input-field"
+                                >
+                                  <option value="">
+                                    Select Target Container
+                                  </option>
+                                  {activeWorkload.containers.map((c) => (
+                                    <option
+                                      key={c.id}
+                                      value={c.name || "(unnamed)"}
+                                    >
+                                      {c.name || "(unnamed)"}
+                                    </option>
+                                  ))}
+                                </select>
+                                <p className="text-xs text-foreground/50 mt-1">
+                                  The name of the container this ephemeral
+                                  container targets for debugging
+                                </p>
+                              </div>
+
+                              {/* Container Configuration */}
+                              <ContainerConfiguration
+                                container={
+                                  (
+                                    activeWorkload.config.ephemeralContainers ||
+                                    []
+                                  ).find(
+                                    (c) => c.id === editingEphemeralContainerId,
+                                  ) || {}
+                                }
+                                onConfigChange={(key, value) =>
                                   updateEphemeralContainerConfig(
                                     activeWorkload.id,
                                     editingEphemeralContainerId,
-                                    "targetContainerName",
-                                    e.target.value || undefined
+                                    key,
+                                    value,
                                   )
                                 }
-                                className="input-field"
-                              >
-                                <option value="">Select Target Container</option>
-                                {activeWorkload.containers.map((c) => (
-                                  <option key={c.id} value={c.name || "(unnamed)"}>
-                                    {c.name || "(unnamed)"}
-                                  </option>
-                                ))}
-                              </select>
-                              <p className="text-xs text-foreground/50 mt-1">
-                                The name of the container this ephemeral container targets for debugging
-                              </p>
+                              />
                             </div>
-
-                            {/* Container Configuration */}
-                            <ContainerConfiguration
-                              container={
-                                (activeWorkload.config.ephemeralContainers || []).find(
-                                  (c) => c.id === editingEphemeralContainerId
-                                ) || {}
-                              }
-                              onConfigChange={(key, value) =>
-                                updateEphemeralContainerConfig(activeWorkload.id, editingEphemeralContainerId, key, value)
-                              }
-                            />
                           </div>
-                        </div>
-                      )}
+                        )}
                     </div>
                   )}
                 </div>
@@ -1844,11 +2381,15 @@ export default function CreateChart() {
                 <div className="space-y-8">
                   {/* Create Resource Section */}
                   <div className="bg-card border border-border rounded-xl p-8">
-                    <h2 className="text-xl font-bold text-foreground mb-6">Create Resource</h2>
+                    <h2 className="text-xl font-bold text-foreground mb-6">
+                      Create Resource
+                    </h2>
                     <div className="space-y-4 mb-6">
                       {/* Resource Type Selection */}
                       <div>
-                        <label className="block text-sm font-semibold text-foreground mb-3">Resource Type</label>
+                        <label className="block text-sm font-semibold text-foreground mb-3">
+                          Resource Type
+                        </label>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                           {resourceTypes.map((type) => (
                             <button
@@ -1868,7 +2409,10 @@ export default function CreateChart() {
 
                       {/* Resource Name */}
                       <div>
-                        <label htmlFor="resourceName" className="block text-sm font-semibold text-foreground mb-2">
+                        <label
+                          htmlFor="resourceName"
+                          className="block text-sm font-semibold text-foreground mb-2"
+                        >
                           Resource Name
                         </label>
                         <input
@@ -1912,8 +2456,12 @@ export default function CreateChart() {
                             }`}
                           >
                             <div>
-                              <p className="font-semibold text-foreground">{resource.name || "Unnamed"}</p>
-                              <p className="text-sm text-foreground/60">{resource.type}</p>
+                              <p className="font-semibold text-foreground">
+                                {resource.name || "Unnamed"}
+                              </p>
+                              <p className="text-sm text-foreground/60">
+                                {resource.type}
+                              </p>
                             </div>
                             <button
                               onClick={(e) => {
@@ -1934,7 +2482,10 @@ export default function CreateChart() {
                   {activeResource && (
                     <div className="bg-card border border-border rounded-xl p-8">
                       <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-xl font-bold text-foreground">Configure "{activeResource.name}" ({activeResource.type})</h2>
+                        <h2 className="text-xl font-bold text-foreground">
+                          Configure "{activeResource.name}" (
+                          {activeResource.type})
+                        </h2>
                         <div className="flex items-center gap-2">
                           <button
                             onClick={handleViewResourceYaml}
@@ -1959,7 +2510,8 @@ export default function CreateChart() {
                           type: activeResource.type,
                           labels: activeResource.labels,
                           annotations: activeResource.annotations,
-                          deletionGracePeriodSeconds: activeResource.deletionGracePeriodSeconds,
+                          deletionGracePeriodSeconds:
+                            activeResource.deletionGracePeriodSeconds,
                           ownerReferences: activeResource.ownerReferences,
                           spec: activeResource.spec,
                         }}
@@ -1980,14 +2532,18 @@ export default function CreateChart() {
                     disabled={isCreating}
                     className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isCreating ? "Deploying Advanced Configuration..." : "Deploy Advanced Configuration"}
+                    {isCreating
+                      ? "Deploying Advanced Configuration..."
+                      : "Deploy Advanced Configuration"}
                   </button>
                 </div>
               )}
 
               {advancedDeploymentResult && (
                 <div className="bg-card border border-border rounded-xl p-8">
-                  <h3 className="text-lg font-bold text-foreground mb-4">Deployment Result</h3>
+                  <h3 className="text-lg font-bold text-foreground mb-4">
+                    Deployment Result
+                  </h3>
                   <pre className="bg-muted p-4 rounded-lg overflow-auto max-h-96 text-sm text-foreground whitespace-pre-wrap break-words">
                     {advancedDeploymentResult}
                   </pre>
@@ -1996,7 +2552,9 @@ export default function CreateChart() {
 
               {advancedDeploymentError && (
                 <div className="bg-card border border-destructive rounded-xl p-8">
-                  <h3 className="text-lg font-bold text-destructive mb-4">Deployment Error</h3>
+                  <h3 className="text-lg font-bold text-destructive mb-4">
+                    Deployment Error
+                  </h3>
                   <p className="text-sm text-foreground whitespace-pre-wrap break-words">
                     {advancedDeploymentError}
                   </p>
@@ -2032,7 +2590,9 @@ export default function CreateChart() {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-card border border-border rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
             <div className="flex items-center justify-between p-6 border-b border-border">
-              <h3 className="text-xl font-bold text-foreground">Generated {activeWorkload?.type} YAML</h3>
+              <h3 className="text-xl font-bold text-foreground">
+                Generated {activeWorkload?.type} YAML
+              </h3>
               <button
                 onClick={() => setShowYamlModal(false)}
                 className="text-foreground/60 hover:text-foreground transition-colors"
@@ -2041,7 +2601,9 @@ export default function CreateChart() {
               </button>
             </div>
             <div className="flex-1 overflow-auto p-6 bg-muted/20">
-              <pre className="text-sm font-mono text-foreground whitespace-pre-wrap break-words">{generatedYaml}</pre>
+              <pre className="text-sm font-mono text-foreground whitespace-pre-wrap break-words">
+                {generatedYaml}
+              </pre>
             </div>
             <div className="flex items-center gap-2 p-4 border-t border-border bg-muted/10">
               <button

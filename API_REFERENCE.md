@@ -27,6 +27,7 @@ Create a new user account.
 **Endpoint:** `POST /api/auth/signup`
 
 **Request Body:**
+
 ```json
 {
   "username": "john_doe",
@@ -37,13 +38,14 @@ Create a new user account.
 
 **Request Parameters:**
 
-| Parameter | Type | Required | Description | Constraints |
-|-----------|------|----------|-------------|-------------|
-| username | string | Yes | Unique username | 3-50 chars, alphanumeric + underscore |
-| email | string | Yes | Valid email address | Must be unique, valid email format |
-| password | string | Yes | User password | Min 8 chars, must have uppercase, number, special char |
+| Parameter | Type   | Required | Description         | Constraints                                            |
+| --------- | ------ | -------- | ------------------- | ------------------------------------------------------ |
+| username  | string | Yes      | Unique username     | 3-50 chars, alphanumeric + underscore                  |
+| email     | string | Yes      | Valid email address | Must be unique, valid email format                     |
+| password  | string | Yes      | User password       | Min 8 chars, must have uppercase, number, special char |
 
 **Success Response (201):**
+
 ```json
 {
   "success": true,
@@ -91,6 +93,7 @@ Create a new user account.
 ```
 
 **cURL Example:**
+
 ```bash
 curl -X POST http://localhost:3000/api/auth/signup \
   -H "Content-Type: application/json" \
@@ -102,15 +105,16 @@ curl -X POST http://localhost:3000/api/auth/signup \
 ```
 
 **JavaScript Example:**
+
 ```javascript
-const response = await fetch('http://localhost:3000/api/auth/signup', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
+const response = await fetch("http://localhost:3000/api/auth/signup", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
-    username: 'john_doe',
-    email: 'john@example.com',
-    password: 'SecurePassword123!'
-  })
+    username: "john_doe",
+    email: "john@example.com",
+    password: "SecurePassword123!",
+  }),
 });
 const data = await response.json();
 // Store token: localStorage.setItem('token', data.token);
@@ -125,6 +129,7 @@ Authenticate user and obtain JWT token.
 **Endpoint:** `POST /api/auth/login`
 
 **Request Body:**
+
 ```json
 {
   "username": "john_doe",
@@ -134,12 +139,13 @@ Authenticate user and obtain JWT token.
 
 **Request Parameters:**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| username | string | Yes | Username or email |
-| password | string | Yes | User password |
+| Parameter | Type   | Required | Description       |
+| --------- | ------ | -------- | ----------------- |
+| username  | string | Yes      | Username or email |
+| password  | string | Yes      | User password     |
 
 **Success Response (200):**
+
 ```json
 {
   "success": true,
@@ -153,6 +159,7 @@ Authenticate user and obtain JWT token.
 ```
 
 **Token Details:**
+
 - **Type:** JWT (JSON Web Token)
 - **Expiry:** 7 days from issue time
 - **Signing Algorithm:** HS256
@@ -181,6 +188,7 @@ Authenticate user and obtain JWT token.
 ```
 
 **cURL Example:**
+
 ```bash
 curl -X POST http://localhost:3000/api/auth/login \
   -H "Content-Type: application/json" \
@@ -201,11 +209,13 @@ Get current authenticated user information.
 **Authentication:** Required (Bearer Token)
 
 **Headers:**
+
 ```
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
 **Success Response (200):**
+
 ```json
 {
   "id": 1,
@@ -230,6 +240,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
 **cURL Example:**
+
 ```bash
 curl -X GET http://localhost:3000/api/auth/me \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
@@ -244,6 +255,7 @@ Logout user (client-side token removal).
 **Endpoint:** `POST /api/auth/logout`
 
 **Success Response (200):**
+
 ```json
 {
   "success": true,
@@ -266,6 +278,7 @@ Validate Helm chart security before deployment.
 **Authentication:** Required (Bearer Token)
 
 **Request Body:**
+
 ```json
 {
   "repository": "stable https://charts.helm.sh/stable",
@@ -275,12 +288,13 @@ Validate Helm chart security before deployment.
 
 **Request Parameters:**
 
-| Parameter | Type | Required | Description | Constraints |
-|-----------|------|----------|-------------|-------------|
-| repository | string | Yes | Helm repository | Format: "name https://url" |
-| helmInstall | string | Yes | Helm install command | Max 1000 chars, no shell metacharacters |
+| Parameter   | Type   | Required | Description          | Constraints                             |
+| ----------- | ------ | -------- | -------------------- | --------------------------------------- |
+| repository  | string | Yes      | Helm repository      | Format: "name https://url"              |
+| helmInstall | string | Yes      | Helm install command | Max 1000 chars, no shell metacharacters |
 
 **Success Response (200):**
+
 ```json
 {
   "success": true,
@@ -302,13 +316,16 @@ Validate Helm chart security before deployment.
 ```
 
 **Example Response with Warnings:**
+
 ```json
 {
   "success": true,
   "securityReport": {
     "valid": true,
     "summary": "Security check passed with 2 warning(s). Review recommendations for production readiness.",
-    "checks": [ /* ... */ ],
+    "checks": [
+      /* ... */
+    ],
     "errors": [],
     "warnings": [
       {
@@ -329,13 +346,16 @@ Validate Helm chart security before deployment.
 ```
 
 **Example Response with Errors:**
+
 ```json
 {
   "success": true,
   "securityReport": {
     "valid": false,
     "summary": "Security check failed: 1 critical error(s) found. Fix these before deployment.",
-    "checks": [ /* ... */ ],
+    "checks": [
+      /* ... */
+    ],
     "errors": [
       {
         "name": "hardcoded-secret",
@@ -351,25 +371,25 @@ Validate Helm chart security before deployment.
 
 **Validation Checks:**
 
-| Check | Severity | Description |
-|-------|----------|-------------|
-| image-tag | warning | 'latest' tag or unspecified |
-| image-registry | warning | Docker Hub without explicit registry |
-| image-missing | error | No image specified |
-| security-context-user | warning | Not running as non-root |
-| security-context-filesystem | warning | Root filesystem is writable |
-| security-context-privilege | warning | Privilege escalation not disabled |
-| resource-limits | warning | Missing CPU or memory limits |
-| resource-requests | warning | Missing resource requests |
-| liveness-probe | warning | Liveness probe not configured |
-| readiness-probe | warning | Readiness probe not configured |
-| service-account | info | Using default service account |
-| hardcoded-secret | error | Hardcoded secrets detected |
-| replica-count | warning | Single replica (no HA) |
-| image-pull-secret | error | Private registry without auth |
-| service-type | info | Service type not specified |
-| ingress-hosts | warning | Ingress enabled without hosts |
-| pod-disruption-budget | info | Pod Disruption Budget missing |
+| Check                       | Severity | Description                          |
+| --------------------------- | -------- | ------------------------------------ |
+| image-tag                   | warning  | 'latest' tag or unspecified          |
+| image-registry              | warning  | Docker Hub without explicit registry |
+| image-missing               | error    | No image specified                   |
+| security-context-user       | warning  | Not running as non-root              |
+| security-context-filesystem | warning  | Root filesystem is writable          |
+| security-context-privilege  | warning  | Privilege escalation not disabled    |
+| resource-limits             | warning  | Missing CPU or memory limits         |
+| resource-requests           | warning  | Missing resource requests            |
+| liveness-probe              | warning  | Liveness probe not configured        |
+| readiness-probe             | warning  | Readiness probe not configured       |
+| service-account             | info     | Using default service account        |
+| hardcoded-secret            | error    | Hardcoded secrets detected           |
+| replica-count               | warning  | Single replica (no HA)               |
+| image-pull-secret           | error    | Private registry without auth        |
+| service-type                | info     | Service type not specified           |
+| ingress-hosts               | warning  | Ingress enabled without hosts        |
+| pod-disruption-budget       | info     | Pod Disruption Budget missing        |
 
 **Error Responses:**
 
@@ -402,6 +422,7 @@ Validate Helm chart security before deployment.
 ```
 
 **cURL Example:**
+
 ```bash
 curl -X POST http://localhost:3000/api/check-security \
   -H "Content-Type: application/json" \
@@ -423,6 +444,7 @@ Deploy Helm chart with automatic security validation.
 **Authentication:** Required (Bearer Token)
 
 **Request Body:**
+
 ```json
 {
   "repository": "stable https://charts.helm.sh/stable",
@@ -432,12 +454,13 @@ Deploy Helm chart with automatic security validation.
 
 **Request Parameters:**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| repository | string | Yes | Helm repository (format: "name https://url") |
-| helmInstall | string | Yes | Helm install command |
+| Parameter   | Type   | Required | Description                                  |
+| ----------- | ------ | -------- | -------------------------------------------- |
+| repository  | string | Yes      | Helm repository (format: "name https://url") |
+| helmInstall | string | Yes      | Helm install command                         |
 
 **Success Response (200):**
+
 ```json
 {
   "success": true,
@@ -455,6 +478,7 @@ Deploy Helm chart with automatic security validation.
 **Output Format:**
 
 The `output` field contains a formatted log that includes:
+
 1. Security validation report
 2. Helm repository setup logs
 3. Helm deployment output
@@ -491,6 +515,7 @@ The `output` field contains a formatted log that includes:
 - Deployment status is NOT saved to database for standard deployments
 
 **cURL Example:**
+
 ```bash
 curl -X POST http://localhost:3000/api/deploy \
   -H "Content-Type: application/json" \
@@ -512,10 +537,12 @@ Deploy custom Kubernetes YAML manifest using kubectl.
 **Authentication:** Required (Bearer Token)
 
 **Prerequisites:**
+
 - User must have Rancher credentials configured in database
 - Rancher cluster must be accessible
 
 **Request Body:**
+
 ```json
 {
   "workloads": [
@@ -591,18 +618,19 @@ Deploy custom Kubernetes YAML manifest using kubectl.
 
 **Request Parameters:**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| workloads | array | Yes | Array of workload objects (Deployment, Pod, etc.) |
-| resources | array | Yes | Array of resource objects (Service, HTTPRoute, etc.) |
-| globalNamespace | string | Yes | Kubernetes namespace for deployment |
-| globalDomain | string | No | Domain for HTTPRoute/GRPCRoute |
-| requestsPerSecond | string | No | Rate limiting requests per second |
-| resourceQuota | object | No | Resource quota configuration |
-| generatedYaml | string | No | User-edited YAML (for reference) |
-| _fullYaml | string | Yes | Complete YAML manifest for kubectl apply |
+| Parameter         | Type   | Required | Description                                          |
+| ----------------- | ------ | -------- | ---------------------------------------------------- |
+| workloads         | array  | Yes      | Array of workload objects (Deployment, Pod, etc.)    |
+| resources         | array  | Yes      | Array of resource objects (Service, HTTPRoute, etc.) |
+| globalNamespace   | string | Yes      | Kubernetes namespace for deployment                  |
+| globalDomain      | string | No       | Domain for HTTPRoute/GRPCRoute                       |
+| requestsPerSecond | string | No       | Rate limiting requests per second                    |
+| resourceQuota     | object | No       | Resource quota configuration                         |
+| generatedYaml     | string | No       | User-edited YAML (for reference)                     |
+| \_fullYaml        | string | Yes      | Complete YAML manifest for kubectl apply             |
 
 **Success Response (200):**
+
 ```json
 {
   "success": true,
@@ -672,6 +700,7 @@ After successful deployment, a record is saved to the database:
 11. Return deployment output
 
 **cURL Example:**
+
 ```bash
 curl -X POST http://localhost:3000/api/deploy-advanced \
   -H "Content-Type: application/json" \
@@ -693,14 +722,15 @@ List all deployments for the authenticated user.
 
 **Query Parameters:**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| limit | integer | 50 | Number of deployments to return (max 100) |
-| offset | integer | 0 | Number of deployments to skip |
-| status | string | - | Filter by status (deployed, pending, deleted) |
-| type | string | - | Filter by type (standard, advanced) |
+| Parameter | Type    | Default | Description                                   |
+| --------- | ------- | ------- | --------------------------------------------- |
+| limit     | integer | 50      | Number of deployments to return (max 100)     |
+| offset    | integer | 0       | Number of deployments to skip                 |
+| status    | string  | -       | Filter by status (deployed, pending, deleted) |
+| type      | string  | -       | Filter by type (standard, advanced)           |
 
 **Success Response (200):**
+
 ```json
 [
   {
@@ -743,6 +773,7 @@ List all deployments for the authenticated user.
 ```
 
 **cURL Example:**
+
 ```bash
 # Get all deployments
 curl -X GET "http://localhost:3000/api/deployments" \
@@ -765,11 +796,12 @@ Get the saved YAML configuration for a specific deployment.
 
 **URL Parameters:**
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
+| Parameter    | Type    | Description          |
+| ------------ | ------- | -------------------- |
 | deploymentId | integer | ID of the deployment |
 
 **Success Response (200):**
+
 ```yaml
 apiVersion: v1
 kind: Namespace
@@ -799,18 +831,18 @@ spec:
     spec:
       serviceAccountName: default
       containers:
-      - name: app
-        image: myrepo/app:1.0.0
-        ports:
-        - containerPort: 8080
-          name: http
-        resources:
-          requests:
-            cpu: 100m
-            memory: 128Mi
-          limits:
-            cpu: 500m
-            memory: 512Mi
+        - name: app
+          image: myrepo/app:1.0.0
+          ports:
+            - containerPort: 8080
+              name: http
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
 ---
 apiVersion: v1
 kind: Service
@@ -822,11 +854,12 @@ spec:
   selector:
     app: my-app
   ports:
-  - port: 80
-    targetPort: 8080
+    - port: 80
+      targetPort: 8080
 ```
 
 **Response Headers:**
+
 ```
 Content-Type: text/yaml
 Content-Disposition: attachment; filename="deployment-1-yaml.yaml"
@@ -852,6 +885,7 @@ Content-Disposition: attachment; filename="deployment-1-yaml.yaml"
 ```
 
 **cURL Example:**
+
 ```bash
 # Download YAML to file
 curl -X GET "http://localhost:3000/api/deployments/1/yaml" \
@@ -875,11 +909,12 @@ Soft-delete a deployment (marks as deleted, doesn't remove from database).
 
 **URL Parameters:**
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
+| Parameter    | Type    | Description                    |
+| ------------ | ------- | ------------------------------ |
 | deploymentId | integer | ID of the deployment to delete |
 
 **Success Response (200):**
+
 ```json
 {
   "success": true,
@@ -918,6 +953,7 @@ Soft-delete a deployment (marks as deleted, doesn't remove from database).
 - Can be restored by updating status in database if needed
 
 **cURL Example:**
+
 ```bash
 curl -X DELETE "http://localhost:3000/api/deployments/1" \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
@@ -929,15 +965,15 @@ curl -X DELETE "http://localhost:3000/api/deployments/1" \
 
 ### HTTP Status Codes
 
-| Code | Meaning | Example |
-|------|---------|---------|
-| 200 | Success | Deployment successful |
-| 201 | Created | User account created |
-| 400 | Bad Request | Invalid input format |
-| 401 | Unauthorized | Missing or invalid token |
-| 403 | Forbidden | Access to another user's resource |
-| 404 | Not Found | Deployment ID doesn't exist |
-| 500 | Server Error | Database connection failed |
+| Code | Meaning      | Example                           |
+| ---- | ------------ | --------------------------------- |
+| 200  | Success      | Deployment successful             |
+| 201  | Created      | User account created              |
+| 400  | Bad Request  | Invalid input format              |
+| 401  | Unauthorized | Missing or invalid token          |
+| 403  | Forbidden    | Access to another user's resource |
+| 404  | Not Found    | Deployment ID doesn't exist       |
+| 500  | Server Error | Database connection failed        |
 
 ### Error Response Format
 
@@ -953,14 +989,14 @@ All error responses follow this format:
 
 ### Common Error Messages
 
-| Error | Cause | Solution |
-|-------|-------|----------|
-| "Unauthorized" | Missing or invalid JWT token | Log in again, check token expiry |
-| "Username already exists" | Username taken | Choose different username |
-| "Invalid repository configuration" | Bad repo format | Use "name https://url" format |
-| "Rancher credentials not configured" | User hasn't set up cluster | Configure Rancher credentials in settings |
-| "At least one workload is required" | No workloads in deployment | Create at least one workload |
-| "Database connection failed" | PostgreSQL unreachable | Check DATABASE_URL, ensure PostgreSQL is running |
+| Error                                | Cause                        | Solution                                         |
+| ------------------------------------ | ---------------------------- | ------------------------------------------------ |
+| "Unauthorized"                       | Missing or invalid JWT token | Log in again, check token expiry                 |
+| "Username already exists"            | Username taken               | Choose different username                        |
+| "Invalid repository configuration"   | Bad repo format              | Use "name https://url" format                    |
+| "Rancher credentials not configured" | User hasn't set up cluster   | Configure Rancher credentials in settings        |
+| "At least one workload is required"  | No workloads in deployment   | Create at least one workload                     |
+| "Database connection failed"         | PostgreSQL unreachable       | Check DATABASE_URL, ensure PostgreSQL is running |
 
 ---
 
@@ -1014,15 +1050,15 @@ Currently not implemented. Recommended for production:
 Implement using middleware like `express-rate-limit`:
 
 ```javascript
-const rateLimit = require('express-rate-limit');
+const rateLimit = require("express-rate-limit");
 
 const loginLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 5,
-  message: 'Too many login attempts, please try again later'
+  message: "Too many login attempts, please try again later",
 });
 
-app.post('/api/auth/login', loginLimiter, handleLogin);
+app.post("/api/auth/login", loginLimiter, handleLogin);
 ```
 
 ---

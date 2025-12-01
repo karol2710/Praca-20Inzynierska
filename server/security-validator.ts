@@ -13,7 +13,10 @@ interface SecurityReport {
   summary: string;
 }
 
-export function validateHelmChart(chartPath: string, helmValues: Record<string, any>): SecurityReport {
+export function validateHelmChart(
+  chartPath: string,
+  helmValues: Record<string, any>,
+): SecurityReport {
   const checks: SecurityCheck[] = [];
 
   // Check 1: Verify image security
@@ -33,7 +36,9 @@ export function validateHelmChart(chartPath: string, helmValues: Record<string, 
     const imageRepo = helmValues.image.repository;
     if (
       !imageRepo.includes("/") ||
-      (imageRepo.includes("/") && !imageRepo.includes(".") && !imageRepo.includes("localhost"))
+      (imageRepo.includes("/") &&
+        !imageRepo.includes(".") &&
+        !imageRepo.includes("localhost"))
     ) {
       checks.push({
         name: "image-registry",
@@ -48,7 +53,8 @@ export function validateHelmChart(chartPath: string, helmValues: Record<string, 
       name: "image-missing",
       severity: "error",
       message: "Container image not specified",
-      description: "The deployment must specify a valid container image in the values.",
+      description:
+        "The deployment must specify a valid container image in the values.",
     });
   }
 
@@ -84,7 +90,10 @@ export function validateHelmChart(chartPath: string, helmValues: Record<string, 
   }
 
   // Check 3: Resource Limits
-  if (!helmValues.resources?.limits?.cpu || !helmValues.resources?.limits?.memory) {
+  if (
+    !helmValues.resources?.limits?.cpu ||
+    !helmValues.resources?.limits?.memory
+  ) {
     checks.push({
       name: "resource-limits",
       severity: "warning",
@@ -94,7 +103,10 @@ export function validateHelmChart(chartPath: string, helmValues: Record<string, 
     });
   }
 
-  if (!helmValues.resources?.requests?.cpu || !helmValues.resources?.requests?.memory) {
+  if (
+    !helmValues.resources?.requests?.cpu ||
+    !helmValues.resources?.requests?.memory
+  ) {
     checks.push({
       name: "resource-requests",
       severity: "warning",
@@ -138,17 +150,20 @@ export function validateHelmChart(chartPath: string, helmValues: Record<string, 
 
   // Check 6: Secrets Management
   if (helmValues.env) {
-    const envArray = Array.isArray(helmValues.env) ? helmValues.env : Object.entries(helmValues.env);
+    const envArray = Array.isArray(helmValues.env)
+      ? helmValues.env
+      : Object.entries(helmValues.env);
     for (const env of envArray) {
-      const envName = typeof env === "object" ? env.name || "" : env.split("=")[0];
+      const envName =
+        typeof env === "object" ? env.name || "" : env.split("=")[0];
       const envValue =
-        typeof env === "object"
-          ? env.value || ""
-          : env.split("=")[1] || "";
+        typeof env === "object" ? env.value || "" : env.split("=")[1] || "";
 
       // Check for hardcoded secrets
       if (
-        /^(password|secret|token|key|credential|api_key|apikey)/i.test(envName) &&
+        /^(password|secret|token|key|credential|api_key|apikey)/i.test(
+          envName,
+        ) &&
         envValue &&
         typeof envValue === "string" &&
         envValue.length > 0
@@ -178,9 +193,13 @@ export function validateHelmChart(chartPath: string, helmValues: Record<string, 
   // Check 8: Image Pull Secrets (for private registries)
   if (
     helmValues.image?.repository &&
-    (helmValues.image.repository.includes("private") || helmValues.image.repository.includes("internal"))
+    (helmValues.image.repository.includes("private") ||
+      helmValues.image.repository.includes("internal"))
   ) {
-    if (!helmValues.imagePullSecrets || helmValues.imagePullSecrets.length === 0) {
+    if (
+      !helmValues.imagePullSecrets ||
+      helmValues.imagePullSecrets.length === 0
+    ) {
       checks.push({
         name: "image-pull-secret",
         severity: "error",
@@ -202,7 +221,10 @@ export function validateHelmChart(chartPath: string, helmValues: Record<string, 
     });
   }
 
-  if (helmValues.ingress?.enabled !== false && !helmValues.ingress?.hosts?.length) {
+  if (
+    helmValues.ingress?.enabled !== false &&
+    !helmValues.ingress?.hosts?.length
+  ) {
     checks.push({
       name: "ingress-hosts",
       severity: "warning",
@@ -252,10 +274,7 @@ export function parseHelmValues(helmCommand: string): Record<string, any> {
   const setMatches = helmCommand.match(/--set\s+([^\s=]+)=([^\s]*)/g);
   if (setMatches) {
     setMatches.forEach((match) => {
-      const [key, value] = match
-        .replace("--set", "")
-        .trim()
-        .split("=");
+      const [key, value] = match.replace("--set", "").trim().split("=");
       if (key && value) {
         // Handle nested keys like image.repository
         const keys = key.split(".");

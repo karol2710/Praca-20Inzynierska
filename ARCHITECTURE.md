@@ -334,7 +334,7 @@ Apply to cluster
 Save deployment record
     │
     ├─ INSERT deployments (
-    │   user_id, name, type, namespace, 
+    │   user_id, name, type, namespace,
     │   yaml_config, status, ...
     │ )
     ├─ Status: 'deployed' or 'pending'
@@ -358,15 +358,15 @@ CREATE TABLE users (
   username VARCHAR(255) UNIQUE NOT NULL,
   email VARCHAR(255) UNIQUE NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
-  
+
   -- Rancher integration
   rancher_api_url VARCHAR(500),
   rancher_api_token VARCHAR(500),
   rancher_cluster_id VARCHAR(255),
-  
+
   -- Utilities
   namespace_counter INT DEFAULT 0,
-  
+
   -- Timestamps
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -381,27 +381,27 @@ CREATE TABLE users (
 CREATE TABLE deployments (
   id SERIAL PRIMARY KEY,
   user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  
+
   -- Metadata
   name VARCHAR(255) NOT NULL,
   type VARCHAR(50) NOT NULL,  -- 'standard' or 'advanced'
   namespace VARCHAR(255) NOT NULL,
-  
+
   -- Content
   yaml_config TEXT NOT NULL,  -- Full YAML for persistence
-  
+
   -- Status tracking
   status VARCHAR(50) DEFAULT 'pending',
   environment VARCHAR(50) DEFAULT 'production',
-  
+
   -- Statistics
   workloads_count INT DEFAULT 0,
   resources_count INT DEFAULT 0,
-  
+
   -- Timestamps
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  
+
   -- Index
   INDEX idx_deployments_user_id (user_id)
 );
@@ -536,8 +536,8 @@ const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
 ```sql
 -- Only user can access their deployments
-SELECT * FROM deployments 
-WHERE user_id = $1 
+SELECT * FROM deployments
+WHERE user_id = $1
   AND id = $2;
 
 -- Cascade delete on user deletion
@@ -549,24 +549,24 @@ FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 #### Repository Input
 
 ```typescript
-function validateRepository(input: string): { valid: boolean; error?: string; } {
+function validateRepository(input: string): { valid: boolean; error?: string } {
   // Format check: "name https://url"
   const match = input.match(/^([a-zA-Z0-9-_]+)\s+(https:\/\/[^\s]+)$/);
   if (!match) {
     return { valid: false, error: "Format: 'name https://url'" };
   }
-  
+
   // Name validation: alphanumeric, hyphen, underscore
   const [, name] = match;
   if (!/^[a-zA-Z0-9-_]+$/.test(name)) {
     return { valid: false, error: "Invalid repository name" };
   }
-  
+
   // URL must use HTTPS
   if (!input.includes("https://")) {
     return { valid: false, error: "URL must use HTTPS" };
   }
-  
+
   return { valid: true };
 }
 ```
@@ -574,24 +574,38 @@ function validateRepository(input: string): { valid: boolean; error?: string; } 
 #### Helm Command Input
 
 ```typescript
-function validateInput(input: string, maxLength: number): { valid: boolean; error?: string } {
+function validateInput(
+  input: string,
+  maxLength: number,
+): { valid: boolean; error?: string } {
   // Check length
   if (input.length > maxLength) {
     return { valid: false, error: "Input too long" };
   }
-  
+
   // Block dangerous patterns
   const dangerousPatterns = [
-    "&", "|", ";", "$", "`", "\n", "\r",
-    "$(", "$()", ">", "<", "rm ", "kill "
+    "&",
+    "|",
+    ";",
+    "$",
+    "`",
+    "\n",
+    "\r",
+    "$(",
+    "$()",
+    ">",
+    "<",
+    "rm ",
+    "kill ",
   ];
-  
+
   for (const pattern of dangerousPatterns) {
     if (input.includes(pattern)) {
       return { valid: false, error: "Invalid characters detected" };
     }
   }
-  
+
   return { valid: true };
 }
 ```
@@ -605,32 +619,32 @@ validateHelmChart(chartPath: string, helmValues: Record<string, any>): SecurityR
   // 1. Image Security
   // - Check if image.tag is 'latest'
   // - Verify registry is trusted
-  
+
   // 2. Security Context
   // - Validate runAsNonRoot: true
   // - Check readOnlyRootFilesystem
   // - Verify allowPrivilegeEscalation: false
-  
+
   // 3. Resource Limits
   // - Require CPU limits
   // - Require memory limits
   // - Check requests are reasonable
-  
+
   // 4. Health Checks
   // - Validate liveness probe
   // - Validate readiness probe
-  
+
   // 5. Secret Detection
   // - Scan for hardcoded passwords
   // - Check for API keys in env vars
-  
+
   // 6. High Availability
   // - Check replica count >= 2
   // - Verify pod disruption budget
-  
+
   // 7. Image Pull Secrets
   // - For private registries, verify secrets
-  
+
   // 8. Service Configuration
   // - Validate service type
   // - Check port configuration
@@ -725,6 +739,7 @@ validateHelmChart(chartPath: string, helmValues: Record<string, any>): SecurityR
 #### Standard Deployment
 
 For Helm-based deployments, the chart itself defines all resources. The server only:
+
 1. Validates the helm command
 2. Adds the repository
 3. Installs the release
@@ -918,12 +933,12 @@ interface ComponentProps {
 export default function Component({ config, onConfigChange }: ComponentProps) {
   // State
   const [expanded, setExpanded] = useState(false);
-  
+
   // Handlers
   const handleChange = (field: string, value: any) => {
     onConfigChange(field, value);
   };
-  
+
   // Render
   return (
     <div className="space-y-4">
@@ -952,29 +967,29 @@ interface ResponsePayload {
 export const handleEndpoint: RequestHandler = async (req, res) => {
   const user = (req as any).user;
   const { field1, field2 } = req.body as RequestPayload;
-  
+
   // Validation
   if (!field1) {
     return res.status(400).json({
       success: false,
-      error: "field1 is required"
+      error: "field1 is required",
     });
   }
-  
+
   try {
     // Business logic
     const result = await someOperation();
-    
+
     // Success response
     res.status(200).json({
       success: true,
-      data: result
+      data: result,
     });
   } catch (error) {
     // Error response
     res.status(500).json({
       success: false,
-      error: "Operation failed"
+      error: "Operation failed",
     });
   }
 };
@@ -1015,6 +1030,7 @@ export const handleEndpoint: RequestHandler = async (req, res) => {
 ### API Rate Limiting
 
 Currently not implemented. For production:
+
 - Implement rate limiting middleware (express-rate-limit)
 - Per-user rate limits (deployments per hour)
 - Per-IP rate limits (auth attempts)

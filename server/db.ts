@@ -54,7 +54,7 @@ export async function initializeDatabase() {
   } catch (err: any) {
     if (err.code === "ECONNREFUSED") {
       console.warn(
-        "⚠️  PostgreSQL not running. Database will initialize when connection is available."
+        "⚠️  PostgreSQL not running. Database will initialize when connection is available.",
       );
     } else if (err.message?.includes("already exists")) {
       console.log("✅ Database tables already exist");

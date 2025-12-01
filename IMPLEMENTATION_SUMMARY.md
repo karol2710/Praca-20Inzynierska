@@ -5,6 +5,7 @@
 ### Client-Side Features
 
 #### 1. **Deployments Management Page**
+
 - **Location**: `client/pages/Deployments.tsx`
 - **Features**:
   - View all user deployments
@@ -16,6 +17,7 @@
   - Environment badges (staging/production)
 
 #### 2. **Deployment Confirmation Modal**
+
 - **Location**: `client/components/DeploymentConfirmModal.tsx`
 - **Features**:
   - Select environment (Staging/Production)
@@ -25,6 +27,7 @@
   - Real-time validation feedback
 
 #### 3. **Updated Advanced Deployment Flow**
+
 - **Location**: `client/pages/CreateChart.tsx`
 - **Features**:
   - Validation that at least one workload exists
@@ -34,6 +37,7 @@
   - Error handling and user feedback
 
 #### 4. **Navigation Updates**
+
 - **Location**: `client/components/Layout.tsx`, `client/App.tsx`
 - **Features**:
   - New route: `/deployments`
@@ -43,6 +47,7 @@
 ### Server-Side Features
 
 #### 1. **Deployments API Endpoints**
+
 - **Location**: `server/routes/deployments.ts`
 - **Endpoints**:
   - `GET /api/deployments` - List all user deployments
@@ -50,6 +55,7 @@
   - `DELETE /api/deployments/:id` - Delete deployment (soft delete)
 
 #### 2. **Database Schema**
+
 - **Location**: `server/db.ts`
 - **New Columns**:
   - `environment VARCHAR(50)` - staging or production
@@ -60,6 +66,7 @@
   - Index on user_id for performance
 
 #### 3. **Server Routing**
+
 - **Location**: `server/index.ts`
 - **Updates**:
   - Registered deployments API endpoints
@@ -68,12 +75,14 @@
 ### Security Enhancements
 
 #### 1. **Input Validation**
+
 - Repository URL validation (HTTPS required)
 - Helm command sanitization
 - Shell metacharacter blocking
 - Input length limits (500 chars repo, 1000 chars helm)
 
 #### 2. **HTTP Security Headers**
+
 - X-Frame-Options (prevent clickjacking)
 - X-Content-Type-Options (prevent MIME sniffing)
 - X-XSS-Protection (browser XSS filtering)
@@ -81,11 +90,13 @@
 - Permissions-Policy (disable camera/microphone/geo)
 
 #### 3. **Authentication & Authorization**
+
 - JWT token verification on all protected routes
 - Password hashing with bcryptjs
 - Deployment ownership verification (soft delete only)
 
 #### 4. **Request Limits**
+
 - 1MB maximum payload size
 - Input length restrictions
 - Rate limiting ready (placeholder)
@@ -93,6 +104,7 @@
 ## Architecture Documentation
 
 ### Complete Documentation Files
+
 1. **KUBERNETES_DEPLOYMENT_ARCHITECTURE.md** - Comprehensive deployment architecture guide
 2. **SECURITY.md** - Security implementation details
 3. **GLOBAL_CONFIG_FEATURE.md** - Global configuration feature documentation
@@ -100,7 +112,9 @@
 ## Ready for Integration
 
 ### System Template Files
+
 The following needs to be provided by you:
+
 1. `client-rbac.yaml` - RBAC roles and bindings
 2. `client-networkpolicy.yaml` - Network segmentation
 3. `client-limits-quota.yaml` - Resource quotas
@@ -122,6 +136,7 @@ The following needs to be provided by you:
      - `${RATE_LIMIT}`, `${CPU_LIMIT}`, etc.
 
 2. **Install Kubernetes Client**
+
    ```bash
    npm install @kubernetes/client-node
    ```
@@ -189,6 +204,7 @@ User Flow:
 ## Testing Checklist
 
 ### Frontend Tests
+
 - [ ] Create deployment with valid inputs
 - [ ] Modal displays correctly with all options
 - [ ] Environment selection changes certificate type
@@ -201,6 +217,7 @@ User Flow:
 - [ ] Navigation links work for authenticated users
 
 ### Backend Tests
+
 - [ ] GET /api/deployments returns user's deployments
 - [ ] GET /api/deployments/:id/yaml returns YAML content
 - [ ] DELETE /api/deployments/:id soft deletes
@@ -209,6 +226,7 @@ User Flow:
 - [ ] Database records created correctly
 
 ### Kubernetes Integration Tests (when implemented)
+
 - [ ] Namespace created with correct labels
 - [ ] RBAC rules applied
 - [ ] NetworkPolicy enforced
@@ -224,11 +242,13 @@ User Flow:
 ## Performance Considerations
 
 ### Current
+
 - Database queries indexed on user_id
 - Deployments listed in reverse chronological order (latest first)
 - Soft delete prevents hard deletes (recovery possible)
 
 ### Future Optimization
+
 - Pagination for large deployment lists
 - Caching of YAML content
 - Async deployment processing
@@ -291,6 +311,7 @@ Documentation/
 ## Support & Questions
 
 Refer to:
+
 - `KUBERNETES_DEPLOYMENT_ARCHITECTURE.md` for architecture details
 - `SECURITY.md` for security implementation
 - `GLOBAL_CONFIG_FEATURE.md` for global config feature

@@ -22,7 +22,10 @@ interface SecurityCheckResponse {
 }
 
 // Validate input format and disallow dangerous patterns
-const validateInput = (input: string, maxLength: number): { valid: boolean; error?: string } => {
+const validateInput = (
+  input: string,
+  maxLength: number,
+): { valid: boolean; error?: string } => {
   if (!input || typeof input !== "string") {
     return { valid: false, error: "Invalid input" };
   }
@@ -33,7 +36,21 @@ const validateInput = (input: string, maxLength: number): { valid: boolean; erro
   }
 
   // Disallow shell metacharacters
-  const dangerousPatterns = [';', '|', '&', '$', '`', '(', ')', '{', '}', '<', '>', '\n', '\r'];
+  const dangerousPatterns = [
+    ";",
+    "|",
+    "&",
+    "$",
+    "`",
+    "(",
+    ")",
+    "{",
+    "}",
+    "<",
+    ">",
+    "\n",
+    "\r",
+  ];
   for (const pattern of dangerousPatterns) {
     if (trimmed.includes(pattern)) {
       return { valid: false, error: "Input contains disallowed characters" };
@@ -44,7 +61,9 @@ const validateInput = (input: string, maxLength: number): { valid: boolean; erro
 };
 
 // Validate repository format
-const validateRepository = (input: string): { valid: boolean; name?: string; url?: string; error?: string } => {
+const validateRepository = (
+  input: string,
+): { valid: boolean; name?: string; url?: string; error?: string } => {
   const validation = validateInput(input, 500);
   if (!validation.valid) {
     return { valid: false, error: validation.error };
@@ -173,15 +192,21 @@ export const handleDeploy: RequestHandler = async (req, res) => {
     // Step 1: Add temporary helm repo using spawnSync (safer than execSync)
     output.push(`Adding helm repository: ${repoName}`);
     try {
-      const addRepoResult = spawnSync("helm", ["repo", "add", repoName!, repoUrl!], {
-        encoding: "utf-8",
-        stdio: ["pipe", "pipe", "pipe"],
-      });
+      const addRepoResult = spawnSync(
+        "helm",
+        ["repo", "add", repoName!, repoUrl!],
+        {
+          encoding: "utf-8",
+          stdio: ["pipe", "pipe", "pipe"],
+        },
+      );
       if (addRepoResult.stdout) {
         output.push(addRepoResult.stdout);
       }
     } catch (error) {
-      output.push(`Note: Repository might already exist or there was a warning (continuing)\n`);
+      output.push(
+        `Note: Repository might already exist or there was a warning (continuing)\n`,
+      );
     }
 
     // Update repo cache
@@ -203,10 +228,14 @@ export const handleDeploy: RequestHandler = async (req, res) => {
     try {
       // Parse helm install command safely (already validated no shell metacharacters)
       const helmArgs = helmInstall.trim().split(/\s+/);
-      const deployResult = spawnSync("helm", ["upgrade", "--install", ...helmArgs], {
-        encoding: "utf-8",
-        stdio: ["pipe", "pipe", "pipe"],
-      });
+      const deployResult = spawnSync(
+        "helm",
+        ["upgrade", "--install", ...helmArgs],
+        {
+          encoding: "utf-8",
+          stdio: ["pipe", "pipe", "pipe"],
+        },
+      );
       if (deployResult.stdout) {
         output.push(deployResult.stdout);
       }

@@ -25,13 +25,8 @@ interface AdvancedDeployResponse {
 
 export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
   const user = (req as any).user;
-  const {
-    workloads,
-    resources,
-    globalNamespace,
-    generatedYaml,
-    _fullYaml
-  } = req.body as AdvancedDeployRequest;
+  const { workloads, resources, globalNamespace, generatedYaml, _fullYaml } =
+    req.body as AdvancedDeployRequest;
 
   if (!user || !user.userId) {
     return res.status(401).json({ error: "Not authenticated" });
@@ -48,7 +43,7 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
     const userResult = await query(
       `SELECT id, username, rancher_api_url, rancher_api_token, rancher_cluster_id
        FROM users WHERE id = $1`,
-      [user.userId]
+      [user.userId],
     );
 
     if (userResult.rows.length === 0) {
@@ -71,7 +66,10 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
 
     const output: string[] = [];
     const namespace = globalNamespace;
-    const deploymentDir = path.join("/tmp", `deployment-${namespace}-${Date.now()}`);
+    const deploymentDir = path.join(
+      "/tmp",
+      `deployment-${namespace}-${Date.now()}`,
+    );
 
     output.push("=== Advanced Deployment Started ===\n");
     output.push(`Namespace: ${namespace}`);
@@ -84,7 +82,9 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
 
     // Parse and write individual YAML files from full YAML
     if (_fullYaml) {
-      const yamlDocuments = _fullYaml.split(/^---$/m).filter((doc) => doc.trim());
+      const yamlDocuments = _fullYaml
+        .split(/^---$/m)
+        .filter((doc) => doc.trim());
 
       output.push(`=== Writing ${yamlDocuments.length} YAML files ===\n`);
 
@@ -100,7 +100,11 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
           if (line.includes("kind:")) {
             kind = line.split(":")[1].trim().toLowerCase();
           }
-          if (line.includes("name:") && (lines[lines.indexOf(line) - 1]?.includes("metadata") || lines[lines.indexOf(line)].includes("metadata"))) {
+          if (
+            line.includes("name:") &&
+            (lines[lines.indexOf(line) - 1]?.includes("metadata") ||
+              lines[lines.indexOf(line)].includes("metadata"))
+          ) {
             resourceName = line.split(":")[1].trim();
             break;
           }
@@ -123,27 +127,33 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
       const kubeconfig = {
         apiVersion: "v1",
         kind: "Config",
-        clusters: [{
-          name: "rancher-cluster",
-          cluster: {
-            server: userData.rancher_api_url,
-            insecure_skip_tls_verify: true,
+        clusters: [
+          {
+            name: "rancher-cluster",
+            cluster: {
+              server: userData.rancher_api_url,
+              insecure_skip_tls_verify: true,
+            },
           },
-        }],
-        contexts: [{
-          name: "rancher-context",
-          context: {
-            cluster: "rancher-cluster",
-            user: "rancher-user",
+        ],
+        contexts: [
+          {
+            name: "rancher-context",
+            context: {
+              cluster: "rancher-cluster",
+              user: "rancher-user",
+            },
           },
-        }],
+        ],
         "current-context": "rancher-context",
-        users: [{
-          name: "rancher-user",
-          user: {
-            token: userData.rancher_api_token,
+        users: [
+          {
+            name: "rancher-user",
+            user: {
+              token: userData.rancher_api_token,
+            },
           },
-        }],
+        ],
       };
 
       await fs.writeFile(kubeconfigPath, JSON.stringify(kubeconfig, null, 2));
@@ -173,15 +183,16 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
           namespace,
           _fullYaml || generatedYaml || "",
           "deployed",
-        ]
+        ],
       );
 
       output.push("\n=== Deployment record saved to database ===\n");
-
     } catch (kubectlError: any) {
       output.push("⚠ kubectl error: " + kubectlError.message);
       output.push("\nYAML files have been created at: " + deploymentDir);
-      output.push("You can manually apply them with: kubectl apply -f " + deploymentDir);
+      output.push(
+        "You can manually apply them with: kubectl apply -f " + deploymentDir,
+      );
 
       // Still save the deployment record even if kubectl fails
       await query(
@@ -194,7 +205,7 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
           namespace,
           _fullYaml || generatedYaml || "",
           "pending",
-        ]
+        ],
       );
     }
 
@@ -203,7 +214,6 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
       output: output.join("\n"),
       namespace: namespace,
     } as AdvancedDeployResponse);
-
   } catch (error: any) {
     console.error("Advanced deploy error:", error);
     res.status(500).json({
