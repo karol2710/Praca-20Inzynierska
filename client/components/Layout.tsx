@@ -79,6 +79,53 @@ export default function Layout({ children }: LayoutProps) {
 
       {/* Main Content */}
       <main>{children}</main>
+
+      {/* Footer */}
+      <footer className="border-t border-border bg-card mt-12">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex flex-col items-center justify-center gap-2 text-sm text-foreground/70">
+            <div className="flex items-center gap-1 flex-wrap justify-center">
+              <a
+                href="https://github.com/karol2710/Praca-20Magisterska"
+                className="text-primary hover:underline"
+              >
+                Praca Magisterska KŻ
+              </a>
+              <span>© 2025 by</span>
+              <a
+                href="https://github.com/karol2710"
+                className="text-primary hover:underline"
+              >
+                Karol Żachowski
+              </a>
+              <span>is licensed under</span>
+              <a
+                href="https://creativecommons.org/licenses/by-nc/4.0/"
+                className="text-primary hover:underline"
+              >
+                CC BY-NC 4.0
+              </a>
+            </div>
+            <div className="flex items-center gap-1 justify-center">
+              <img
+                src="https://mirrors.creativecommons.org/presskit/icons/cc.svg"
+                alt="Creative Commons"
+                style={{ maxWidth: "1em", maxHeight: "1em" }}
+              />
+              <img
+                src="https://mirrors.creativecommons.org/presskit/icons/by.svg"
+                alt="Attribution"
+                style={{ maxWidth: "1em", maxHeight: "1em", marginLeft: "0.2em" }}
+              />
+              <img
+                src="https://mirrors.creativecommons.org/presskit/icons/nc.svg"
+                alt="Non-Commercial"
+                style={{ maxWidth: "1em", maxHeight: "1em", marginLeft: "0.2em" }}
+              />
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
