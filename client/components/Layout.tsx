@@ -115,12 +115,20 @@ export default function Layout({ children }: LayoutProps) {
               <img
                 src="https://mirrors.creativecommons.org/presskit/icons/by.svg"
                 alt="Attribution"
-                style={{ maxWidth: "1em", maxHeight: "1em", marginLeft: "0.2em" }}
+                style={{
+                  maxWidth: "1em",
+                  maxHeight: "1em",
+                  marginLeft: "0.2em",
+                }}
               />
               <img
                 src="https://mirrors.creativecommons.org/presskit/icons/nc.svg"
                 alt="Non-Commercial"
-                style={{ maxWidth: "1em", maxHeight: "1em", marginLeft: "0.2em" }}
+                style={{
+                  maxWidth: "1em",
+                  maxHeight: "1em",
+                  marginLeft: "0.2em",
+                }}
               />
             </div>
           </div>
