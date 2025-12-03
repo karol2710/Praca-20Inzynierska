@@ -4,10 +4,10 @@ Two separate scripts for container building and Kubernetes deployment.
 
 ## Files
 
-| File | Purpose |
-|------|---------|
-| `docker-build.sh` | Build Docker container image |
-| `k8s-deploy.sh` | Deploy to Kubernetes cluster |
+| File                             | Purpose                      |
+| -------------------------------- | ---------------------------- |
+| `docker-build.sh`                | Build Docker container image |
+| `k8s-deploy.sh`                  | Deploy to Kubernetes cluster |
 | `DOCKER_K8S_DEPLOYMENT_GUIDE.md` | Complete guide with examples |
 
 ## 5-Minute Setup
@@ -19,6 +19,7 @@ vi docker-build.sh
 ```
 
 Update lines 7-16:
+
 ```bash
 REGISTRY_URL="docker.io"              # Your registry
 REGISTRY_USERNAME="your-username"
@@ -34,6 +35,7 @@ chmod +x docker-build.sh
 ```
 
 Answer prompts:
+
 - Test image? → `y` (optional)
 - Push to registry? → `y` (optional)
 
@@ -46,6 +48,7 @@ vi k8s-deploy.sh
 ```
 
 Update lines 7-32 (critical ones):
+
 ```bash
 KUBECHART_IMAGE="docker.io/your-username/kubechart:latest"  # ← Must match above
 DATABASE_HOST="your-postgres-host"    # Or: postgres.kubechart.svc.cluster.local
@@ -61,6 +64,7 @@ chmod +x k8s-deploy.sh
 ```
 
 Script will:
+
 - ✅ Create namespace
 - ✅ Create secrets
 - ✅ Deploy application
@@ -92,7 +96,9 @@ kubectl port-forward -n kubechart svc/kubechart 3000:3000
 ## Configuration Comparison
 
 ### docker-build.sh
+
 Controls what image is **built and pushed**:
+
 ```bash
 REGISTRY_URL="docker.io"
 REGISTRY_USERNAME="user"
@@ -102,7 +108,9 @@ IMAGE_TAG="v1.0.0"
 ```
 
 ### k8s-deploy.sh
+
 Controls what image is **deployed** and how:
+
 ```bash
 KUBECHART_IMAGE="docker.io/user/kubechart:v1.0.0"  # ← Must match above
 REPLICAS=3
@@ -166,12 +174,14 @@ KUBECHART_IMAGE="123456789.dkr.ecr.us-east-1.amazonaws.com/kubechart:latest" \
 ## Required Information Before Starting
 
 ### For docker-build.sh:
+
 - [ ] Docker registry URL
 - [ ] Registry username
 - [ ] Registry password/token
 - [ ] Desired image tag
 
 ### For k8s-deploy.sh:
+
 - [ ] Built image URL (from step above)
 - [ ] Kubernetes cluster access
 - [ ] Database host and credentials
@@ -202,12 +212,14 @@ kubectl get svc -n envoy-gateway-system
 ## Troubleshooting
 
 ### Script won't run
+
 ```bash
 chmod +x docker-build.sh
 chmod +x k8s-deploy.sh
 ```
 
 ### Docker build fails
+
 ```bash
 # Check Docker is running
 docker ps
@@ -220,6 +232,7 @@ docker build -f Dockerfile . --progress=plain
 ```
 
 ### Kubernetes deployment fails
+
 ```bash
 # Check cluster connection
 kubectl cluster-info
@@ -232,6 +245,7 @@ docker pull your-registry/kubechart:tag
 ```
 
 ### Pods won't start
+
 ```bash
 # View pod events
 kubectl describe pod -n kubechart <pod-name>

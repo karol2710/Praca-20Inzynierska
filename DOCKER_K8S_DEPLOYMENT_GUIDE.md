@@ -1,17 +1,20 @@
 # Docker & Kubernetes Deployment Guide
 
 This guide explains how to use the two separate deployment scripts:
+
 1. **`docker-build.sh`** - Builds and pushes Docker container
 2. **`k8s-deploy.sh`** - Deploys container to Kubernetes cluster
 
 ## Prerequisites
 
 ### For Docker Build
+
 - Docker installed and running
 - (Optional) Docker registry account (Docker Hub, ECR, GCR, etc.)
 - Git with the KubeChart repository cloned
 
 ### For Kubernetes Deployment
+
 - kubectl installed and configured
 - Active Kubernetes cluster connection (`kubectl cluster-info`)
 - Access to the cluster (admin or deployment permissions)
@@ -67,6 +70,7 @@ BUILD_CONTEXT="."
 ```
 
 **Common Registry URLs:**
+
 - Docker Hub: `docker.io`
 - Google Container Registry: `gcr.io/your-project`
 - AWS ECR: `your-account.dkr.ecr.region.amazonaws.com`
@@ -80,6 +84,7 @@ chmod +x docker-build.sh
 ```
 
 **What the script does:**
+
 1. ✅ Verifies Docker installation
 2. ✅ Checks Dockerfile exists
 3. ✅ Builds multi-architecture image (if buildx available)
@@ -90,11 +95,13 @@ chmod +x docker-build.sh
 #### 1.3 Build Output
 
 After successful build, you'll have:
+
 - Local Docker image: `your-registry.com/kubechart:latest`
 - (Optional) Image pushed to registry
 - Image metadata available for deployment
 
 **Example output:**
+
 ```
 Size: 245000000 bytes
 Created: 2024-01-15T10:30:45Z
@@ -141,6 +148,7 @@ chmod +x k8s-deploy.sh
 ```
 
 **What the script does:**
+
 1. ✅ Verifies kubectl is installed and cluster is accessible
 2. ✅ Creates namespace (if not exists)
 3. ✅ Creates database credentials secret
@@ -157,6 +165,7 @@ chmod +x k8s-deploy.sh
 #### 2.3 Deployment Output
 
 After successful deployment, you'll see:
+
 ```
 Deployment Summary:
   Namespace:      kubechart
@@ -168,10 +177,10 @@ Deployment Summary:
 Useful commands:
   # View logs
   kubectl logs -n kubechart -l app=kubechart -f
-  
+
   # Check pods
   kubectl get pods -n kubechart
-  
+
   # Port forward
   kubectl port-forward -n kubechart svc/kubechart 3000:3000
 ```
@@ -180,34 +189,34 @@ Useful commands:
 
 ### docker-build.sh Configuration
 
-| Variable | Purpose | Example |
-|----------|---------|---------|
-| `REGISTRY_URL` | Docker registry hostname | `docker.io` or `gcr.io/project` |
-| `REGISTRY_USERNAME` | Registry login username | `your-username` |
-| `REGISTRY_PASSWORD` | Registry login password | `your-token-or-password` |
-| `IMAGE_NAME` | Image name | `kubechart` |
-| `IMAGE_TAG` | Image version tag | `latest`, `v1.0.0`, `prod` |
-| `DOCKERFILE` | Path to Dockerfile | `./Dockerfile` |
-| `BUILD_CONTEXT` | Build context directory | `.` (current dir) |
+| Variable            | Purpose                  | Example                         |
+| ------------------- | ------------------------ | ------------------------------- |
+| `REGISTRY_URL`      | Docker registry hostname | `docker.io` or `gcr.io/project` |
+| `REGISTRY_USERNAME` | Registry login username  | `your-username`                 |
+| `REGISTRY_PASSWORD` | Registry login password  | `your-token-or-password`        |
+| `IMAGE_NAME`        | Image name               | `kubechart`                     |
+| `IMAGE_TAG`         | Image version tag        | `latest`, `v1.0.0`, `prod`      |
+| `DOCKERFILE`        | Path to Dockerfile       | `./Dockerfile`                  |
+| `BUILD_CONTEXT`     | Build context directory  | `.` (current dir)               |
 
 ### k8s-deploy.sh Configuration
 
-| Variable | Purpose | Example |
-|----------|---------|---------|
-| `KUBE_CONTEXT` | kubectl context to use | Leave empty for current |
-| `KUBE_NAMESPACE` | Kubernetes namespace | `kubechart` |
-| `KUBECHART_IMAGE` | Full image URL to deploy | `docker.io/user/kubechart:latest` |
-| `REPLICAS` | Number of pod replicas | `3` |
-| `DATABASE_HOST` | PostgreSQL hostname | `postgres.kubechart.svc.cluster.local` |
-| `DATABASE_PORT` | PostgreSQL port | `5432` |
-| `DATABASE_NAME` | Database name | `kubechart` |
-| `DATABASE_USER` | Database user | `deployer_user` |
-| `DATABASE_PASSWORD` | Database password | `secure-password` |
-| `JWT_SECRET` | JWT signing secret | `your-secret-key` |
-| `CPU_REQUEST` | Minimum CPU per pod | `100m` |
-| `CPU_LIMIT` | Maximum CPU per pod | `500m` |
-| `MEMORY_REQUEST` | Minimum memory per pod | `256Mi` |
-| `MEMORY_LIMIT` | Maximum memory per pod | `512Mi` |
+| Variable            | Purpose                  | Example                                |
+| ------------------- | ------------------------ | -------------------------------------- |
+| `KUBE_CONTEXT`      | kubectl context to use   | Leave empty for current                |
+| `KUBE_NAMESPACE`    | Kubernetes namespace     | `kubechart`                            |
+| `KUBECHART_IMAGE`   | Full image URL to deploy | `docker.io/user/kubechart:latest`      |
+| `REPLICAS`          | Number of pod replicas   | `3`                                    |
+| `DATABASE_HOST`     | PostgreSQL hostname      | `postgres.kubechart.svc.cluster.local` |
+| `DATABASE_PORT`     | PostgreSQL port          | `5432`                                 |
+| `DATABASE_NAME`     | Database name            | `kubechart`                            |
+| `DATABASE_USER`     | Database user            | `deployer_user`                        |
+| `DATABASE_PASSWORD` | Database password        | `secure-password`                      |
+| `JWT_SECRET`        | JWT signing secret       | `your-secret-key`                      |
+| `CPU_REQUEST`       | Minimum CPU per pod      | `100m`                                 |
+| `CPU_LIMIT`         | Maximum CPU per pod      | `500m`                                 |
+| `MEMORY_REQUEST`    | Minimum memory per pod   | `256Mi`                                |
+| `MEMORY_LIMIT`      | Maximum memory per pod   | `512Mi`                                |
 
 ## Advanced Usage
 
@@ -270,9 +279,11 @@ REPLICAS=3 \
 The scripts include built-in health checks:
 
 **Docker Build:**
+
 - Container health check: `curl http://localhost:3000/api/ping`
 
 **Kubernetes Deployment:**
+
 - Liveness probe: Checks `/api/ping` every 10 seconds
 - Readiness probe: Checks `/api/ping` every 5 seconds
 - Initial delay: 30s (liveness), 10s (readiness)
@@ -306,6 +317,7 @@ MEMORY_LIMIT="2Gi"
 ### Docker Build Issues
 
 **Issue: "Dockerfile not found"**
+
 ```bash
 # Verify Dockerfile exists
 ls -la Dockerfile
@@ -315,6 +327,7 @@ DOCKERFILE="./path/to/Dockerfile"
 ```
 
 **Issue: "Failed to build image"**
+
 ```bash
 # Check Docker daemon
 docker ps
@@ -327,6 +340,7 @@ docker build --dry-run -f Dockerfile .
 ```
 
 **Issue: "Failed to push image"**
+
 ```bash
 # Verify registry credentials
 docker login your-registry.com
@@ -341,6 +355,7 @@ docker push your-registry.com/kubechart:latest
 ### Kubernetes Deployment Issues
 
 **Issue: "Cannot connect to cluster"**
+
 ```bash
 # Verify kubectl config
 kubectl config view
@@ -351,6 +366,7 @@ kubectl config use-context your-context
 ```
 
 **Issue: "ImagePullBackOff"**
+
 ```bash
 # Verify image exists in registry
 docker pull your-registry.com/kubechart:latest
@@ -363,6 +379,7 @@ kubectl get secrets -n kubechart
 ```
 
 **Issue: "Deployment not rolling out"**
+
 ```bash
 # Check pod status
 kubectl get pods -n kubechart -o wide
@@ -378,6 +395,7 @@ kubectl top pods -n kubechart
 ```
 
 **Issue: "Database connection failed"**
+
 ```bash
 # Verify database secret
 kubectl get secret kubechart-db-credentials -n kubechart -o yaml
@@ -440,14 +458,14 @@ name: Build and Deploy KubeChart
 on:
   push:
     branches: [main, develop]
-    tags: ['v*']
+    tags: ["v*"]
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Build Docker Image
         env:
           REGISTRY_URL: ${{ secrets.REGISTRY_URL }}
@@ -455,7 +473,7 @@ jobs:
           REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
           IMAGE_TAG: ${{ github.ref_name }}
         run: chmod +x docker-build.sh && ./docker-build.sh
-      
+
       - name: Deploy to Kubernetes
         env:
           KUBECHART_IMAGE: ${{ secrets.REGISTRY_URL }}/kubechart:${{ github.ref_name }}
@@ -520,6 +538,7 @@ kubectl rollout undo deployment/kubechart -n kubechart --to-revision=3
 ## Support
 
 For issues or questions:
+
 1. Check the troubleshooting section above
 2. Review logs: `kubectl logs -n kubechart -l app=kubechart`
 3. Check events: `kubectl get events -n kubechart`
@@ -528,6 +547,7 @@ For issues or questions:
 ## Summary
 
 **docker-build.sh workflow:**
+
 ```
 docker-build.sh
 ├── Pre-flight checks (Docker, buildx)
@@ -539,6 +559,7 @@ docker-build.sh
 ```
 
 **k8s-deploy.sh workflow:**
+
 ```
 k8s-deploy.sh
 ├── Pre-flight checks (kubectl, cluster)
