@@ -87,6 +87,9 @@ React 18.3.1 (Core)
 │  ├─ Recharts 2.12.7 (Data visualization)
 │  │  └─ Used for: Metrics, charts, graphs
 │  │
+│  ├─ react-day-picker 9.8.1 (Date picker)
+│  │  └─ Used for: Calendar UI, date selection
+│  │
 │  ├─ Lucide React 0.539.0 (Icons)
 │  │  └─ 500+ SVG icons for UI
 │  │
