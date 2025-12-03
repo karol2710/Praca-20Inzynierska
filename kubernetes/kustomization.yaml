@@ -14,7 +14,9 @@ resources:
   - serviceaccount.yaml
   - deployment.yaml
   - service.yaml
+  - service.yaml
   - ingress.yaml
+  - httproute.yaml
   - hpa.yaml
   - network-policy.yaml
 
