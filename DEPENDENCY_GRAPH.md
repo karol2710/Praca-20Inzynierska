@@ -69,11 +69,6 @@ React 18.3.1 (Core)
 │
 ├─ Form Management
 │  ├─ React Hook Form 7.62.0 (Form state)
-│  │  ├─ @hookform/resolvers 5.2.1 (Validation)
-│  │  └─ Integrated with Zod
-│  │
-│  ├─ Zod 3.25.76 (Type-safe validation)
-│  │  └─ Used for: API contracts, form validation
 │  │
 │  └─ Input OTP 1.4.2 (OTP inputs)
 │
@@ -167,10 +162,6 @@ Node.js 22+ Runtime
    ├─ Deployment Options
    │  └─ serverless-http 3.2.0 (Serverless adapter)
    │     └─ Used for: AWS Lambda, Netlify Functions
-   │
-   ├─ Validation
-   │  └─ Zod 3.25.76 (Type-safe validation)
-   │     └─ Used for: Request validation, type safety
    │
    └─ Type System
       ├─ TypeScript 5.9.2 (Type checking)
