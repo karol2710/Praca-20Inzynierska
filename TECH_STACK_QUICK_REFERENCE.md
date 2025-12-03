@@ -49,12 +49,11 @@ Tailwind CSS 3.4.17
   + AutoPrefixer
 ```
 
-### Form & Validation
+### Forms
 
 ```
 React Hook Form 7.62.0
-  + Zod 3.25.76 (Type-safe validation)
-  + @hookform/resolvers
+  + Input OTP for multi-step inputs
 ```
 
 ### Data Management
