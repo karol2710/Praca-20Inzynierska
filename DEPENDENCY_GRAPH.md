@@ -491,7 +491,7 @@ Authentication
 | **Transitive Dependencies** | 450+                    |
 | **Frontend Packages**       | 38+                     |
 | **Backend Packages**        | 7                       |
-| **Dev Tools**               | 20                     |
+| **Dev Tools**               | 20                      |
 | **Radix UI Components**     | 25+                     |
 | **TypeScript Definitions**  | 10+                     |
 | **Vite Plugins**            | 2                       |
