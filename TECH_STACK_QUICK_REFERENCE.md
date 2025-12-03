@@ -63,14 +63,6 @@ React Hook Form 7.62.0
 TanStack React Query 5.84.2 (Server state)
 ```
 
-### 3D Graphics
-
-```
-Three.js 0.176.0
-  + React Three Fiber 8.18.0
-  + React Three Drei 9.122.0
-```
-
 ### Build & Compilation
 
 ```
