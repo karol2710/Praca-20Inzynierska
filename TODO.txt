@@ -1,0 +1,2 @@
+In Resources make VPA, and HPA.
+Check Standard Config Security Check, and deploy security tool in platform.
