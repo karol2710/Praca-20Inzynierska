@@ -359,14 +359,13 @@ User Request
 │
 ├─ Frontend (React)
 │  ├─ User Input (Forms)
-│  │  └─ React Hook Form + Zod validation
+│  │  └─ React Hook Form
 │  │
 │  ├─ API Call (fetch)
 │  │  └─ @tanstack/react-query (caching)
 │  │
 │  └─ Component Rendering
 │     ├─ Radix UI + Tailwind CSS
-│     ├─ Framer Motion (animations)
 │
 └─ Backend (Express)
    │
