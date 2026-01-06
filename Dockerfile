@@ -18,8 +18,8 @@ RUN pnpm install --frozen-lockfile
 # Copy source code
 COPY . .
 
-# Build application (client and server)
-RUN pnpm run build
+# Clear Vite cache and build application
+RUN rm -rf .vite node_modules/.vite && pnpm run build
 
 # Production stage
 FROM node:22-alpine
