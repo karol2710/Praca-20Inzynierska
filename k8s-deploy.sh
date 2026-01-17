@@ -99,13 +99,10 @@ echo "Application Port:       $PORT"
 echo "Storage Class:          $STORAGE_CLASS"
 echo ""
 
-if [ "$KUBECHART_IMAGE" = "your-registry.com/kubechart:latest" ]; then
-    print_warning "Docker image is using default placeholder. Please update KUBECHART_IMAGE"
-    read -p "Continue anyway? (y/n) " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        exit 1
-    fi
+# Check if using local image (without registry URL)
+if [[ "$KUBECHART_IMAGE" != *"/"* ]]; then
+    print_warning "Using local Docker image: $KUBECHART_IMAGE"
+    print_warning "Make sure the image exists: docker images | grep kubechart"
 fi
 
 # ==========================================
