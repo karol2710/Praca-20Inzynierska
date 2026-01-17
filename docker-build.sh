@@ -94,7 +94,11 @@ print_success "Build context found"
 # ==========================================
 print_header "Building Docker Image"
 
-FULL_IMAGE_NAME="${REGISTRY_URL}/${IMAGE_NAME}:${IMAGE_TAG}"
+if [ -z "$REGISTRY_URL" ]; then
+    FULL_IMAGE_NAME="${IMAGE_NAME}:${IMAGE_TAG}"
+else
+    FULL_IMAGE_NAME="${REGISTRY_URL}/${IMAGE_NAME}:${IMAGE_TAG}"
+fi
 
 echo "Building image: $FULL_IMAGE_NAME"
 echo ""
