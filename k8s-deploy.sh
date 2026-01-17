@@ -119,6 +119,75 @@ else
 fi
 
 # ==========================================
+# Step 1.5: Create RBAC resources
+# ==========================================
+print_header "Step 1.5: Creating RBAC Resources"
+
+# Create ServiceAccount
+if kubectl get serviceaccount "$DEPLOYMENT_NAME" -n "$KUBE_NAMESPACE" > /dev/null 2>&1; then
+    print_success "ServiceAccount '$DEPLOYMENT_NAME' already exists"
+else
+    echo "Creating ServiceAccount: $DEPLOYMENT_NAME"
+    cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: $DEPLOYMENT_NAME
+  namespace: $KUBE_NAMESPACE
+  labels:
+    app: $DEPLOYMENT_NAME
+EOF
+    print_success "ServiceAccount created"
+fi
+
+# Create Role for basic pod operations
+echo "Creating Role for $DEPLOYMENT_NAME"
+cat <<EOF | kubectl apply -f -
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: $DEPLOYMENT_NAME
+  namespace: $KUBE_NAMESPACE
+  labels:
+    app: $DEPLOYMENT_NAME
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list"]
+EOF
+
+# Create RoleBinding
+echo "Creating RoleBinding for $DEPLOYMENT_NAME"
+cat <<EOF | kubectl apply -f -
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: $DEPLOYMENT_NAME
+  namespace: $KUBE_NAMESPACE
+  labels:
+    app: $DEPLOYMENT_NAME
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: $DEPLOYMENT_NAME
+subjects:
+  - kind: ServiceAccount
+    name: $DEPLOYMENT_NAME
+    namespace: $KUBE_NAMESPACE
+EOF
+
+print_success "RBAC resources created"
+
+# ==========================================
 # Step 2: Create secrets
 # ==========================================
 print_header "Step 2: Creating Kubernetes Secrets"
