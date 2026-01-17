@@ -56,31 +56,22 @@ for i in {1..30}; do
   sleep 5
 done
 
-echo "==> Tworzenie AddressPool dla MetalLB"
-kubectl apply -f - <<EOF
-apiVersion: metallb.io/v1beta1
-kind: IPAddressPool
-metadata:
-  name: default
-  namespace: metallb-system
-spec:
-  addresses:
-  - 172.18.255.1-172.18.255.250
----
-apiVersion: metallb.io/v1beta1
-kind: L2Advertisement
-metadata:
-  name: l2advertisement
-  namespace: metallb-system
-EOF
+if [ ! -f metallb-pool.yaml ]; then
+  echo "❌ Brak pliku metallb-pool.yaml w katalogu!"
+  exit 1
+fi
+echo "==> Zastosowanie AddressPool"
+kubectl apply -f metallb-pool.yaml
 
 echo "==> Sprawdzanie MetalLB"
 kubectl -n metallb-system get all
+
 
 echo "=========================="
 echo " INSTALLACJA Envoy Gateway"
 echo "=========================="
 
+# Namespace
 kubectl create namespace envoy-gateway-system --dry-run=client -o yaml | kubectl apply -f -
 
 if helm status eg -n envoy-gateway-system >/dev/null 2>&1; then
@@ -106,9 +97,11 @@ echo "==============================="
 echo " Envoy Gateway zainstalowany ✔"
 echo "==============================="
 
-echo ""
+# Informacyjnie – pokaż Service (MetalLB IP)
+echo
 echo "==> Service Envoy Gateway:"
 kubectl -n envoy-gateway-system get svc
+
 
 echo "=========================="
 echo " INSTALLACJA cert-manager"
@@ -128,72 +121,62 @@ helm upgrade --install cert-manager jetstack/cert-manager \
   --namespace cert-manager \
   --version ${CERT_MANAGER_VERSION}
 
+
 echo "==> Oczekiwanie na gotowość cert-manager..."
 
 kubectl rollout status deployment cert-manager -n cert-manager --timeout=180s
 kubectl rollout status deployment cert-manager-webhook -n cert-manager --timeout=180s
 kubectl rollout status deployment cert-manager-cainjector -n cert-manager --timeout=180s
 
-echo "==> cert-manager gotowy"
 
-echo "=========================="
-echo " TWORZENIE GATEWAY"
-echo "=========================="
+# Aplikacja Gateway.yaml (z lokalnego katalogu)
+if [ ! -f gateway.yaml ]; then
+  echo "❌ Brak pliku gateway.yaml w katalogu!"
+  exit 1
+fi
+echo "==> Stosowanie gateway.yaml"
+kubectl apply -f gateway.yaml
 
-kubectl apply -f - <<EOF
-apiVersion: gateway.networking.k8s.io/v1
-kind: GatewayClass
-metadata:
-  name: eg
-spec:
-  controllerName: gateway.envoyproxy.io/gatewayclass-controller
----
-apiVersion: gateway.networking.k8s.io/v1
-kind: Gateway
-metadata:
-  name: platform-gateway
-  namespace: envoy-gateway-system
-spec:
-  gatewayClassName: eg
-  listeners:
-  - name: http
-    protocol: HTTP
-    port: 80
-  - name: https
-    protocol: HTTPS
-    port: 443
-    tls:
-      mode: Terminate
-      certificateRefs:
-      - name: platform-tls
-EOF
+echo "==> Uruchomienie LoadBalancer"
+if [ -f envoylb.yaml ]; then
+  kubectl apply -f envoylb.yaml
+fi
 
-echo "==> Gateway utworzony"
+echo "==> Czekam czy API akceptuje gatewayHTTPRoute..."
 
-echo "=========================="
-echo " OCZEKIWANIE NA EXTERNAL-IP"
-echo "=========================="
+for i in {1..60}; do
+  if kubectl apply --dry-run=server -f cert-issuer-prod.yaml >/dev/null 2>&1; then
+    echo "==> Gateway solver zaakceptowany przez API"
+    break
+  fi
+  echo "Czekam aż webhook zacznie akceptować gatewayHTTPRoute..."
+  sleep 5
+done
 
+kubectl apply -f cert-issuer-prod.yaml
+kubectl apply -f cert-issuer-staging.yaml
+
+echo "==> Oczekiwanie na EXTERNAL-IP z MetalLB..."
+
+# Czekamy na External IP
 for i in {1..60}; do
   IP=$(kubectl -n envoy-gateway-system get svc -l gateway.networking.k8s.io/gateway-name=platform-gateway \
     -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}' 2>/dev/null || echo "")
-  
-  if [[ -n "$IP" && "$IP" != "<pending>" ]]; then
+  if [[ "$IP" != "" && "$IP" != "<pending>" ]]; then
     echo "==> EXTERNAL-IP przydzielony: $IP"
-    GATEWAY_IP=$IP
     break
   fi
   echo "Czekam na przydzielenie IP..."
   sleep 5
 done
 
-if [[ -z "$GATEWAY_IP" ]]; then
+if [[ -z "$IP" || "$IP" == "<pending>" ]]; then
   echo "❌ ERROR: MetalLB nie przydzielił IP!"
   exit 1
 fi
 
 echo "=========================="
-echo " INSTALACJA LONGHORN"
+echo " INSTALLACJA LONGHORN"
 echo "=========================="
 
 kubectl create namespace longhorn-system --dry-run=client -o yaml | kubectl apply -f -
@@ -210,25 +193,56 @@ else
     --set persistence.defaultClassReplicaCount=3
 fi
 
-echo "==> Czekanie na Longhorn komponenty..."
+echo "==> Czekanie na Longhorn CRD i komponenty..."
 
-kubectl wait --for=condition=available deployment/longhorn-ui -n longhorn-system --timeout=600s
-kubectl wait --for=condition=available deployment/longhorn-driver-deployer -n longhorn-system --timeout=600s
+CRDS=("volumes.longhorn.io" "engines.longhorn.io" "replicas.longhorn.io" "nodes.longhorn.io")
 
-echo "==> Tworzenie StorageClass dla Longhorn"
-kubectl apply -f - <<EOF
-apiVersion: storage.k8s.io/v1
-kind: StorageClass
-metadata:
-  name: longhorn
-provisioner: driver.longhorn.io
-allowVolumeExpansion: true
-parameters:
-  numberOfReplicas: "3"
-  staleReplicaTimeout: "2880"
-EOF
+for crd in "${CRDS[@]}"; do
+  for i in {1..60}; do
+    if kubectl get crd "$crd" >/dev/null 2>&1; then
+      kubectl wait --for=condition=established crd/$crd --timeout=300s
+      echo "CRD $crd gotowa"
+      break
+    fi
+    echo "Czekam aż CRD $crd zostanie utworzona..."
+    sleep 5
+  done
+done
+
+echo "==> Czekam aż longhorn-manager będzie READY..."
+
+for i in {1..60}; do
+  READY=$(kubectl -n longhorn-system get ds longhorn-manager -o jsonpath='{.status.numberReady}' 2>/dev/null || echo "0")
+  DESIRED=$(kubectl -n longhorn-system get ds longhorn-manager -o jsonpath='{.status.desiredNumberScheduled}' 2>/dev/null || echo "0")
+
+  if [[ "$READY" == "$DESIRED" && "$READY" != "0" && "$READY" != "" ]]; then
+    echo "==> longhorn-manager gotowy ($READY/$DESIRED)"
+    break
+  fi
+
+  echo "Czekam na longhorn-manager ($READY/$DESIRED)..."
+  sleep 5
+done
+
+kubectl wait --for=condition=available --timeout=600s deployment/longhorn-ui -n longhorn-system
+kubectl wait --for=condition=available --timeout=600s deployment/longhorn-driver-deployer -n longhorn-system
+
+echo "==> Czekam na CRD Longhorna..."
+
+for crd in volumes.longhorn.io engines.longhorn.io replicas.longhorn.io nodes.longhorn.io; do
+  kubectl wait --for=condition=established crd/$crd --timeout=300s
+done
+
+if [ -f LonghornEncrypt.yaml ]; then
+  kubectl apply -f LonghornEncrypt.yaml
+fi
+
+if [ -f StorageClass.yaml ]; then
+  kubectl apply -f StorageClass.yaml
+fi
 
 echo "==> Longhorn + StorageClass skonfigurowane!"
+
 
 echo "=========================="
 echo " WALIDACJA INSTALACJI"
@@ -246,19 +260,13 @@ kubectl -n envoy-gateway-system get pods
 echo "==> Sprawdzanie cert-manager pods:"
 kubectl -n cert-manager get pods
 
-echo "==> Sprawdzanie Longhorn:"
+echo "==> Sprawdzanie Service Envoy Gateway:"
+kubectl -n envoy-gateway-system get svc
+
+echo "==> Sprawdzanie longhorn:"
 kubectl -n longhorn-system get pods
 
 echo "=========================="
 echo " INSTALACJA ZAKOŃCZONA ✔"
 echo "=========================="
-echo "Gateway IP: $GATEWAY_IP"
-echo "StorageClass: longhorn"
-echo ""
-echo "Następne kroki:"
-echo "1. Dodaj do /etc/hosts:"
-echo "   $GATEWAY_IP yourdomain.com"
-echo "2. Zaaplikuj cert-issuer:"
-echo "   kubectl apply -f cert-issuer-staging.yaml"
-echo "   kubectl apply -f cert-issuer-prod.yaml"
-echo "3. Zaaplikuj HTTPRoute dla Twojej aplikacji"
+echo "Publiczny adres IP Envoy Gateway: $IP"
