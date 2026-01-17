@@ -67,8 +67,9 @@ fi
 # ==========================================
 print_header "Configuration"
 
-echo "Registry URL:        $REGISTRY_URL"
-echo "Registry Username:   $REGISTRY_USERNAME"
+if [ -n "$REGISTRY_URL" ]; then
+    echo "Registry URL:        $REGISTRY_URL"
+fi
 echo "Image Name:          $IMAGE_NAME"
 echo "Image Tag:           $IMAGE_TAG"
 echo "Dockerfile:          $DOCKERFILE"
