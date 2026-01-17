@@ -4,13 +4,11 @@ set -e
 # ==========================================
 # Docker Build Configuration
 # ==========================================
-REGISTRY_URL="your-registry.com"          # Docker registry URL (e.g., docker.io, gcr.io, etc.)
-REGISTRY_USERNAME="your-username"         # Docker registry username
-REGISTRY_PASSWORD="your-password"         # Docker registry password
 IMAGE_NAME="kubechart"                    # Image name
 IMAGE_TAG="latest"                        # Image tag (e.g., latest, v1.0.0)
 DOCKERFILE="Dockerfile"                   # Path to Dockerfile
 BUILD_CONTEXT="."                         # Build context directory
+REGISTRY_URL=""                           # Docker registry URL (leave empty for local build)
 
 # ==========================================
 # Color codes
@@ -69,8 +67,9 @@ fi
 # ==========================================
 print_header "Configuration"
 
-echo "Registry URL:        $REGISTRY_URL"
-echo "Registry Username:   $REGISTRY_USERNAME"
+if [ -n "$REGISTRY_URL" ]; then
+    echo "Registry URL:        $REGISTRY_URL"
+fi
 echo "Image Name:          $IMAGE_NAME"
 echo "Image Tag:           $IMAGE_TAG"
 echo "Dockerfile:          $DOCKERFILE"
@@ -96,7 +95,11 @@ print_success "Build context found"
 # ==========================================
 print_header "Building Docker Image"
 
-FULL_IMAGE_NAME="${REGISTRY_URL}/${IMAGE_NAME}:${IMAGE_TAG}"
+if [ -z "$REGISTRY_URL" ]; then
+    FULL_IMAGE_NAME="${IMAGE_NAME}:${IMAGE_TAG}"
+else
+    FULL_IMAGE_NAME="${REGISTRY_URL}/${IMAGE_NAME}:${IMAGE_TAG}"
+fi
 
 echo "Building image: $FULL_IMAGE_NAME"
 echo ""
@@ -176,55 +179,29 @@ fi
 # ==========================================
 # Push to registry (optional)
 # ==========================================
-print_header "Registry Push"
+if [ -n "$REGISTRY_URL" ]; then
+    print_header "Registry Push"
 
-read -p "Push image to registry? (y/n) " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    
-    # Check if already logged in
-    if ! docker info | grep -q "Username: $REGISTRY_USERNAME"; then
-        echo "Logging in to Docker registry..."
-        
-        if [ -z "$REGISTRY_PASSWORD" ] || [ "$REGISTRY_PASSWORD" = "your-password" ]; then
-            print_error "Registry password not configured. Please update the script."
-            exit 1
-        fi
-        
-        echo "$REGISTRY_PASSWORD" | docker login -u "$REGISTRY_USERNAME" --password-stdin "$REGISTRY_URL"
-        
-        if [ $? -eq 0 ]; then
-            print_success "Logged in to registry"
-        else
-            print_error "Failed to login to registry"
-            exit 1
-        fi
-    else
-        print_success "Already logged in to registry"
-    fi
-    
-    echo ""
-    echo "Pushing image to registry: $FULL_IMAGE_NAME"
-    
-    docker push "$FULL_IMAGE_NAME"
-    
-    if [ $? -eq 0 ]; then
-        print_success "Image pushed successfully"
-    else
-        print_error "Failed to push image"
-        exit 1
-    fi
-    
-    # Push additional tags
-    echo ""
-    read -p "Also push with 'latest' tag? (y/n) " -n 1 -r
+    read -p "Push image to registry? (y/n) " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
-        LATEST_IMAGE="${REGISTRY_URL}/${IMAGE_NAME}:latest"
-        docker tag "$FULL_IMAGE_NAME" "$LATEST_IMAGE"
-        docker push "$LATEST_IMAGE"
-        print_success "Latest tag pushed"
+        echo ""
+        echo "Pushing image to registry: $FULL_IMAGE_NAME"
+
+        docker push "$FULL_IMAGE_NAME"
+
+        if [ $? -eq 0 ]; then
+            print_success "Image pushed successfully"
+        else
+            print_error "Failed to push image"
+            exit 1
+        fi
     fi
+else
+    print_header "Local Build Complete"
+    echo "Image built locally: $FULL_IMAGE_NAME"
+    echo "Image is ready for Kubernetes deployment"
+    echo "The image will be deployed with 'imagePullPolicy: Never'"
 fi
 
 # ==========================================
@@ -237,6 +214,12 @@ echo "Dockerfile:   $DOCKERFILE"
 echo "Build Context: $BUILD_CONTEXT"
 echo ""
 echo "Next steps:"
-echo "1. Update kubernetes/deployment.yaml image reference to: $FULL_IMAGE_NAME"
-echo "2. Run: ./k8s-deploy.sh"
+if [ -n "$REGISTRY_URL" ]; then
+    echo "1. Image is ready in registry: $FULL_IMAGE_NAME"
+    echo "2. Update k8s-deploy.sh with: KUBECHART_IMAGE=\"$FULL_IMAGE_NAME\""
+else
+    echo "1. Image built successfully and ready locally"
+    echo "2. Ensure k8s-deploy.sh has: KUBECHART_IMAGE=\"kubechart:latest\""
+fi
+echo "3. Run: ./k8s-deploy.sh"
 echo ""
