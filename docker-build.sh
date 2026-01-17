@@ -179,55 +179,29 @@ fi
 # ==========================================
 # Push to registry (optional)
 # ==========================================
-print_header "Registry Push"
+if [ -n "$REGISTRY_URL" ]; then
+    print_header "Registry Push"
 
-read -p "Push image to registry? (y/n) " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    
-    # Check if already logged in
-    if ! docker info | grep -q "Username: $REGISTRY_USERNAME"; then
-        echo "Logging in to Docker registry..."
-        
-        if [ -z "$REGISTRY_PASSWORD" ] || [ "$REGISTRY_PASSWORD" = "your-password" ]; then
-            print_error "Registry password not configured. Please update the script."
-            exit 1
-        fi
-        
-        echo "$REGISTRY_PASSWORD" | docker login -u "$REGISTRY_USERNAME" --password-stdin "$REGISTRY_URL"
-        
-        if [ $? -eq 0 ]; then
-            print_success "Logged in to registry"
-        else
-            print_error "Failed to login to registry"
-            exit 1
-        fi
-    else
-        print_success "Already logged in to registry"
-    fi
-    
-    echo ""
-    echo "Pushing image to registry: $FULL_IMAGE_NAME"
-    
-    docker push "$FULL_IMAGE_NAME"
-    
-    if [ $? -eq 0 ]; then
-        print_success "Image pushed successfully"
-    else
-        print_error "Failed to push image"
-        exit 1
-    fi
-    
-    # Push additional tags
-    echo ""
-    read -p "Also push with 'latest' tag? (y/n) " -n 1 -r
+    read -p "Push image to registry? (y/n) " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
-        LATEST_IMAGE="${REGISTRY_URL}/${IMAGE_NAME}:latest"
-        docker tag "$FULL_IMAGE_NAME" "$LATEST_IMAGE"
-        docker push "$LATEST_IMAGE"
-        print_success "Latest tag pushed"
+        echo ""
+        echo "Pushing image to registry: $FULL_IMAGE_NAME"
+
+        docker push "$FULL_IMAGE_NAME"
+
+        if [ $? -eq 0 ]; then
+            print_success "Image pushed successfully"
+        else
+            print_error "Failed to push image"
+            exit 1
+        fi
     fi
+else
+    print_header "Local Build Complete"
+    echo "Image built locally: $FULL_IMAGE_NAME"
+    echo "Image is ready for Kubernetes deployment"
+    echo "The image will be deployed with 'imagePullPolicy: Never'"
 fi
 
 # ==========================================
