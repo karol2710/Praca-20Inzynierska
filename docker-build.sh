@@ -4,13 +4,11 @@ set -e
 # ==========================================
 # Docker Build Configuration
 # ==========================================
-REGISTRY_URL="your-registry.com"          # Docker registry URL (e.g., docker.io, gcr.io, etc.)
-REGISTRY_USERNAME="your-username"         # Docker registry username
-REGISTRY_PASSWORD="your-password"         # Docker registry password
 IMAGE_NAME="kubechart"                    # Image name
 IMAGE_TAG="latest"                        # Image tag (e.g., latest, v1.0.0)
 DOCKERFILE="Dockerfile"                   # Path to Dockerfile
 BUILD_CONTEXT="."                         # Build context directory
+REGISTRY_URL=""                           # Docker registry URL (leave empty for local build)
 
 # ==========================================
 # Color codes
