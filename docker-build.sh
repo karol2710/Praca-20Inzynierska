@@ -214,6 +214,12 @@ echo "Dockerfile:   $DOCKERFILE"
 echo "Build Context: $BUILD_CONTEXT"
 echo ""
 echo "Next steps:"
-echo "1. Update kubernetes/deployment.yaml image reference to: $FULL_IMAGE_NAME"
-echo "2. Run: ./k8s-deploy.sh"
+if [ -n "$REGISTRY_URL" ]; then
+    echo "1. Image is ready in registry: $FULL_IMAGE_NAME"
+    echo "2. Update k8s-deploy.sh with: KUBECHART_IMAGE=\"$FULL_IMAGE_NAME\""
+else
+    echo "1. Image built successfully and ready locally"
+    echo "2. Ensure k8s-deploy.sh has: KUBECHART_IMAGE=\"kubechart:latest\""
+fi
+echo "3. Run: ./k8s-deploy.sh"
 echo ""
