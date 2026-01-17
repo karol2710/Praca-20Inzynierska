@@ -6,7 +6,7 @@ set -e
 # ==========================================
 KUBE_CONTEXT=""                           # Kubernetes context (leave empty for current context)
 KUBE_NAMESPACE="kubechart"                # Kubernetes namespace
-KUBECHART_IMAGE="kubechart:latest"        # Docker image URL (use 'kubechart:latest' for local images, or full path for registry)
+KUBECHART_IMAGE="your-registry.com/kubechart:latest"  # Docker image URL
 DEPLOYMENT_NAME="kubechart"               # Deployment name
 REPLICAS=3                                # Number of replicas
 DATABASE_HOST="postgres.kubechart.svc.cluster.local"  # PostgreSQL host
@@ -99,10 +99,13 @@ echo "Application Port:       $PORT"
 echo "Storage Class:          $STORAGE_CLASS"
 echo ""
 
-# Check if using local image (without registry URL)
-if [[ "$KUBECHART_IMAGE" != *"/"* ]]; then
-    print_warning "Using local Docker image: $KUBECHART_IMAGE"
-    print_warning "Make sure the image exists: docker images | grep kubechart"
+if [ "$KUBECHART_IMAGE" = "your-registry.com/kubechart:latest" ]; then
+    print_warning "Docker image is using default placeholder. Please update KUBECHART_IMAGE"
+    read -p "Continue anyway? (y/n) " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        exit 1
+    fi
 fi
 
 # ==========================================
@@ -241,7 +244,7 @@ spec:
       containers:
         - name: $DEPLOYMENT_NAME
           image: $KUBECHART_IMAGE
-          imagePullPolicy: Never
+          imagePullPolicy: IfNotPresent
           ports:
             - name: http
               containerPort: $PORT
