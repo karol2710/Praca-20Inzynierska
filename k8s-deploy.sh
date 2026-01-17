@@ -6,7 +6,7 @@ set -e
 # ==========================================
 KUBE_CONTEXT=""                           # Kubernetes context (leave empty for current context)
 KUBE_NAMESPACE="kubechart"                # Kubernetes namespace
-KUBECHART_IMAGE="your-registry.com/kubechart:latest"  # Docker image URL
+KUBECHART_IMAGE="kubechart:latest"        # Docker image URL (use 'kubechart:latest' for local images, or full path for registry)
 DEPLOYMENT_NAME="kubechart"               # Deployment name
 REPLICAS=3                                # Number of replicas
 DATABASE_HOST="postgres.kubechart.svc.cluster.local"  # PostgreSQL host
