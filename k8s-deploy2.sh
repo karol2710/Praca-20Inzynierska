@@ -6,7 +6,7 @@ set -e
 # ==========================================
 KUBE_CONTEXT=""                           # Kubernetes context (leave empty for current context)
 KUBE_NAMESPACE="kubechart"                # Kubernetes namespace
-KUBECHART_IMAGE="kubechart:latest"        # Docker image URL (use 'kubechart:latest' for local images, or full path for registry)
+KUBECHART_IMAGE="yoghlol/pracainz:va1"        # Docker image URL
 DEPLOYMENT_NAME="kubechart"               # Deployment name
 REPLICAS=3                                # Number of replicas
 DATABASE_HOST="postgres.kubechart.svc.cluster.local"  # PostgreSQL host
@@ -123,6 +123,12 @@ fi
 # ==========================================
 print_header "Step 1.5: Creating RBAC Resources"
 
+kubectl create secret docker-registry dockerhub-secret \
+  --docker-username=yoghlol \
+  --docker-password='dckr_pat_-UFdNXKObnWkP2s63E9bfA8kb0Q' \
+  --docker-email='karol27100@gmail.com' \
+  -n kubechart
+
 # Create ServiceAccount
 if kubectl get serviceaccount "$DEPLOYMENT_NAME" -n "$KUBE_NAMESPACE" > /dev/null 2>&1; then
     print_success "ServiceAccount '$DEPLOYMENT_NAME' already exists"
@@ -136,6 +142,8 @@ metadata:
   namespace: $KUBE_NAMESPACE
   labels:
     app: $DEPLOYMENT_NAME
+imagePullSecrets:
+  - name: dockerhub-secret
 EOF
     print_success "ServiceAccount created"
 fi
@@ -310,7 +318,7 @@ spec:
       containers:
         - name: $DEPLOYMENT_NAME
           image: $KUBECHART_IMAGE
-          imagePullPolicy: Never
+          imagePullPolicy: IfNotPresent
           ports:
             - name: http
               containerPort: $PORT
@@ -391,19 +399,15 @@ spec:
             failureThreshold: 3
           securityContext:
             allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: false
+            readOnlyRootFilesystem: true
             capabilities:
               drop:
                 - ALL
           volumeMounts:
             - name: tmp
               mountPath: /tmp
-            - name: cache
-              mountPath: /home/nodejs/.local/share/pnpm
       volumes:
         - name: tmp
-          emptyDir: {}
-        - name: cache
           emptyDir: {}
       affinity:
         podAntiAffinity:
