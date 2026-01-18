@@ -40,8 +40,16 @@ COPY --from=builder /app/public ./public
 # Install only production dependencies
 RUN pnpm install --prod --frozen-lockfile
 
-# Create a non-root user for security
-RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
+# Create a non-root user for security with proper home directory
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001 -h /home/nodejs && \
+    mkdir -p /home/nodejs/.local/share/pnpm && \
+    chown -R nodejs:nodejs /home/nodejs /app
+
+# Set pnpm home
+ENV PNPM_HOME="/home/nodejs/.local/share/pnpm"
+ENV PATH="${PNPM_HOME}:$PATH"
+
 USER nodejs
 
 # Expose port
