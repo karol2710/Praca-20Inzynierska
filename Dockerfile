@@ -47,7 +47,9 @@ RUN addgroup -g 1001 -S nodejs && \
     mkdir -p /home/nodejs/.local/share/pnpm && \
     mkdir -p /home/nodejs/.cache && \
     chown -R nodejs:nodejs /home/nodejs /app && \
-    chmod -R 755 /home/nodejs
+    chmod -R 775 /home/nodejs && \
+    chmod -R 777 /home/nodejs/.local/share/pnpm && \
+    chmod -R 777 /home/nodejs/.cache
 
 # Set environment variables for pnpm
 ENV HOME="/home/nodejs"
