@@ -403,6 +403,8 @@ spec:
       volumes:
         - name: tmp
           emptyDir: {}
+        - name: cache
+          emptyDir: {}
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
