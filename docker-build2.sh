@@ -4,11 +4,11 @@ set -e
 # ==========================================
 # Docker Build Configuration
 # ==========================================
-IMAGE_NAME="pracainz"                    # Image name
-IMAGE_TAG="va1"                        # Image tag (e.g., latest, v1.0.0)
+IMAGE_NAME="kubechart"                    # Image name
+IMAGE_TAG="latest"                        # Image tag (e.g., latest, v1.0.0)
 DOCKERFILE="Dockerfile"                   # Path to Dockerfile
 BUILD_CONTEXT="."                         # Build context directory
-REGISTRY_URL="yoghlol"                           # Docker registry URL (leave empty for local build)
+REGISTRY_URL=""                           # Docker registry URL (leave empty for local build)
 
 # ==========================================
 # Color codes
