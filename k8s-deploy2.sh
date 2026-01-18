@@ -406,8 +406,12 @@ spec:
           volumeMounts:
             - name: tmp
               mountPath: /tmp
+            - name: cache
+              mountPath: /home/nodejs/.local/share/pnpm
       volumes:
         - name: tmp
+          emptyDir: {}
+        - name: cache
           emptyDir: {}
       affinity:
         podAntiAffinity:
