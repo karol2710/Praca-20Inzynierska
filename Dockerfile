@@ -42,13 +42,17 @@ RUN pnpm install --prod --frozen-lockfile
 
 # Create a non-root user for security with proper home directory
 RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001 -h /home/nodejs && \
+    adduser -S nodejs -u 1001 && \
+    mkdir -p /home/nodejs && \
     mkdir -p /home/nodejs/.local/share/pnpm && \
-    chown -R nodejs:nodejs /home/nodejs /app
+    mkdir -p /home/nodejs/.cache && \
+    chown -R nodejs:nodejs /home/nodejs /app && \
+    chmod -R 755 /home/nodejs
 
-# Set pnpm home
+# Set environment variables for pnpm
+ENV HOME="/home/nodejs"
 ENV PNPM_HOME="/home/nodejs/.local/share/pnpm"
-ENV PATH="${PNPM_HOME}:$PATH"
+ENV PATH="${PNPM_HOME}:${PATH}"
 
 USER nodejs
 
