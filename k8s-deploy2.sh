@@ -318,7 +318,7 @@ spec:
       containers:
         - name: $DEPLOYMENT_NAME
           image: $KUBECHART_IMAGE
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - name: http
               containerPort: $PORT
