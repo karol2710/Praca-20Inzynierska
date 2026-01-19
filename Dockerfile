@@ -53,8 +53,9 @@ RUN addgroup -g 1001 -S nodejs && \
 
 # Set environment variables for pnpm
 ENV HOME="/home/nodejs"
-ENV PNPM_HOME="/home/nodejs/.local/share/pnpm"
+ENV PNPM_HOME="/tmp/pnpm"
 ENV PATH="${PNPM_HOME}:${PATH}"
+ENV XDG_CACHE_HOME="/tmp"
 
 USER nodejs
 
