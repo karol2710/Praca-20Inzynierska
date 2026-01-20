@@ -51,11 +51,9 @@ RUN addgroup -g 1001 -S nodejs && \
     chmod -R 777 /home/nodejs/.local/share/pnpm && \
     chmod -R 777 /home/nodejs/.cache
 
-# Set environment variables for pnpm
+# Set environment variables
 ENV HOME="/home/nodejs"
-ENV PNPM_HOME="/tmp/pnpm"
-ENV PATH="${PNPM_HOME}:${PATH}"
-ENV XDG_CACHE_HOME="/tmp"
+ENV NODE_ENV="production"
 
 USER nodejs
 
@@ -66,5 +64,5 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
   CMD curl -f http://localhost:3000/api/ping || exit 1
 
-# Start application
-CMD ["pnpm", "start"]
+# Start application directly with node (bypasses pnpm cache issues)
+CMD ["node", "dist/server/node-build.mjs"]
