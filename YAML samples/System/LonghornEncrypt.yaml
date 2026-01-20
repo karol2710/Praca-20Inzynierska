@@ -4,12 +4,9 @@ metadata:
   name: longhorn-crypto
   namespace: longhorn-system
 stringData:
-  CRYPTO_KEY: |
-    {
-      "cipher": "aes-xts-plain64",
-      "keysize": 256,
-      "password": "2321",
-      "provider": "secret",
-      "pbkdf": "argon2i",
-      "hash": "sha256"
-    }
+  CRYPTO_KEY_VALUE: "admin"
+  CRYPTO_KEY_PROVIDER: "secret"
+  CRYPTO_KEY_CIPHER: "aes-xts-plain64"
+  CRYPTO_KEY_HASH: "sha256"
+  CRYPTO_KEY_SIZE: "256"
+  CRYPTO_PBKDF: "argon2i"
