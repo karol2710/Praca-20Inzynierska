@@ -32,13 +32,11 @@ WORKDIR /app
 # Install pnpm and curl for health checks
 RUN apk add --no-cache pnpm curl
 
-# Copy only necessary files from builder
+# Copy package files and dependencies from builder
 COPY package.json pnpm-lock.yaml ./
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/public ./public
-
-# Install only production dependencies
-RUN pnpm install --prod --frozen-lockfile
 
 # Create a non-root user for security with proper home directory
 RUN addgroup -g 1001 -S nodejs && \
