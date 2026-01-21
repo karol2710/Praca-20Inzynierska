@@ -100,4 +100,4 @@ spec:
         storageClassName: platform-storageclass
         resources:
           requests:
-            storage: 10Gi
+            storage: 3Gi
