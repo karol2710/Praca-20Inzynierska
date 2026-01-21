@@ -12,7 +12,7 @@ RUN npm install -g pnpm
 # Copy package files
 COPY package.json pnpm-lock.yaml ./
 
-# Install dependencies
+# Install all dependencies (including dev)
 RUN pnpm install --frozen-lockfile
 
 # Copy source code
@@ -29,30 +29,25 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-# Install pnpm and curl for health checks
-RUN apk add --no-cache pnpm curl
+# Install curl for health checks only
+RUN apk add --no-cache curl
 
-# Copy package files and all dependencies from builder
-COPY package.json pnpm-lock.yaml ./
+# Copy everything from builder including node_modules
+COPY --from=builder /app/package.json /app/pnpm-lock.yaml ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/server/index.ts ./server/index.ts
 
-# Create a non-root user for security with proper home directory
+# Create a non-root user for security
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001 && \
     mkdir -p /home/nodejs && \
-    mkdir -p /home/nodejs/.local/share/pnpm && \
-    mkdir -p /home/nodejs/.cache && \
-    chown -R nodejs:nodejs /home/nodejs /app && \
-    chmod -R 775 /home/nodejs && \
-    chmod -R 777 /home/nodejs/.local/share/pnpm && \
-    chmod -R 777 /home/nodejs/.cache
+    chown -R nodejs:nodejs /home/nodejs /app
 
 # Set environment variables
 ENV HOME="/home/nodejs"
 ENV NODE_ENV="production"
+ENV NODE_PATH="/app/node_modules"
 
 USER nodejs
 
@@ -63,5 +58,5 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
   CMD curl -f http://localhost:3000/api/ping || exit 1
 
-# Start application directly with node (bypasses pnpm cache issues)
+# Start application directly with node
 CMD ["node", "dist/server/node-build.mjs"]
