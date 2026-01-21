@@ -439,9 +439,43 @@ else
 fi
 
 # ==========================================
-# Step 6: Apply service (if exists)
+# Step 6: Deploy PostgreSQL (if not already running)
 # ==========================================
-print_header "Step 6: Applying Service"
+print_header "Step 6: Deploying PostgreSQL Database"
+
+# Check if postgres is already running
+if kubectl get statefulset postgres -n "$KUBE_NAMESPACE" > /dev/null 2>&1; then
+    print_success "PostgreSQL already deployed"
+else
+    echo "Deploying PostgreSQL..."
+
+    # Apply PostgreSQL resources in order
+    echo "Creating PostgreSQL Secret..."
+    kubectl apply -f kubernetes/postgres-secret.yaml
+
+    echo "Creating PostgreSQL ConfigMap..."
+    kubectl apply -f kubernetes/postgres-init-configmap.yaml
+
+    echo "Creating PostgreSQL Service..."
+    kubectl apply -f kubernetes/postgres-service.yaml
+
+    echo "Creating PostgreSQL StatefulSet..."
+    kubectl apply -f kubernetes/postgres-statefulset.yaml
+
+    print_success "PostgreSQL resources created"
+
+    echo "Waiting for PostgreSQL to be ready (timeout: 300s)..."
+    if kubectl rollout status statefulset/postgres -n "$KUBE_NAMESPACE" --timeout=300s; then
+        print_success "PostgreSQL is ready"
+    else
+        print_warning "PostgreSQL rollout incomplete or timed out"
+    fi
+fi
+
+# ==========================================
+# Step 6.5: Apply application service
+# ==========================================
+print_header "Step 6.5: Applying Application Service"
 
 SERVICE_FILE="kubernetes/service.yaml"
 
