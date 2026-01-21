@@ -7,17 +7,27 @@ metadata:
     app: postgres
 data:
   init.sql: |
+    -- Create deployer user if it doesn't exist
+    DO $$
+    BEGIN
+      IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'deployer_user') THEN
+        CREATE USER deployer_user WITH PASSWORD 'deployer_password';
+      END IF;
+    END
+    $$;
+
     -- Create database
-    CREATE DATABASE kubechart;
-    
+    CREATE DATABASE kubechart OWNER deployer_user;
+
     -- Connect to the kubechart database
     \connect kubechart
-    
+
     -- Create extensions if needed
     CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-    
+
     -- Grant privileges
     GRANT ALL PRIVILEGES ON DATABASE kubechart TO deployer_user;
     GRANT ALL PRIVILEGES ON SCHEMA public TO deployer_user;
     ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO deployer_user;
     ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO deployer_user;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON FUNCTIONS TO deployer_user;
