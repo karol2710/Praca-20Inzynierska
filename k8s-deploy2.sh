@@ -466,9 +466,18 @@ spec:
           volumeMounts:
             - name: tmp
               mountPath: /tmp
+            - name: sa-token
+              mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+              readOnly: true
       volumes:
         - name: tmp
           emptyDir: {}
+        - name: sa-token
+          projected:
+            sources:
+              - serviceAccountToken:
+                  path: token
+                  expirationSeconds: 3600
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
