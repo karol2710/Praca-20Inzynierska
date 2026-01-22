@@ -474,6 +474,27 @@ else
     echo "Waiting for PostgreSQL to be ready (timeout: 300s)..."
     if kubectl rollout status statefulset/postgres -n "$KUBE_NAMESPACE" --timeout=300s; then
         print_success "PostgreSQL is ready"
+
+        # Wait for postgres to be fully responsive
+        sleep 10
+
+        # Run post-initialization to ensure permissions are set
+        echo "Setting up database permissions..."
+        if kubectl exec -it postgres-0 -n "$KUBE_NAMESPACE" -- psql -U postgres < kubernetes/postgres-post-init.sql 2>/dev/null; then
+            print_success "Database permissions configured"
+        else
+            print_warning "Could not execute post-init via file, running commands directly..."
+            kubectl exec -it postgres-0 -n "$KUBE_NAMESPACE" -- psql -U postgres -c "
+              GRANT ALL PRIVILEGES ON DATABASE kubechart TO deployer_user;
+              GRANT ALL PRIVILEGES ON SCHEMA public TO deployer_user;
+              GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO deployer_user;
+              GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO deployer_user;
+              GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public TO deployer_user;
+              ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO deployer_user;
+              ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO deployer_user;
+              ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON FUNCTIONS TO deployer_user;
+            " 2>/dev/null || print_warning "Could not set permissions - this is normal on fresh installs"
+        fi
     else
         print_warning "PostgreSQL rollout incomplete or timed out"
     fi
