@@ -74,10 +74,8 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
     // Method 2: Check if service account token file exists
     let isInClusterToken = false;
     try {
-      await import("fs").then((fs) => {
-        fs.accessSync("/var/run/secrets/kubernetes.io/serviceaccount/token");
-        isInClusterToken = true;
-      });
+      fsSync.accessSync("/var/run/secrets/kubernetes.io/serviceaccount/token");
+      isInClusterToken = true;
     } catch {
       isInClusterToken = false;
     }
