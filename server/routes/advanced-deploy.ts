@@ -351,11 +351,23 @@ async function applyResource(
       api = kubeConfig.makeApiClient(k8s.NetworkingV1Api);
     } else if (apiVersion.startsWith("autoscaling/")) {
       api = kubeConfig.makeApiClient(k8s.AutoscalingV2Api);
-    } else if (apiVersion.startsWith("gateway.networking.k8s.io/")) {
+    } else if (
+      apiVersion.includes(".") &&
+      !apiVersion.startsWith("v1") &&
+      !apiVersion.startsWith("apps/") &&
+      !apiVersion.startsWith("batch/") &&
+      !apiVersion.startsWith("networking.k8s.io/") &&
+      !apiVersion.startsWith("autoscaling/")
+    ) {
+      // Custom resource (HTTPRoute, Schedule, etc)
       api = kubeConfig.makeApiClient(k8s.CustomObjectsApi);
-      // Handle custom resources (HTTPRoute, etc)
-      const group = "gateway.networking.k8s.io";
-      const version = apiVersion.split("/")[1] || "v1";
+
+      // Parse API version: "group/version" or "version"
+      const parts = apiVersion.split("/");
+      const group = parts.length > 1 ? parts[0] : "";
+      const version = parts.length > 1 ? parts[1] : parts[0];
+
+      // Convert kind to plural form (simple approach: add 's')
       const plural = kind.toLowerCase() + "s";
 
       try {
