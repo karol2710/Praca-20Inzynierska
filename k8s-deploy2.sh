@@ -444,10 +444,25 @@ fi
 print_header "Step 6: Deploying PostgreSQL Database"
 
 # Check if postgres is already running
-POSTGRES_EXISTS=false
 if kubectl get statefulset postgres -n "$KUBE_NAMESPACE" > /dev/null 2>&1; then
     print_success "PostgreSQL already deployed"
-    POSTGRES_EXISTS=true
+
+    # Ensure permissions are set for existing postgres
+    echo "Ensuring database permissions are configured..."
+    sleep 5
+
+    if kubectl get pod postgres-0 -n "$KUBE_NAMESPACE" > /dev/null 2>&1; then
+        kubectl exec postgres-0 -n "$KUBE_NAMESPACE" -- psql -U postgres -c "
+          GRANT ALL PRIVILEGES ON DATABASE kubechart TO deployer_user;
+          GRANT ALL PRIVILEGES ON SCHEMA public TO deployer_user;
+          GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO deployer_user;
+          GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO deployer_user;
+          GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public TO deployer_user;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO deployer_user;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO deployer_user;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON FUNCTIONS TO deployer_user;
+        " 2>/dev/null || print_warning "Could not verify permissions"
+    fi
 else
     echo "Deploying PostgreSQL..."
 
@@ -482,31 +497,7 @@ else
 
         # Run post-initialization to ensure permissions are set
         echo "Setting up database permissions..."
-        if kubectl exec -it postgres-0 -n "$KUBE_NAMESPACE" -- psql -U postgres < kubernetes/postgres-post-init.sql 2>/dev/null; then
-            print_success "Database permissions configured"
-        else
-            print_warning "Could not execute post-init via file, running commands directly..."
-            kubectl exec -it postgres-0 -n "$KUBE_NAMESPACE" -- psql -U postgres -c "
-              GRANT ALL PRIVILEGES ON DATABASE kubechart TO deployer_user;
-              GRANT ALL PRIVILEGES ON SCHEMA public TO deployer_user;
-              GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO deployer_user;
-              GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO deployer_user;
-              GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public TO deployer_user;
-              ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO deployer_user;
-              ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO deployer_user;
-              ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON FUNCTIONS TO deployer_user;
-            " 2>/dev/null || print_warning "Could not set permissions - this is normal on fresh installs"
-        fi
-    else
-        print_warning "PostgreSQL rollout incomplete or timed out"
-    fi
-else
-    # PostgreSQL already exists, but ensure permissions are set
-    echo "Ensuring database permissions are configured..."
-    sleep 5
-
-    if kubectl get pod postgres-0 -n "$KUBE_NAMESPACE" > /dev/null 2>&1; then
-        kubectl exec -it postgres-0 -n "$KUBE_NAMESPACE" -- psql -U postgres -c "
+        kubectl exec postgres-0 -n "$KUBE_NAMESPACE" -- psql -U postgres -c "
           GRANT ALL PRIVILEGES ON DATABASE kubechart TO deployer_user;
           GRANT ALL PRIVILEGES ON SCHEMA public TO deployer_user;
           GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO deployer_user;
@@ -515,7 +506,11 @@ else
           ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO deployer_user;
           ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO deployer_user;
           ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON FUNCTIONS TO deployer_user;
-        " 2>/dev/null || print_warning "Could not verify permissions"
+        " 2>/dev/null || print_warning "Could not set permissions - this is normal on fresh installs"
+
+        print_success "Database permissions configured"
+    else
+        print_warning "PostgreSQL rollout incomplete or timed out"
     fi
 fi
 
