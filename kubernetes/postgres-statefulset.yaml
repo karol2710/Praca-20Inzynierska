@@ -16,28 +16,6 @@ spec:
       labels:
         app: postgres
     spec:
-      initContainers:
-        - name: clear-old-data
-          image: busybox:latest
-          securityContext:
-            runAsUser: 0
-          command:
-            - sh
-            - -c
-            - |
-              # Remove old PostgreSQL data to force reinitialization
-              ls -la /var/lib/postgresql/data/ || echo "Directory is empty"
-              rm -rf /var/lib/postgresql/data/* || true
-              rm -rf /var/lib/postgresql/data/.* || true
-              echo "Cleared old PostgreSQL data"
-              # Create pgdata directory with proper permissions
-              mkdir -p /var/lib/postgresql/data/pgdata
-              chmod 777 /var/lib/postgresql/data
-              chmod 777 /var/lib/postgresql/data/pgdata
-              ls -la /var/lib/postgresql/data/
-          volumeMounts:
-            - name: postgres-storage
-              mountPath: /var/lib/postgresql/data
       containers:
         - name: postgres
           image: postgres:16-alpine
