@@ -56,9 +56,7 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
     output.push(
       `KUBERNETES_SERVICE_PORT: ${process.env.KUBERNETES_SERVICE_PORT || "not set"}\n`,
     );
-    output.push(
-      `NODE_ENV: ${process.env.NODE_ENV || "not set"}\n`,
-    );
+    output.push(`NODE_ENV: ${process.env.NODE_ENV || "not set"}\n`);
 
     // Initialize Kubernetes client
     let kc = new k8s.KubeConfig();
@@ -80,9 +78,7 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
         output.push(
           `✗ Failed to load in-cluster config: ${inClusterError.message}\n`,
         );
-        output.push(
-          `Stack: ${inClusterError.stack}\n`,
-        );
+        output.push(`Stack: ${inClusterError.stack}\n`);
         console.error("[DEPLOY] In-cluster config error:", inClusterError);
         return res.status(500).json({
           success: false,
@@ -114,9 +110,7 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
         !userData.rancher_api_token ||
         !userData.rancher_cluster_id
       ) {
-        output.push(
-          "✗ No Rancher credentials configured in user account\n",
-        );
+        output.push("✗ No Rancher credentials configured in user account\n");
         return res.status(400).json({
           success: false,
           output: output.join("\n"),
@@ -162,7 +156,8 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
         return res.status(500).json({
           success: false,
           output: output.join("\n"),
-          error: "Failed to configure cluster connection with Rancher credentials",
+          error:
+            "Failed to configure cluster connection with Rancher credentials",
         } as AdvancedDeployResponse);
       }
     }
@@ -247,9 +242,7 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
         }
       }
 
-      output.push(
-        `\n=== Deployment Summary ===\n`,
-      );
+      output.push(`\n=== Deployment Summary ===\n`);
       output.push(`✓ Successfully applied: ${successCount} resources\n`);
       if (errorCount > 0) {
         output.push(`✗ Failed to apply: ${errorCount} resources\n`);
