@@ -21,7 +21,7 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@kubernetes/client-node": "^1.29.3",
+    "@kubernetes/client-node": "^0.20.0",
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
