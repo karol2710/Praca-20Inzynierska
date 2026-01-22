@@ -453,7 +453,7 @@ if kubectl get statefulset postgres -n "$KUBE_NAMESPACE" > /dev/null 2>&1; then
 
     # Ensure permissions are set for existing postgres
     echo "Ensuring database permissions are configured..."
-    sleep 5
+    sleep 10
 
     if kubectl get pod postgres-0 -n "$KUBE_NAMESPACE" > /dev/null 2>&1; then
         kubectl exec postgres-0 -n "$KUBE_NAMESPACE" -- psql -U postgres -c "
