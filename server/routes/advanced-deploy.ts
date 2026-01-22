@@ -52,13 +52,40 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
     let kc = new k8s.KubeConfig();
     let kubeConfig: any = null;
 
-    // Try to load in-cluster configuration first (when running inside a pod)
-    try {
-      kc.loadFromCluster();
-      output.push("✓ Using in-cluster Kubernetes configuration\n");
-      kubeConfig = kc;
-    } catch (inClusterError) {
-      output.push("⚠ In-cluster config not available, trying Rancher credentials...\n");
+    // Check if we're running inside a Kubernetes cluster
+    const isInCluster =
+      process.env.KUBERNETES_SERVICE_HOST &&
+      process.env.KUBERNETES_SERVICE_PORT;
+
+    if (isInCluster) {
+      try {
+        kc.loadFromCluster();
+        output.push("✓ Using in-cluster Kubernetes configuration\n");
+        output.push(
+          `  Host: ${process.env.KUBERNETES_SERVICE_HOST}\n`,
+        );
+        output.push(
+          `  Port: ${process.env.KUBERNETES_SERVICE_PORT}\n`,
+        );
+        kubeConfig = kc;
+      } catch (inClusterError: any) {
+        output.push(
+          `✗ Failed to load in-cluster config: ${inClusterError.message}\n`,
+        );
+        output.push(
+          "⚠ This usually means the service account token is not properly mounted.\n",
+        );
+        return res.status(500).json({
+          success: false,
+          output: output.join("\n"),
+          error:
+            "Failed to authenticate with Kubernetes cluster. Please contact your administrator.",
+        } as AdvancedDeployResponse);
+      }
+    } else {
+      output.push(
+        "⚠ Not running inside Kubernetes cluster, checking for Rancher credentials...\n",
+      );
 
       // Fallback to user-configured Rancher credentials
       const userResult = await query(
@@ -79,37 +106,51 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
         !userData.rancher_cluster_id
       ) {
         return res.status(400).json({
+          success: false,
+          output: output.join("\n"),
           error:
-            "No cluster configuration available. Either run inside Kubernetes cluster or configure Rancher credentials in account settings.",
+            "No cluster configuration available. Please configure Rancher credentials in account settings.",
         } as AdvancedDeployResponse);
       }
 
       // Use Rancher credentials
-      kc.loadFromOptions({
-        clusters: [
-          {
-            name: "rancher-cluster",
-            server: userData.rancher_api_url,
-            skipTLSVerify: true,
-          },
-        ],
-        users: [
-          {
-            name: "rancher-user",
-            token: userData.rancher_api_token,
-          },
-        ],
-        contexts: [
-          {
-            cluster: "rancher-cluster",
-            user: "rancher-user",
-            name: "rancher-context",
-          },
-        ],
-        currentContext: "rancher-context",
-      });
-      output.push("✓ Using Rancher cluster configuration\n");
-      kubeConfig = kc;
+      try {
+        kc.loadFromOptions({
+          clusters: [
+            {
+              name: "rancher-cluster",
+              server: userData.rancher_api_url,
+              skipTLSVerify: true,
+            },
+          ],
+          users: [
+            {
+              name: "rancher-user",
+              token: userData.rancher_api_token,
+            },
+          ],
+          contexts: [
+            {
+              cluster: "rancher-cluster",
+              user: "rancher-user",
+              name: "rancher-context",
+            },
+          ],
+          currentContext: "rancher-context",
+        });
+        output.push("✓ Using Rancher cluster configuration\n");
+        output.push(`  Server: ${userData.rancher_api_url}\n`);
+        kubeConfig = kc;
+      } catch (rangerError: any) {
+        output.push(
+          `✗ Failed to load Rancher config: ${rangerError.message}\n`,
+        );
+        return res.status(500).json({
+          success: false,
+          output: output.join("\n"),
+          error: "Failed to configure cluster connection",
+        } as AdvancedDeployResponse);
+      }
     }
 
     // Create namespace if it doesn't exist
