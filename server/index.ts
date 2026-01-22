@@ -9,6 +9,10 @@ import {
   handleLogin,
   handleGetCurrentUser,
   handleLogout,
+  handleUpdateUsername,
+  handleUpdateEmail,
+  handleUpdatePassword,
+  handleDeleteAccount,
 } from "./routes/auth.js";
 import {
   handleGetDeployments,
