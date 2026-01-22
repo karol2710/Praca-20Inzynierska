@@ -75,19 +75,10 @@ spec:
             - name: postgres-init
               mountPath: /docker-entrypoint-initdb.d
       volumes:
+        - name: postgres-storage
+          emptyDir:
+            sizeLimit: 10Gi
         - name: postgres-init
           configMap:
             name: postgres-init
             defaultMode: 0755
-  volumeClaimTemplates:
-    - metadata:
-        name: postgres-storage
-        labels:
-          app: postgres
-      spec:
-        accessModes:
-          - ReadWriteOnce
-        storageClassName: platform-storageclass
-        resources:
-          requests:
-            storage: 3Gi
