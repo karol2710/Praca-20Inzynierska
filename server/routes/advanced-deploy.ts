@@ -248,63 +248,79 @@ async function applyResource(
   const name = resource.metadata?.name;
   const resourceNamespace = resource.metadata?.namespace || namespace;
 
+  // Ensure namespace is set for namespaced resources
+  if (kind !== "Namespace" && !resource.metadata?.namespace) {
+    resource.metadata = resource.metadata || {};
+    resource.metadata.namespace = namespace;
+  }
+
   // Get the appropriate API client based on API version
   let api: any;
 
-  if (apiVersion.startsWith("apps/")) {
-    api = kubeConfig.makeApiClient(k8s.AppsV1Api);
-  } else if (apiVersion.startsWith("batch/")) {
-    api = kubeConfig.makeApiClient(k8s.BatchV1Api);
-  } else if (apiVersion.startsWith("networking.k8s.io/")) {
-    api = kubeConfig.makeApiClient(k8s.NetworkingV1Api);
-  } else if (apiVersion.startsWith("autoscaling/")) {
-    api = kubeConfig.makeApiClient(k8s.AutoscalingV2Api);
-  } else {
-    api = kubeConfig.makeApiClient(k8s.CoreV1Api);
-  }
-
-  // Convert kind to API method name (e.g., "Deployment" -> "deployment")
-  const methodPrefix = kind.charAt(0).toLowerCase() + kind.slice(1);
-
   try {
-    // Try to get existing resource
-    const getMethod = `read${kind}`;
-    if (typeof api[getMethod] === "function") {
-      try {
-        if (kind === "Namespace") {
-          await api[getMethod](name);
-        } else {
-          await api[getMethod](name, resourceNamespace);
+    if (apiVersion.startsWith("apps/")) {
+      api = kubeConfig.makeApiClient(k8s.AppsV1Api);
+    } else if (apiVersion.startsWith("batch/")) {
+      api = kubeConfig.makeApiClient(k8s.BatchV1Api);
+    } else if (apiVersion.startsWith("networking.k8s.io/")) {
+      api = kubeConfig.makeApiClient(k8s.NetworkingV1Api);
+    } else if (apiVersion.startsWith("autoscaling/")) {
+      api = kubeConfig.makeApiClient(k8s.AutoscalingV2Api);
+    } else {
+      api = kubeConfig.makeApiClient(k8s.CoreV1Api);
+    }
+
+    // Try to read the existing resource
+    let exists = false;
+    try {
+      if (kind === "Namespace") {
+        await api.readNamespace(name);
+      } else {
+        const readMethod = `read${kind}`;
+        if (typeof api[readMethod] === "function") {
+          await api[readMethod](name, resourceNamespace);
         }
-        // Resource exists, update it
+      }
+      exists = true;
+    } catch (readError: any) {
+      if (readError.statusCode !== 404) {
+        throw readError;
+      }
+      // Resource doesn't exist, we'll create it
+      exists = false;
+    }
+
+    // Apply the resource (create or patch)
+    if (exists) {
+      // Use patch to update existing resource
+      if (kind === "Namespace") {
+        await api.patchNamespace(name, resource);
+      } else {
         const patchMethod = `patch${kind}`;
         if (typeof api[patchMethod] === "function") {
-          if (kind === "Namespace") {
-            await api[patchMethod](name, resource);
-          } else {
-            await api[patchMethod](name, resourceNamespace, resource);
-          }
+          await api[patchMethod](name, resourceNamespace, resource);
         }
-      } catch (readError: any) {
-        if (readError.statusCode === 404) {
-          // Resource doesn't exist, create it
-          const createMethod = `create${kind === "Namespace" ? "Namespace" : methodPrefix[0].toUpperCase() + methodPrefix.slice(1)}`;
-          const createMethodName = `create${kind}`;
-          if (typeof api[createMethodName] === "function") {
-            if (kind === "Namespace") {
-              await api[createMethodName](resource);
-            } else {
-              await api[createMethodName](resourceNamespace, resource);
-            }
-          }
+      }
+    } else {
+      // Create new resource
+      if (kind === "Namespace") {
+        await api.createNamespace(resource);
+      } else {
+        const createMethod = `create${kind}`;
+        if (typeof api[createMethod] === "function") {
+          await api[createMethod](resourceNamespace, resource);
         } else {
-          throw readError;
+          // Fallback: try the createNamespaced${kind} method
+          const createNamespacedMethod = `createNamespaced${kind}`;
+          if (typeof api[createNamespacedMethod] === "function") {
+            await api[createNamespacedMethod](resourceNamespace, resource);
+          }
         }
       }
     }
   } catch (error: any) {
     throw new Error(
-      `${kind} operation failed: ${error.message || error.statusCode}`,
+      `${kind} operation failed: ${error.body?.message || error.message || error.statusCode}`,
     );
   }
 }
