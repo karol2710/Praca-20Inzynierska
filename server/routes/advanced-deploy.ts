@@ -320,12 +320,22 @@ async function applyResource(
 ): Promise<void> {
   const kind = resource.kind;
   const apiVersion = resource.apiVersion || "v1";
-  const name = resource.metadata?.name;
-  const resourceNamespace = resource.metadata?.namespace || namespace;
+
+  // Ensure metadata exists
+  if (!resource.metadata) {
+    resource.metadata = {};
+  }
+
+  const name = resource.metadata.name;
+  const resourceNamespace = resource.metadata.namespace || namespace;
+
+  // Validate that name exists
+  if (!name) {
+    throw new Error(`${kind} resource missing metadata.name`);
+  }
 
   // Ensure namespace is set for namespaced resources
-  if (kind !== "Namespace" && !resource.metadata?.namespace) {
-    resource.metadata = resource.metadata || {};
+  if (kind !== "Namespace" && !resource.metadata.namespace) {
     resource.metadata.namespace = namespace;
   }
 
