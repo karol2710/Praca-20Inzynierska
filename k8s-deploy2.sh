@@ -496,8 +496,8 @@ else
     if kubectl rollout status statefulset/postgres -n "$KUBE_NAMESPACE" --timeout=300s; then
         print_success "PostgreSQL is ready"
 
-        # Wait for postgres to be fully responsive
-        sleep 10
+        # Wait for postgres to be fully responsive and accept connections
+        sleep 15
 
         # Run post-initialization to ensure permissions are set
         echo "Setting up database permissions..."
