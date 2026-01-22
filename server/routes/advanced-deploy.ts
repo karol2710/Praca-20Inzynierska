@@ -48,6 +48,18 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
     output.push(`Workloads: ${workloads.length}`);
     output.push(`Resources: ${resources.length}\n`);
 
+    // Debug environment
+    output.push("=== Debug Information ===\n");
+    output.push(
+      `KUBERNETES_SERVICE_HOST: ${process.env.KUBERNETES_SERVICE_HOST || "not set"}\n`,
+    );
+    output.push(
+      `KUBERNETES_SERVICE_PORT: ${process.env.KUBERNETES_SERVICE_PORT || "not set"}\n`,
+    );
+    output.push(
+      `NODE_ENV: ${process.env.NODE_ENV || "not set"}\n`,
+    );
+
     // Initialize Kubernetes client
     let kc = new k8s.KubeConfig();
     let kubeConfig: any = null;
@@ -58,28 +70,25 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
       process.env.KUBERNETES_SERVICE_PORT;
 
     if (isInCluster) {
+      output.push("\n✓ Detected in-cluster Kubernetes environment\n");
       try {
         kc.loadFromCluster();
-        output.push("✓ Using in-cluster Kubernetes configuration\n");
-        output.push(
-          `  Host: ${process.env.KUBERNETES_SERVICE_HOST}\n`,
-        );
-        output.push(
-          `  Port: ${process.env.KUBERNETES_SERVICE_PORT}\n`,
-        );
+        output.push("✓ Successfully loaded in-cluster configuration\n");
         kubeConfig = kc;
+        console.log("[DEPLOY] In-cluster Kubernetes authentication successful");
       } catch (inClusterError: any) {
         output.push(
           `✗ Failed to load in-cluster config: ${inClusterError.message}\n`,
         );
         output.push(
-          "⚠ This usually means the service account token is not properly mounted.\n",
+          `Stack: ${inClusterError.stack}\n`,
         );
+        console.error("[DEPLOY] In-cluster config error:", inClusterError);
         return res.status(500).json({
           success: false,
           output: output.join("\n"),
           error:
-            "Failed to authenticate with Kubernetes cluster. Please contact your administrator.",
+            "Failed to authenticate with Kubernetes cluster. Make sure the pod's service account is properly configured with RBAC permissions.",
         } as AdvancedDeployResponse);
       }
     } else {
