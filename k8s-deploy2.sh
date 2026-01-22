@@ -444,8 +444,10 @@ fi
 print_header "Step 6: Deploying PostgreSQL Database"
 
 # Check if postgres is already running
+POSTGRES_EXISTS=false
 if kubectl get statefulset postgres -n "$KUBE_NAMESPACE" > /dev/null 2>&1; then
     print_success "PostgreSQL already deployed"
+    POSTGRES_EXISTS=true
 else
     echo "Deploying PostgreSQL..."
 
