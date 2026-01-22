@@ -389,7 +389,7 @@ spec:
             httpGet:
               path: /api/ping
               port: http
-            initialDelaySeconds: 45
+            initialDelaySeconds: 60
             periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 3
