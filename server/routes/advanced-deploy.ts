@@ -3,7 +3,8 @@ import { query } from "../db";
 import { generateYAMLManifest } from "../yaml-generator";
 import * as fs from "fs/promises";
 import * as path from "path";
-import { execSync } from "child_process";
+import * as k8s from "@kubernetes/client-node";
+import * as yaml from "js-yaml";
 
 interface AdvancedDeployRequest {
   workloads: any[];
