@@ -354,8 +354,10 @@ async function applyResource(
     } else if (apiVersion.startsWith("gateway.networking.k8s.io/")) {
       api = kubeConfig.makeApiClient(k8s.CustomObjectsApi);
       // Handle custom resources (HTTPRoute, etc)
-      const [group, version] = apiVersion.split("/");
+      const group = "gateway.networking.k8s.io";
+      const version = apiVersion.split("/")[1] || "v1";
       const plural = kind.toLowerCase() + "s";
+
       try {
         await api.getNamespacedCustomObject(
           group,
