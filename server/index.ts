@@ -79,6 +79,29 @@ export async function createServer() {
 
   app.get("/api/demo", handleDemo);
 
+  // Kubernetes diagnostic endpoint
+  app.get("/api/k8s-status", (_req, res) => {
+    const fsSync = require("fs");
+    const isInClusterEnv =
+      process.env.KUBERNETES_SERVICE_HOST &&
+      process.env.KUBERNETES_SERVICE_PORT;
+    let isInClusterToken = false;
+    try {
+      fsSync.accessSync("/var/run/secrets/kubernetes.io/serviceaccount/token");
+      isInClusterToken = true;
+    } catch {
+      isInClusterToken = false;
+    }
+
+    res.json({
+      kubeServiceHost: process.env.KUBERNETES_SERVICE_HOST || "NOT SET",
+      kubeServicePort: process.env.KUBERNETES_SERVICE_PORT || "NOT SET",
+      tokenFileExists: isInClusterToken,
+      detectedInCluster: isInClusterEnv || isInClusterToken,
+      env: process.env.NODE_ENV,
+    });
+  });
+
   // Auth routes (no auth required)
   app.post("/api/auth/signup", handleSignup);
   app.post("/api/auth/login", handleLogin);
