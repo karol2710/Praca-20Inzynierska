@@ -404,15 +404,9 @@ async function applyResource(
         const readNamespacedMethod = `readNamespaced${kind}`;
         if (typeof api[readNamespacedMethod] === "function") {
           await api[readNamespacedMethod](name, resourceNamespace);
-        } else {
-          // Fallback to simple read method
-          const readMethod = `read${kind}`;
-          if (typeof api[readMethod] === "function") {
-            await api[readMethod](name, resourceNamespace);
-          }
+          exists = true;
         }
       }
-      exists = true;
     } catch (readError: any) {
       if (readError.statusCode !== 404) {
         throw readError;
@@ -429,12 +423,11 @@ async function applyResource(
       } else {
         const patchNamespacedMethod = `patchNamespaced${kind}`;
         if (typeof api[patchNamespacedMethod] === "function") {
-          await api[patchNamespacedMethod](name, resourceNamespace, resource);
-        } else {
-          const patchMethod = `patch${kind}`;
-          if (typeof api[patchMethod] === "function") {
-            await api[patchMethod](name, resourceNamespace, resource);
-          }
+          await api[patchNamespacedMethod](
+            name,
+            resourceNamespace,
+            resource,
+          );
         }
       }
     } else {
@@ -445,13 +438,10 @@ async function applyResource(
         // For namespaced resources, use createNamespaced${kind} method
         const createNamespacedMethod = `createNamespaced${kind}`;
         if (typeof api[createNamespacedMethod] === "function") {
-          await api[createNamespacedMethod](resourceNamespace, resource);
-        } else {
-          // Fallback to simple create method
-          const createMethod = `create${kind}`;
-          if (typeof api[createMethod] === "function") {
-            await api[createMethod](resourceNamespace, resource);
-          }
+          await api[createNamespacedMethod](
+            resourceNamespace,
+            resource,
+          );
         }
       }
     }
