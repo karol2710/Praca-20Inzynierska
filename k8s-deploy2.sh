@@ -497,7 +497,7 @@ else
         print_success "PostgreSQL is ready"
 
         # Wait for postgres to be fully responsive and accept connections
-        sleep 15
+        sleep 20
 
         # Run post-initialization to ensure permissions are set
         echo "Setting up database permissions..."
