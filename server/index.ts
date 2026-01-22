@@ -74,8 +74,12 @@ export async function createServer() {
   app.post("/api/auth/login", handleLogin);
   app.post("/api/auth/logout", handleLogout);
 
-  // Protected auth route
+  // Protected auth routes
   app.get("/api/auth/me", authMiddleware, handleGetCurrentUser);
+  app.put("/api/auth/profile/username", authMiddleware, handleUpdateUsername);
+  app.put("/api/auth/profile/email", authMiddleware, handleUpdateEmail);
+  app.put("/api/auth/profile/password", authMiddleware, handleUpdatePassword);
+  app.delete("/api/auth/profile", authMiddleware, handleDeleteAccount);
 
   // Protected deployment routes
   app.post("/api/deploy", authMiddleware, handleDeploy);
