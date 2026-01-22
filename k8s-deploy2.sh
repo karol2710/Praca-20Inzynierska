@@ -315,6 +315,10 @@ spec:
         runAsNonRoot: true
         runAsUser: 1001
         fsGroup: 1001
+      initContainers:
+        - name: wait-for-postgres
+          image: busybox:latest
+          command: ['sh', '-c', 'until nc -z postgres.$KUBE_NAMESPACE.svc.cluster.local 5432; do echo waiting for postgres; sleep 2; done']
       containers:
         - name: $DEPLOYMENT_NAME
           image: $KUBECHART_IMAGE
