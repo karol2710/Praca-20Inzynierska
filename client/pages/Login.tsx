@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -7,6 +8,7 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,9 +30,8 @@ export default function Login() {
         throw new Error(data.error || "Login failed");
       }
 
-      // Store token and user info
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
+      // Use auth hook to store token and user info
+      login(data.token, data.user);
 
       navigate("/create-chart");
     } catch (err) {
