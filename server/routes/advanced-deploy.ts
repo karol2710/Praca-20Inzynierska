@@ -341,6 +341,43 @@ async function applyResource(
       api = kubeConfig.makeApiClient(k8s.NetworkingV1Api);
     } else if (apiVersion.startsWith("autoscaling/")) {
       api = kubeConfig.makeApiClient(k8s.AutoscalingV2Api);
+    } else if (apiVersion.startsWith("gateway.networking.k8s.io/")) {
+      api = kubeConfig.makeApiClient(k8s.CustomObjectsApi);
+      // Handle custom resources (HTTPRoute, etc)
+      const [group, version] = apiVersion.split("/");
+      const plural = kind.toLowerCase() + "s";
+      try {
+        await api.getNamespacedCustomObject(
+          group,
+          version,
+          resourceNamespace,
+          plural,
+          name,
+        );
+        // Exists, patch it
+        await api.patchNamespacedCustomObject(
+          group,
+          version,
+          resourceNamespace,
+          plural,
+          name,
+          resource,
+        );
+      } catch (readError: any) {
+        if (readError.statusCode === 404) {
+          // Create it
+          await api.createNamespacedCustomObject(
+            group,
+            version,
+            resourceNamespace,
+            plural,
+            resource,
+          );
+        } else {
+          throw readError;
+        }
+      }
+      return;
     } else {
       api = kubeConfig.makeApiClient(k8s.CoreV1Api);
     }
@@ -351,9 +388,16 @@ async function applyResource(
       if (kind === "Namespace") {
         await api.readNamespace(name);
       } else {
-        const readMethod = `read${kind}`;
-        if (typeof api[readMethod] === "function") {
-          await api[readMethod](name, resourceNamespace);
+        // For namespaced resources, use readNamespaced${kind} method
+        const readNamespacedMethod = `readNamespaced${kind}`;
+        if (typeof api[readNamespacedMethod] === "function") {
+          await api[readNamespacedMethod](name, resourceNamespace);
+        } else {
+          // Fallback to simple read method
+          const readMethod = `read${kind}`;
+          if (typeof api[readMethod] === "function") {
+            await api[readMethod](name, resourceNamespace);
+          }
         }
       }
       exists = true;
@@ -371,9 +415,14 @@ async function applyResource(
       if (kind === "Namespace") {
         await api.patchNamespace(name, resource);
       } else {
-        const patchMethod = `patch${kind}`;
-        if (typeof api[patchMethod] === "function") {
-          await api[patchMethod](name, resourceNamespace, resource);
+        const patchNamespacedMethod = `patchNamespaced${kind}`;
+        if (typeof api[patchNamespacedMethod] === "function") {
+          await api[patchNamespacedMethod](name, resourceNamespace, resource);
+        } else {
+          const patchMethod = `patch${kind}`;
+          if (typeof api[patchMethod] === "function") {
+            await api[patchMethod](name, resourceNamespace, resource);
+          }
         }
       }
     } else {
@@ -381,14 +430,15 @@ async function applyResource(
       if (kind === "Namespace") {
         await api.createNamespace(resource);
       } else {
-        const createMethod = `create${kind}`;
-        if (typeof api[createMethod] === "function") {
-          await api[createMethod](resourceNamespace, resource);
+        // For namespaced resources, use createNamespaced${kind} method
+        const createNamespacedMethod = `createNamespaced${kind}`;
+        if (typeof api[createNamespacedMethod] === "function") {
+          await api[createNamespacedMethod](resourceNamespace, resource);
         } else {
-          // Fallback: try the createNamespaced${kind} method
-          const createNamespacedMethod = `createNamespaced${kind}`;
-          if (typeof api[createNamespacedMethod] === "function") {
-            await api[createNamespacedMethod](resourceNamespace, resource);
+          // Fallback to simple create method
+          const createMethod = `create${kind}`;
+          if (typeof api[createMethod] === "function") {
+            await api[createMethod](resourceNamespace, resource);
           }
         }
       }
