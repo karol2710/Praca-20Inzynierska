@@ -40,175 +40,187 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
   }
 
   try {
-    // Get user information from database
-    const userResult = await query(
-      `SELECT id, username, rancher_api_url, rancher_api_token, rancher_cluster_id
-       FROM users WHERE id = $1`,
-      [user.userId],
-    );
-
-    if (userResult.rows.length === 0) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    const userData = userResult.rows[0];
-
-    // Check if Rancher credentials are configured
-    if (
-      !userData.rancher_api_url ||
-      !userData.rancher_api_token ||
-      !userData.rancher_cluster_id
-    ) {
-      return res.status(400).json({
-        error:
-          "Rancher RKE2 cluster credentials not configured. Please set up your cluster in settings.",
-      } as AdvancedDeployResponse);
-    }
-
     const output: string[] = [];
     const namespace = globalNamespace;
-    const deploymentDir = path.join(
-      "/tmp",
-      `deployment-${namespace}-${Date.now()}`,
-    );
 
     output.push("=== Advanced Deployment Started ===\n");
     output.push(`Namespace: ${namespace}`);
     output.push(`Workloads: ${workloads.length}`);
     output.push(`Resources: ${resources.length}\n`);
 
-    // Create deployment directory
-    await fs.mkdir(deploymentDir, { recursive: true });
-    output.push(`Created directory: ${deploymentDir}\n`);
+    // Initialize Kubernetes client
+    let kc = new k8s.KubeConfig();
+    let kubeConfig: any = null;
 
-    // Parse and write individual YAML files from full YAML
+    // Try to load in-cluster configuration first (when running inside a pod)
+    try {
+      kc.loadFromCluster();
+      output.push("✓ Using in-cluster Kubernetes configuration\n");
+      kubeConfig = kc;
+    } catch (inClusterError) {
+      output.push("⚠ In-cluster config not available, trying Rancher credentials...\n");
+
+      // Fallback to user-configured Rancher credentials
+      const userResult = await query(
+        `SELECT id, username, rancher_api_url, rancher_api_token, rancher_cluster_id
+         FROM users WHERE id = $1`,
+        [user.userId],
+      );
+
+      if (userResult.rows.length === 0) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const userData = userResult.rows[0];
+
+      if (
+        !userData.rancher_api_url ||
+        !userData.rancher_api_token ||
+        !userData.rancher_cluster_id
+      ) {
+        return res.status(400).json({
+          error:
+            "No cluster configuration available. Either run inside Kubernetes cluster or configure Rancher credentials in account settings.",
+        } as AdvancedDeployResponse);
+      }
+
+      // Use Rancher credentials
+      kc.loadFromOptions({
+        clusters: [
+          {
+            name: "rancher-cluster",
+            server: userData.rancher_api_url,
+            skipTLSVerify: true,
+          },
+        ],
+        users: [
+          {
+            name: "rancher-user",
+            token: userData.rancher_api_token,
+          },
+        ],
+        contexts: [
+          {
+            cluster: "rancher-cluster",
+            user: "rancher-user",
+            name: "rancher-context",
+          },
+        ],
+        currentContext: "rancher-context",
+      });
+      output.push("✓ Using Rancher cluster configuration\n");
+      kubeConfig = kc;
+    }
+
+    // Create namespace if it doesn't exist
+    try {
+      const k8sApi = kubeConfig.makeApiClient(k8s.CoreV1Api);
+      const namespaceObj: k8s.V1Namespace = {
+        apiVersion: "v1",
+        kind: "Namespace",
+        metadata: {
+          name: namespace,
+        },
+      };
+
+      try {
+        await k8sApi.readNamespace(namespace);
+        output.push(`✓ Namespace '${namespace}' already exists\n`);
+      } catch (nsError: any) {
+        if (nsError.statusCode === 404) {
+          await k8sApi.createNamespace(namespaceObj);
+          output.push(`✓ Created namespace '${namespace}'\n`);
+        } else {
+          throw nsError;
+        }
+      }
+    } catch (nsError: any) {
+      output.push(`⚠ Warning creating namespace: ${nsError.message}\n`);
+    }
+
+    // Parse and apply YAML documents
     if (_fullYaml) {
       const yamlDocuments = _fullYaml
         .split(/^---$/m)
         .filter((doc) => doc.trim());
 
-      output.push(`=== Writing ${yamlDocuments.length} YAML files ===\n`);
+      output.push(
+        `=== Applying ${yamlDocuments.length} Kubernetes Resources ===\n`,
+      );
+
+      let successCount = 0;
+      let errorCount = 0;
 
       for (let i = 0; i < yamlDocuments.length; i++) {
         const yamlDoc = yamlDocuments[i].trim();
-        const lines = yamlDoc.split("\n");
 
-        // Extract kind and name from YAML
-        let kind = "resource";
-        let resourceName = "unknown";
+        try {
+          const doc = yaml.load(yamlDoc) as any;
 
-        for (const line of lines) {
-          if (line.includes("kind:")) {
-            kind = line.split(":")[1].trim().toLowerCase();
+          if (!doc || !doc.kind) {
+            output.push(`⚠ Skipping invalid YAML document ${i + 1}\n`);
+            continue;
           }
-          if (
-            line.includes("name:") &&
-            (lines[lines.indexOf(line) - 1]?.includes("metadata") ||
-              lines[lines.indexOf(line)].includes("metadata"))
-          ) {
-            resourceName = line.split(":")[1].trim();
-            break;
+
+          const resourceKind = doc.kind;
+          const resourceName = doc.metadata?.name || "unknown";
+          const resourceNamespace = doc.metadata?.namespace || namespace;
+
+          // Apply namespace if not specified
+          if (!doc.metadata?.namespace && resourceKind !== "Namespace") {
+            doc.metadata = doc.metadata || {};
+            doc.metadata.namespace = namespace;
           }
+
+          output.push(
+            `→ Applying ${resourceKind}/${resourceName} (${resourceNamespace})...`,
+          );
+
+          try {
+            await applyResource(kubeConfig, doc, namespace);
+            output.push(" ✓\n");
+            successCount++;
+          } catch (applyError: any) {
+            output.push(` ✗ (${applyError.message})\n`);
+            errorCount++;
+          }
+        } catch (parseError: any) {
+          output.push(
+            `✗ Failed to parse YAML document ${i + 1}: ${parseError.message}\n`,
+          );
+          errorCount++;
         }
-
-        const fileName = `${i + 1}-${kind}-${resourceName}.yaml`;
-        const filePath = path.join(deploymentDir, fileName);
-
-        await fs.writeFile(filePath, yamlDoc + "\n");
-        output.push(`✓ Created: ${fileName}`);
       }
-    }
 
-    output.push("\n=== Applying to Kubernetes Cluster ===\n");
-
-    // Set kubectl context from Rancher credentials
-    try {
-      // Create kubeconfig with Rancher credentials
-      const kubeconfigPath = path.join("/tmp", `kubeconfig-${Date.now()}`);
-      const kubeconfig = {
-        apiVersion: "v1",
-        kind: "Config",
-        clusters: [
-          {
-            name: "rancher-cluster",
-            cluster: {
-              server: userData.rancher_api_url,
-              insecure_skip_tls_verify: true,
-            },
-          },
-        ],
-        contexts: [
-          {
-            name: "rancher-context",
-            context: {
-              cluster: "rancher-cluster",
-              user: "rancher-user",
-            },
-          },
-        ],
-        "current-context": "rancher-context",
-        users: [
-          {
-            name: "rancher-user",
-            user: {
-              token: userData.rancher_api_token,
-            },
-          },
-        ],
-      };
-
-      await fs.writeFile(kubeconfigPath, JSON.stringify(kubeconfig, null, 2));
-
-      // Apply all YAML files to the cluster
-      const applyCmd = `KUBECONFIG=${kubeconfigPath} kubectl apply -f ${deploymentDir}`;
-      const applyOutput = execSync(applyCmd, { encoding: "utf-8" });
-
-      output.push("Kubernetes Deployment Output:");
-      output.push(applyOutput);
-
-      // Cleanup kubeconfig
-      await fs.unlink(kubeconfigPath).catch(() => {});
-
-      output.push("\n=== Deployment Successful ===\n");
-      output.push(`All resources have been applied to namespace: ${namespace}`);
-      output.push("Verify with: kubectl get all -n " + namespace);
-
-      // Store deployment record
-      await query(
-        `INSERT INTO deployments (user_id, name, type, namespace, yaml_config, status)
-         VALUES ($1, $2, $3, $4, $5, $6)`,
-        [
-          user.userId,
-          `deployment-${Date.now()}`,
-          "advanced",
-          namespace,
-          _fullYaml || generatedYaml || "",
-          "deployed",
-        ],
-      );
-
-      output.push("\n=== Deployment record saved to database ===\n");
-    } catch (kubectlError: any) {
-      output.push("⚠ kubectl error: " + kubectlError.message);
-      output.push("\nYAML files have been created at: " + deploymentDir);
       output.push(
-        "You can manually apply them with: kubectl apply -f " + deploymentDir,
+        `\n=== Deployment Summary ===\n`,
       );
-
-      // Still save the deployment record even if kubectl fails
-      await query(
-        `INSERT INTO deployments (user_id, name, type, namespace, yaml_config, status)
-         VALUES ($1, $2, $3, $4, $5, $6)`,
-        [
-          user.userId,
-          `deployment-${Date.now()}`,
-          "advanced",
-          namespace,
-          _fullYaml || generatedYaml || "",
-          "pending",
-        ],
-      );
+      output.push(`✓ Successfully applied: ${successCount} resources\n`);
+      if (errorCount > 0) {
+        output.push(`✗ Failed to apply: ${errorCount} resources\n`);
+      }
+      output.push(`\nNamespace: ${namespace}\n`);
+      output.push("Verify with: kubectl get all -n " + namespace);
     }
+
+    // Store deployment record
+    const status = output.join("\n").includes("Failed to apply")
+      ? "partial"
+      : "deployed";
+    await query(
+      `INSERT INTO deployments (user_id, name, type, namespace, yaml_config, status)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [
+        user.userId,
+        `deployment-${Date.now()}`,
+        "advanced",
+        namespace,
+        _fullYaml || generatedYaml || "",
+        status,
+      ],
+    );
+
+    output.push("\n=== Deployment record saved to database ===\n");
 
     res.status(200).json({
       success: true,
@@ -224,3 +236,75 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
     } as AdvancedDeployResponse);
   }
 };
+
+// Helper function to apply a Kubernetes resource
+async function applyResource(
+  kubeConfig: k8s.KubeConfig,
+  resource: any,
+  namespace: string,
+): Promise<void> {
+  const kind = resource.kind;
+  const apiVersion = resource.apiVersion || "v1";
+  const name = resource.metadata?.name;
+  const resourceNamespace = resource.metadata?.namespace || namespace;
+
+  // Get the appropriate API client based on API version
+  let api: any;
+
+  if (apiVersion.startsWith("apps/")) {
+    api = kubeConfig.makeApiClient(k8s.AppsV1Api);
+  } else if (apiVersion.startsWith("batch/")) {
+    api = kubeConfig.makeApiClient(k8s.BatchV1Api);
+  } else if (apiVersion.startsWith("networking.k8s.io/")) {
+    api = kubeConfig.makeApiClient(k8s.NetworkingV1Api);
+  } else if (apiVersion.startsWith("autoscaling/")) {
+    api = kubeConfig.makeApiClient(k8s.AutoscalingV2Api);
+  } else {
+    api = kubeConfig.makeApiClient(k8s.CoreV1Api);
+  }
+
+  // Convert kind to API method name (e.g., "Deployment" -> "deployment")
+  const methodPrefix = kind.charAt(0).toLowerCase() + kind.slice(1);
+
+  try {
+    // Try to get existing resource
+    const getMethod = `read${kind}`;
+    if (typeof api[getMethod] === "function") {
+      try {
+        if (kind === "Namespace") {
+          await api[getMethod](name);
+        } else {
+          await api[getMethod](name, resourceNamespace);
+        }
+        // Resource exists, update it
+        const patchMethod = `patch${kind}`;
+        if (typeof api[patchMethod] === "function") {
+          if (kind === "Namespace") {
+            await api[patchMethod](name, resource);
+          } else {
+            await api[patchMethod](name, resourceNamespace, resource);
+          }
+        }
+      } catch (readError: any) {
+        if (readError.statusCode === 404) {
+          // Resource doesn't exist, create it
+          const createMethod = `create${kind === "Namespace" ? "Namespace" : methodPrefix[0].toUpperCase() + methodPrefix.slice(1)}`;
+          const createMethodName = `create${kind}`;
+          if (typeof api[createMethodName] === "function") {
+            if (kind === "Namespace") {
+              await api[createMethodName](resource);
+            } else {
+              await api[createMethodName](resourceNamespace, resource);
+            }
+          }
+        } else {
+          throw readError;
+        }
+      }
+    }
+  } catch (error: any) {
+    throw new Error(
+      `${kind} operation failed: ${error.message || error.statusCode}`,
+    );
+  }
+}
