@@ -93,7 +93,7 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
       }
     } else {
       output.push(
-        "⚠ Not running inside Kubernetes cluster, checking for Rancher credentials...\n",
+        "\n⚠ Not running inside Kubernetes cluster, checking for Rancher credentials...\n",
       );
 
       // Fallback to user-configured Rancher credentials
@@ -114,11 +114,14 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
         !userData.rancher_api_token ||
         !userData.rancher_cluster_id
       ) {
+        output.push(
+          "✗ No Rancher credentials configured in user account\n",
+        );
         return res.status(400).json({
           success: false,
           output: output.join("\n"),
           error:
-            "No cluster configuration available. Please configure Rancher credentials in account settings.",
+            "Cannot deploy: Not running inside Kubernetes cluster AND no Rancher credentials configured. Either deploy inside the cluster or configure Rancher credentials in your account settings.",
         } as AdvancedDeployResponse);
       }
 
@@ -150,14 +153,16 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
         output.push("✓ Using Rancher cluster configuration\n");
         output.push(`  Server: ${userData.rancher_api_url}\n`);
         kubeConfig = kc;
+        console.log("[DEPLOY] Rancher authentication configured");
       } catch (rangerError: any) {
         output.push(
           `✗ Failed to load Rancher config: ${rangerError.message}\n`,
         );
+        console.error("[DEPLOY] Rancher config error:", rangerError);
         return res.status(500).json({
           success: false,
           output: output.join("\n"),
-          error: "Failed to configure cluster connection",
+          error: "Failed to configure cluster connection with Rancher credentials",
         } as AdvancedDeployResponse);
       }
     }
