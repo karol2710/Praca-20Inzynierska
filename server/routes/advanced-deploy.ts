@@ -411,6 +411,7 @@ async function applyResource(
     try {
       if (kind === "Namespace") {
         await api.readNamespace(name);
+        exists = true;
       } else {
         // For namespaced resources, use readNamespaced${kind} method
         const readNamespacedMethod = `readNamespaced${kind}`;
