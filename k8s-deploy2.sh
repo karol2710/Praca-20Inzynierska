@@ -364,10 +364,13 @@ spec:
         prometheus.io/port: "$PORT"
     spec:
       serviceAccountName: $DEPLOYMENT_NAME
+      automountServiceAccountToken: true
       securityContext:
         runAsNonRoot: true
         runAsUser: 1001
         fsGroup: 1001
+        seccompProfile:
+          type: RuntimeDefault
       initContainers:
         - name: wait-for-postgres
           image: busybox:latest
