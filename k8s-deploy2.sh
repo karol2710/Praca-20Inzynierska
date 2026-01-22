@@ -500,6 +500,23 @@ else
     else
         print_warning "PostgreSQL rollout incomplete or timed out"
     fi
+else
+    # PostgreSQL already exists, but ensure permissions are set
+    echo "Ensuring database permissions are configured..."
+    sleep 5
+
+    if kubectl get pod postgres-0 -n "$KUBE_NAMESPACE" > /dev/null 2>&1; then
+        kubectl exec -it postgres-0 -n "$KUBE_NAMESPACE" -- psql -U postgres -c "
+          GRANT ALL PRIVILEGES ON DATABASE kubechart TO deployer_user;
+          GRANT ALL PRIVILEGES ON SCHEMA public TO deployer_user;
+          GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO deployer_user;
+          GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO deployer_user;
+          GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public TO deployer_user;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO deployer_user;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO deployer_user;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON FUNCTIONS TO deployer_user;
+        " 2>/dev/null || print_warning "Could not verify permissions"
+    fi
 fi
 
 # ==========================================
