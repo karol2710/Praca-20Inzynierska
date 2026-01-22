@@ -449,6 +449,13 @@ if kubectl get statefulset postgres -n "$KUBE_NAMESPACE" > /dev/null 2>&1; then
 else
     echo "Deploying PostgreSQL..."
 
+    # Clean up old PVC if it exists (to avoid stale data)
+    if kubectl get pvc postgres-storage-postgres-0 -n "$KUBE_NAMESPACE" > /dev/null 2>&1; then
+        echo "Cleaning up old PostgreSQL storage..."
+        kubectl delete pvc postgres-storage-postgres-0 -n "$KUBE_NAMESPACE" --wait=true
+        sleep 5
+    fi
+
     # Apply PostgreSQL resources in order
     echo "Creating PostgreSQL Secret..."
     kubectl apply -f kubernetes/postgres-secret.yaml
