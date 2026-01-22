@@ -53,13 +53,20 @@ export default function Login() {
 
         {/* Card */}
         <div className="bg-card border border-border rounded-2xl p-8 shadow-lg">
-          <h1 className="text-2xl font-bold text-foreground mb-2">Welcome Back</h1>
-          <p className="text-foreground/60 mb-6">Sign in to your KubeChart account</p>
+          <h1 className="text-2xl font-bold text-foreground mb-2">
+            Welcome Back
+          </h1>
+          <p className="text-foreground/60 mb-6">
+            Sign in to your KubeChart account
+          </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Username Input */}
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-foreground mb-2">
+              <label
+                htmlFor="username"
+                className="block text-sm font-medium text-foreground mb-2"
+              >
                 Username
               </label>
               <input
@@ -76,7 +83,10 @@ export default function Login() {
 
             {/* Password Input */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-foreground mb-2"
+              >
                 Password
               </label>
               <input
@@ -114,15 +124,14 @@ export default function Login() {
               <div className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-card text-foreground/60">New to KubeChart?</span>
+              <span className="px-2 bg-card text-foreground/60">
+                New to KubeChart?
+              </span>
             </div>
           </div>
 
           {/* Sign Up Link */}
-          <Link
-            to="/signup"
-            className="btn-secondary w-full text-center"
-          >
+          <Link to="/signup" className="btn-secondary w-full text-center">
             Create Account
           </Link>
         </div>
@@ -132,8 +141,8 @@ export default function Login() {
           By signing in, you agree to our{" "}
           <Link to="#" className="text-primary hover:underline">
             Terms of Service
-          </Link>
-          {" "}and{" "}
+          </Link>{" "}
+          and{" "}
           <Link to="#" className="text-primary hover:underline">
             Privacy Policy
           </Link>

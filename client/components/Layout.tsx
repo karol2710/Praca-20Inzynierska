@@ -89,7 +89,10 @@ export default function Layout({ children }: LayoutProps) {
                     <User className="w-4 h-4" />
                     <span className="text-foreground/80">{user?.username}</span>
                   </div>
-                  <Link to="/account" className="btn-ghost text-foreground text-sm">
+                  <Link
+                    to="/account"
+                    className="btn-ghost text-foreground text-sm"
+                  >
                     Account
                   </Link>
                   <button

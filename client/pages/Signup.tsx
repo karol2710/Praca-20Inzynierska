@@ -66,13 +66,20 @@ export default function Signup() {
 
         {/* Card */}
         <div className="bg-card border border-border rounded-2xl p-8 shadow-lg">
-          <h1 className="text-2xl font-bold text-foreground mb-2">Create Account</h1>
-          <p className="text-foreground/60 mb-6">Join KubeChart to manage your Kubernetes deployments</p>
+          <h1 className="text-2xl font-bold text-foreground mb-2">
+            Create Account
+          </h1>
+          <p className="text-foreground/60 mb-6">
+            Join KubeChart to manage your Kubernetes deployments
+          </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Username Input */}
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-foreground mb-2">
+              <label
+                htmlFor="username"
+                className="block text-sm font-medium text-foreground mb-2"
+              >
                 Username
               </label>
               <input
@@ -89,7 +96,10 @@ export default function Signup() {
 
             {/* Email Input */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-foreground mb-2"
+              >
                 Email Address
               </label>
               <input
@@ -106,7 +116,10 @@ export default function Signup() {
 
             {/* Password Input */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-foreground mb-2"
+              >
                 Password
               </label>
               <input
@@ -119,12 +132,17 @@ export default function Signup() {
                 required
                 disabled={isLoading}
               />
-              <p className="text-xs text-foreground/50 mt-1">At least 8 characters</p>
+              <p className="text-xs text-foreground/50 mt-1">
+                At least 8 characters
+              </p>
             </div>
 
             {/* Confirm Password Input */}
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground mb-2">
+              <label
+                htmlFor="confirmPassword"
+                className="block text-sm font-medium text-foreground mb-2"
+              >
                 Confirm Password
               </label>
               <input
@@ -162,15 +180,14 @@ export default function Signup() {
               <div className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-card text-foreground/60">Already have an account?</span>
+              <span className="px-2 bg-card text-foreground/60">
+                Already have an account?
+              </span>
             </div>
           </div>
 
           {/* Sign In Link */}
-          <Link
-            to="/login"
-            className="btn-secondary w-full text-center"
-          >
+          <Link to="/login" className="btn-secondary w-full text-center">
             Sign In
           </Link>
         </div>

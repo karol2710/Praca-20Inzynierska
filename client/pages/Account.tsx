@@ -202,12 +202,18 @@ export default function Account() {
       <div className="min-h-screen bg-background py-12">
         <div className="container mx-auto px-4 max-w-2xl">
           <div className="bg-card border border-border rounded-xl p-8 shadow-lg">
-            <h1 className="text-3xl font-bold text-foreground mb-2">Account Settings</h1>
-            <p className="text-foreground/60 mb-8">Manage your account information</p>
+            <h1 className="text-3xl font-bold text-foreground mb-2">
+              Account Settings
+            </h1>
+            <p className="text-foreground/60 mb-8">
+              Manage your account information
+            </p>
 
             {/* Current User Info */}
             <div className="bg-background/50 border border-border rounded-lg p-6 mb-8">
-              <h2 className="text-lg font-semibold text-foreground mb-4">Current Information</h2>
+              <h2 className="text-lg font-semibold text-foreground mb-4">
+                Current Information
+              </h2>
               <div className="space-y-3">
                 <div>
                   <p className="text-sm text-foreground/60">Username</p>
@@ -222,10 +228,15 @@ export default function Account() {
 
             {/* Update Username */}
             <div className="mb-8 pb-8 border-b border-border">
-              <h2 className="text-lg font-semibold text-foreground mb-4">Update Username</h2>
+              <h2 className="text-lg font-semibold text-foreground mb-4">
+                Update Username
+              </h2>
               <form onSubmit={handleUpdateUsername} className="space-y-4">
                 <div>
-                  <label htmlFor="username" className="block text-sm font-semibold text-foreground mb-2">
+                  <label
+                    htmlFor="username"
+                    className="block text-sm font-semibold text-foreground mb-2"
+                  >
                     New Username
                   </label>
                   <input
@@ -257,10 +268,15 @@ export default function Account() {
 
             {/* Update Email */}
             <div className="mb-8 pb-8 border-b border-border">
-              <h2 className="text-lg font-semibold text-foreground mb-4">Update Email</h2>
+              <h2 className="text-lg font-semibold text-foreground mb-4">
+                Update Email
+              </h2>
               <form onSubmit={handleUpdateEmail} className="space-y-4">
                 <div>
-                  <label htmlFor="email" className="block text-sm font-semibold text-foreground mb-2">
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-semibold text-foreground mb-2"
+                  >
                     New Email
                   </label>
                   <input
@@ -292,10 +308,15 @@ export default function Account() {
 
             {/* Update Password */}
             <div className="mb-8 pb-8 border-b border-border">
-              <h2 className="text-lg font-semibold text-foreground mb-4">Change Password</h2>
+              <h2 className="text-lg font-semibold text-foreground mb-4">
+                Change Password
+              </h2>
               <form onSubmit={handleUpdatePassword} className="space-y-4">
                 <div>
-                  <label htmlFor="currentPassword" className="block text-sm font-semibold text-foreground mb-2">
+                  <label
+                    htmlFor="currentPassword"
+                    className="block text-sm font-semibold text-foreground mb-2"
+                  >
                     Current Password
                   </label>
                   <input
@@ -311,7 +332,10 @@ export default function Account() {
                 </div>
 
                 <div>
-                  <label htmlFor="newPassword" className="block text-sm font-semibold text-foreground mb-2">
+                  <label
+                    htmlFor="newPassword"
+                    className="block text-sm font-semibold text-foreground mb-2"
+                  >
                     New Password
                   </label>
                   <input
@@ -327,7 +351,10 @@ export default function Account() {
                 </div>
 
                 <div>
-                  <label htmlFor="confirmNewPassword" className="block text-sm font-semibold text-foreground mb-2">
+                  <label
+                    htmlFor="confirmNewPassword"
+                    className="block text-sm font-semibold text-foreground mb-2"
+                  >
                     Confirm New Password
                   </label>
                   <input
@@ -360,9 +387,12 @@ export default function Account() {
 
             {/* Delete Account */}
             <div className="mb-8">
-              <h2 className="text-lg font-semibold text-foreground mb-4">Delete Account</h2>
+              <h2 className="text-lg font-semibold text-foreground mb-4">
+                Delete Account
+              </h2>
               <p className="text-sm text-foreground/60 mb-4">
-                This action cannot be undone. All your data will be permanently deleted.
+                This action cannot be undone. All your data will be permanently
+                deleted.
               </p>
 
               {showDeleteConfirm ? (
@@ -372,7 +402,8 @@ export default function Account() {
                       Are you sure you want to delete your account?
                     </p>
                     <p className="text-sm text-foreground/60">
-                      This action cannot be undone. Type your username to confirm.
+                      This action cannot be undone. Type your username to
+                      confirm.
                     </p>
                   </div>
 
@@ -386,7 +417,9 @@ export default function Account() {
                   <div className="flex gap-3">
                     <button
                       onClick={() => {
-                        const input = (document.getElementById("confirmUsername") as HTMLInputElement);
+                        const input = document.getElementById(
+                          "confirmUsername",
+                        ) as HTMLInputElement;
                         if (input.value === user.username) {
                           handleDeleteAccount();
                         }

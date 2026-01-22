@@ -31,7 +31,7 @@ export const handleSignup: RequestHandler = async (req, res) => {
     // Check if user already exists
     const existingUser = await query(
       "SELECT id FROM users WHERE username = $1 OR email = $2",
-      [username, email]
+      [username, email],
     );
 
     if (existingUser.rows.length > 0) {
@@ -46,7 +46,7 @@ export const handleSignup: RequestHandler = async (req, res) => {
     // Create user
     const result = await query(
       "INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3) RETURNING id, username, email",
-      [username, email, passwordHash]
+      [username, email, passwordHash],
     );
 
     const user = result.rows[0];
@@ -80,7 +80,7 @@ export const handleLogin: RequestHandler = async (req, res) => {
     // Find user
     const result = await query(
       "SELECT id, username, email, password_hash FROM users WHERE username = $1",
-      [username]
+      [username],
     );
 
     if (result.rows.length === 0) {
@@ -125,9 +125,10 @@ export const handleGetCurrentUser: RequestHandler = async (req, res) => {
     }
 
     // Get full user data from database
-    const result = await query("SELECT id, username, email FROM users WHERE id = $1", [
-      user.userId,
-    ]);
+    const result = await query(
+      "SELECT id, username, email FROM users WHERE id = $1",
+      [user.userId],
+    );
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "User not found" });
@@ -165,7 +166,7 @@ export const handleUpdateUsername: RequestHandler = async (req, res) => {
     // Check if username is already taken by another user
     const existingUser = await query(
       "SELECT id FROM users WHERE username = $1 AND id != $2",
-      [username, user.userId]
+      [username, user.userId],
     );
 
     if (existingUser.rows.length > 0) {
@@ -175,7 +176,7 @@ export const handleUpdateUsername: RequestHandler = async (req, res) => {
     // Update username
     const result = await query(
       "UPDATE users SET username = $1 WHERE id = $2 RETURNING id, username, email",
-      [username, user.userId]
+      [username, user.userId],
     );
 
     if (result.rows.length === 0) {
@@ -214,7 +215,7 @@ export const handleUpdateEmail: RequestHandler = async (req, res) => {
     // Check if email is already taken by another user
     const existingUser = await query(
       "SELECT id FROM users WHERE email = $1 AND id != $2",
-      [email, user.userId]
+      [email, user.userId],
     );
 
     if (existingUser.rows.length > 0) {
@@ -224,7 +225,7 @@ export const handleUpdateEmail: RequestHandler = async (req, res) => {
     // Update email
     const result = await query(
       "UPDATE users SET email = $1 WHERE id = $2 RETURNING id, username, email",
-      [email, user.userId]
+      [email, user.userId],
     );
 
     if (result.rows.length === 0) {
@@ -257,13 +258,15 @@ export const handleUpdatePassword: RequestHandler = async (req, res) => {
     const { currentPassword, newPassword } = req.body;
 
     if (!currentPassword || !newPassword) {
-      return res.status(400).json({ error: "Current and new password are required" });
+      return res
+        .status(400)
+        .json({ error: "Current and new password are required" });
     }
 
     // Get current user password hash
     const result = await query(
       "SELECT password_hash FROM users WHERE id = $1",
-      [user.userId]
+      [user.userId],
     );
 
     if (result.rows.length === 0) {
@@ -282,10 +285,10 @@ export const handleUpdatePassword: RequestHandler = async (req, res) => {
     const newPasswordHash = await hashPassword(newPassword);
 
     // Update password
-    await query(
-      "UPDATE users SET password_hash = $1 WHERE id = $2",
-      [newPasswordHash, user.userId]
-    );
+    await query("UPDATE users SET password_hash = $1 WHERE id = $2", [
+      newPasswordHash,
+      user.userId,
+    ]);
 
     res.status(200).json({
       success: true,
@@ -306,10 +309,9 @@ export const handleDeleteAccount: RequestHandler = async (req, res) => {
     }
 
     // Delete user account
-    const result = await query(
-      "DELETE FROM users WHERE id = $1 RETURNING id",
-      [user.userId]
-    );
+    const result = await query("DELETE FROM users WHERE id = $1 RETURNING id", [
+      user.userId,
+    ]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "User not found" });
