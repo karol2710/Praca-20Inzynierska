@@ -2,6 +2,7 @@ import { RequestHandler } from "express";
 import { query } from "../db";
 import { generateYAMLManifest } from "../yaml-generator";
 import * as fs from "fs/promises";
+import * as fsSync from "fs";
 import * as path from "path";
 import * as k8s from "@kubernetes/client-node";
 import * as yaml from "js-yaml";
