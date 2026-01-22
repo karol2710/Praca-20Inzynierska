@@ -1,5 +1,7 @@
-import { Link, useLocation } from "react-router-dom";
-import { ReactNode } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { ReactNode, useState } from "react";
+import { useAuth } from "@/hooks/use-auth";
+import { LogOut, User, Menu, X } from "lucide-react";
 
 interface LayoutProps {
   children: ReactNode;
@@ -7,6 +9,9 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, isAuthenticated, logout } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const isAuthPage =
     location.pathname === "/login" || location.pathname === "/signup";
