@@ -424,7 +424,7 @@ async function callKubernetesApi(
   server: string,
   apiPath: string,
   resource: any,
-  auth: any,
+  token: string,
   method: string = "PUT"
 ): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -433,14 +433,10 @@ async function callKubernetesApi(
       method,
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
       rejectUnauthorized: false,
     };
-
-    // Apply authentication
-    if (auth && typeof auth.applyToRequest === "function") {
-      auth.applyToRequest(options);
-    }
 
     const req = https.request(url, options, (res) => {
       let data = "";
@@ -455,7 +451,7 @@ async function callKubernetesApi(
         } else if (status === 404) {
           // Try POST if PUT returns 404
           console.log(`[DEPLOY] Resource not found (404), trying POST...`);
-          createResource(server, apiPath, resource, auth)
+          createResource(server, apiPath, resource, token)
             .then(resolve)
             .catch(reject);
         } else if (status === 409) {
@@ -478,7 +474,7 @@ async function createResource(
   server: string,
   apiPath: string,
   resource: any,
-  auth: any
+  token: string
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     // Remove resource name from path for POST
@@ -488,13 +484,10 @@ async function createResource(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
       rejectUnauthorized: false,
     };
-
-    if (auth && typeof auth.applyToRequest === "function") {
-      auth.applyToRequest(options);
-    }
 
     const req = https.request(url, options, (res) => {
       let data = "";
