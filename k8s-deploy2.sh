@@ -148,14 +148,13 @@ EOF
     print_success "ServiceAccount created"
 fi
 
-# Create Role for pod operations and deployment management
-echo "Creating Role for $DEPLOYMENT_NAME"
+# Create ClusterRole for pod operations and deployment management (cluster-wide)
+echo "Creating ClusterRole for $DEPLOYMENT_NAME"
 cat <<EOF | kubectl apply -f -
 apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
+kind: ClusterRole
 metadata:
   name: $DEPLOYMENT_NAME
-  namespace: $KUBE_NAMESPACE
   labels:
     app: $DEPLOYMENT_NAME
 rules:
