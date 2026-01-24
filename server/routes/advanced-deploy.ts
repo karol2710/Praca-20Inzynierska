@@ -367,8 +367,36 @@ async function applyResource(
       const customGroup = parts[0];
       const customVersion = parts[1] || "v1";
 
-      // Convert kind to plural form
-      const customPlural = kind.toLowerCase() + "s";
+      // Convert kind to plural form - handle special cases
+      let customPlural = kind.toLowerCase();
+      if (!customPlural.endsWith("s")) {
+        customPlural += "s";
+      }
+      // Handle special pluralization
+      if (kind === "Schedule") {
+        customPlural = "schedules";
+      } else if (kind === "Certificate") {
+        customPlural = "certificates";
+      } else if (kind === "HTTPRoute") {
+        customPlural = "httproutes";
+      }
+
+      // Validate all parameters
+      if (!customGroup || typeof customGroup !== "string") {
+        throw new Error(`Invalid group: "${customGroup}" (type: ${typeof customGroup})`);
+      }
+      if (!customVersion || typeof customVersion !== "string") {
+        throw new Error(`Invalid version: "${customVersion}" (type: ${typeof customVersion})`);
+      }
+      if (!resourceNamespace || typeof resourceNamespace !== "string") {
+        throw new Error(`Invalid namespace: "${resourceNamespace}" (type: ${typeof resourceNamespace})`);
+      }
+      if (!customPlural || typeof customPlural !== "string") {
+        throw new Error(`Invalid plural: "${customPlural}" (type: ${typeof customPlural})`);
+      }
+      if (!resource || typeof resource !== "object") {
+        throw new Error(`Invalid resource body (type: ${typeof resource})`);
+      }
 
       console.log(`[DEPLOY] Custom resource: group=${customGroup}, version=${customVersion}, plural=${customPlural}`);
       console.log(`[DEPLOY] API instance type: ${api?.constructor?.name}`);
@@ -377,8 +405,9 @@ async function applyResource(
       try {
         // Try to create the custom resource
         console.log(`[DEPLOY] Creating custom resource ${kind}/${name}`);
-        console.log(`[DEPLOY] Parameters: group="${customGroup}", version="${customVersion}", namespace="${resourceNamespace}", plural="${customPlural}"`);
-        await api.createNamespacedCustomObject(
+        console.log(`[DEPLOY] Parameters: group="${customGroup}" (${typeof customGroup}), version="${customVersion}" (${typeof customVersion}), namespace="${resourceNamespace}" (${typeof resourceNamespace}), plural="${customPlural}" (${typeof customPlural})`);
+
+        const result = await api.createNamespacedCustomObject(
           customGroup,
           customVersion,
           resourceNamespace,
