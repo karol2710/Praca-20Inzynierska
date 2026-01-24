@@ -359,6 +359,8 @@ async function applyResource(
       throw new Error(`Failed to create API client for apiVersion="${apiVersion}"`);
     }
     console.log(`[DEPLOY] API client created successfully`);
+    console.log(`[DEPLOY] API client type: ${api.constructor.name}`);
+    console.log(`[DEPLOY] API client methods: ${Object.getOwnPropertyNames(Object.getPrototypeOf(api)).slice(0, 10).join(", ")}...`);
 
     // Handle custom resources separately
     if (isCustomResource) {
