@@ -56,6 +56,7 @@ export function generateTemplates(
     clusterIpServices: [],
     httpRoute: null,
     workloadPortMappings: {},
+    workloads: [],
   };
 
   if (!createClusterIP && !createHTTPRoute) {
