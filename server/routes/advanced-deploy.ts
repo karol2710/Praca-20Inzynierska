@@ -394,14 +394,8 @@ async function applyResource(
     const apiPath = buildApiPath(kind, apiVersion, resourceNamespace, name);
     console.log(`[DEPLOY] Using REST API path: ${apiPath}`);
 
-    // Make HTTP request to Kubernetes API
-    const result = await callKubernetesApi(
-      server,
-      apiPath,
-      resource,
-      token,
-      "PUT"
-    );
+    // Try to create first, then patch if it exists
+    await createOrPatchResource(server, apiPath, resource, token);
 
     console.log(`[DEPLOY] ✓ Applied ${kind}/${name}`);
   } catch (error: any) {
