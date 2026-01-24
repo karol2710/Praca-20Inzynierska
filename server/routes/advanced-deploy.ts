@@ -264,6 +264,15 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
           const resourceKind = doc.kind;
           const resourceName = doc.metadata?.name || "unknown";
           const resourceNamespace = doc.metadata?.namespace || namespace;
+          const errorMsg = error.message || "";
+
+          // Skip retry if it's a validation error (won't be fixed by retrying)
+          if (errorMsg.includes("invalid") || errorMsg.includes("Invalid") || errorMsg.includes("resourceVersion")) {
+            output.push(
+              `⊘ Skipping ${resourceKind}/${resourceName} (validation error, not retryable)\n`,
+            );
+            continue;
+          }
 
           output.push(
             `↻ Retrying ${resourceKind}/${resourceName}...`,
