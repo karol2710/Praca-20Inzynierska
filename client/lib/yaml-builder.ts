@@ -1360,7 +1360,13 @@ export function generateResourceYAML(
     ];
 
     if (grpcRouteSpec.hostnames && grpcRouteSpec.hostnames.length > 0) {
-      spec.hostnames = grpcRouteSpec.hostnames;
+      // Filter out null, undefined, and empty string values from hostnames
+      const validHostnames = grpcRouteSpec.hostnames.filter(
+        (h: any) => h && typeof h === "string" && h.trim().length > 0,
+      );
+      if (validHostnames.length > 0) {
+        spec.hostnames = validHostnames;
+      }
     }
 
     if (grpcRouteSpec.rules && grpcRouteSpec.rules.length > 0) {
