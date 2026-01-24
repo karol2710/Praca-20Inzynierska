@@ -223,6 +223,54 @@ rules:
   - apiGroups: ["autoscaling"]
     resources: ["horizontalpodautoscalers"]
     verbs: ["get", "list", "create", "patch", "update", "delete"]
+
+  # Namespaces (cluster-wide)
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list", "create", "patch", "update", "delete"]
+
+  # ServiceAccounts (across all namespaces)
+  - apiGroups: [""]
+    resources: ["serviceaccounts"]
+    verbs: ["get", "list", "create", "patch", "update", "delete"]
+
+  # RBAC - Roles and RoleBindings (cluster-wide)
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources: ["roles", "rolebindings"]
+    verbs: ["get", "list", "create", "patch", "update", "delete"]
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources: ["clusterroles", "clusterrolebindings"]
+    verbs: ["get", "list", "create", "patch", "update", "delete"]
+
+  # Cert-Manager Certificates
+  - apiGroups: ["cert-manager.io"]
+    resources: ["certificates", "issuers", "clusterissuers"]
+    verbs: ["get", "list", "create", "patch", "update", "delete"]
+
+  # Gateway API
+  - apiGroups: ["gateway.networking.k8s.io"]
+    resources: ["httproutes", "tcproutes", "udproutes", "tlsroutes", "gateways", "gatewayclasses"]
+    verbs: ["get", "list", "create", "patch", "update", "delete"]
+
+  # Velero Schedules and other Velero resources
+  - apiGroups: ["velero.io"]
+    resources: ["schedules", "backups", "restores", "backupstoragelocations", "volumesnapshotlocations"]
+    verbs: ["get", "list", "create", "patch", "update", "delete"]
+
+  # Longhorn (if using)
+  - apiGroups: ["longhorn.io"]
+    resources: ["volumes", "engines", "replicas"]
+    verbs: ["get", "list", "create", "patch", "update", "delete"]
+
+  # Custom metrics
+  - apiGroups: ["custom.metrics.k8s.io"]
+    resources: ["*"]
+    verbs: ["get", "list", "watch"]
+
+  # Allow all resource types via wildcard for flexibility
+  - apiGroups: ["*"]
+    resources: ["*"]
+    verbs: ["get", "list"]
 EOF
 
 # Create ClusterRoleBinding (cluster-wide)
