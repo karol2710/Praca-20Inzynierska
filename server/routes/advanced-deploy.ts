@@ -58,9 +58,7 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
     output.push(
       `KUBERNETES_SERVICE_PORT: ${process.env.KUBERNETES_SERVICE_PORT || "not set"}\n`,
     );
-    output.push(
-      `NODE_ENV: ${process.env.NODE_ENV || "not set"}\n`,
-    );
+    output.push(`NODE_ENV: ${process.env.NODE_ENV || "not set"}\n`);
 
     // Initialize Kubernetes client
     let kc = new k8s.KubeConfig();
@@ -101,9 +99,7 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
         output.push(
           `✗ Failed to load in-cluster config: ${inClusterError.message}\n`,
         );
-        output.push(
-          `Stack: ${inClusterError.stack}\n`,
-        );
+        output.push(`Stack: ${inClusterError.stack}\n`);
         console.error("[DEPLOY] In-cluster config error:", inClusterError);
         return res.status(500).json({
           success: false,
@@ -135,9 +131,7 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
         !userData.rancher_api_token ||
         !userData.rancher_cluster_id
       ) {
-        output.push(
-          "✗ No Rancher credentials configured in user account\n",
-        );
+        output.push("✗ No Rancher credentials configured in user account\n");
         return res.status(400).json({
           success: false,
           output: output.join("\n"),
@@ -183,14 +177,17 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
         return res.status(500).json({
           success: false,
           output: output.join("\n"),
-          error: "Failed to configure cluster connection with Rancher credentials",
+          error:
+            "Failed to configure cluster connection with Rancher credentials",
         } as AdvancedDeployResponse);
       }
     }
 
     // Create namespace if it doesn't exist - let it be created via YAML instead
     // The namespace will be in the _fullYaml, so we'll let applyResource handle it
-    output.push(`ℹ Namespace '${namespace}' will be created via YAML deployment\n`);
+    output.push(
+      `ℹ Namespace '${namespace}' will be created via YAML deployment\n`,
+    );
 
     // Parse and apply YAML documents
     if (_fullYaml) {
@@ -222,7 +219,9 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
           const resourceName = doc.metadata?.name || "unknown";
           const resourceNamespace = doc.metadata?.namespace || namespace;
 
-          console.log(`[DEPLOY] Parsed YAML document ${i + 1}: kind=${resourceKind}, name=${resourceName}, ns=${resourceNamespace}, apiVersion=${doc.apiVersion}`);
+          console.log(
+            `[DEPLOY] Parsed YAML document ${i + 1}: kind=${resourceKind}, name=${resourceName}, ns=${resourceNamespace}, apiVersion=${doc.apiVersion}`,
+          );
 
           // Apply namespace if not specified
           if (!doc.metadata?.namespace && resourceKind !== "Namespace") {
@@ -241,7 +240,7 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
           } catch (applyError: any) {
             output.push(` ✗ (${applyError.message})\n`);
             errorCount++;
-            failedResources.push({doc, error: applyError, attempt: 1});
+            failedResources.push({ doc, error: applyError, attempt: 1 });
           }
         } catch (parseError: any) {
           output.push(
@@ -253,11 +252,15 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
 
       // Retry failed resources (in case they were dependent on other resources)
       if (failedResources.length > 0) {
-        output.push(`\n=== Retrying ${failedResources.length} failed resources ===\n`);
-        console.log(`[DEPLOY] Retrying ${failedResources.length} failed resources...`);
+        output.push(
+          `\n=== Retrying ${failedResources.length} failed resources ===\n`,
+        );
+        console.log(
+          `[DEPLOY] Retrying ${failedResources.length} failed resources...`,
+        );
 
         // Wait a bit before retrying
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
 
         for (const item of failedResources) {
           const { doc, error } = item;
@@ -267,16 +270,18 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
           const errorMsg = error.message || "";
 
           // Skip retry if it's a validation error (won't be fixed by retrying)
-          if (errorMsg.includes("invalid") || errorMsg.includes("Invalid") || errorMsg.includes("resourceVersion")) {
+          if (
+            errorMsg.includes("invalid") ||
+            errorMsg.includes("Invalid") ||
+            errorMsg.includes("resourceVersion")
+          ) {
             output.push(
               `⊘ Skipping ${resourceKind}/${resourceName} (validation error, not retryable)\n`,
             );
             continue;
           }
 
-          output.push(
-            `↻ Retrying ${resourceKind}/${resourceName}...`,
-          );
+          output.push(`↻ Retrying ${resourceKind}/${resourceName}...`);
 
           try {
             await applyResource(kubeConfig, doc, namespace);
@@ -289,9 +294,7 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
         }
       }
 
-      output.push(
-        `\n=== Deployment Summary ===\n`,
-      );
+      output.push(`\n=== Deployment Summary ===\n`);
       output.push(`✓ Successfully applied: ${successCount} resources\n`);
       if (errorCount > 0) {
         output.push(`✗ Failed to apply: ${errorCount} resources\n`);
@@ -361,7 +364,9 @@ async function applyResource(
     resource.metadata.namespace = namespace;
   }
 
-  console.log(`[DEPLOY] Applying ${kind}/${name} in namespace ${resourceNamespace}`);
+  console.log(
+    `[DEPLOY] Applying ${kind}/${name} in namespace ${resourceNamespace}`,
+  );
 
   try {
     const cluster = kubeConfig.getCurrentCluster();
@@ -408,7 +413,7 @@ function buildApiPath(
   kind: string,
   apiVersion: string,
   namespace: string,
-  name: string
+  name: string,
 ): string {
   if (kind === "Namespace") {
     return `/api/v1/namespaces/${name}`;
@@ -459,7 +464,7 @@ async function createOrPatchResource(
   server: string,
   apiPath: string,
   resource: any,
-  token: string
+  token: string,
 ): Promise<void> {
   // Remove name from path for POST
   const createPath = apiPath.substring(0, apiPath.lastIndexOf("/"));
@@ -487,7 +492,9 @@ async function createOrPatchResource(
           resolve();
         } else if (status === 409) {
           // Already exists, try PATCH
-          console.log(`[DEPLOY] Resource already exists (409), trying PATCH...`);
+          console.log(
+            `[DEPLOY] Resource already exists (409), trying PATCH...`,
+          );
           patchResource(server, apiPath, resource, token)
             .then(resolve)
             .catch(reject);
@@ -508,7 +515,7 @@ async function patchResource(
   server: string,
   apiPath: string,
   resource: any,
-  token: string
+  token: string,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const url = new URL(server + apiPath);
