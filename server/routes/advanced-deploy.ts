@@ -463,14 +463,16 @@ async function applyResource(
     } else {
       // Core API (v1)
       const api = kubeConfig.makeApiClient(k8s.CoreV1Api);
-      const method = `createNamespaced${kind}` as keyof typeof api;
+      const methodName = `createNamespaced${kind}`;
       try {
-        await (api[method] as any)(resourceNamespace, resource);
+        const method = (api as any)[methodName];
+        await method.call(api, resourceNamespace, resource);
         console.log(`[DEPLOY] ✓ Created ${kind}/${name}`);
       } catch (e: any) {
         if (e.statusCode === 409) {
-          const patchMethod = `patchNamespaced${kind}` as keyof typeof api;
-          await (api[patchMethod] as any)(name, resourceNamespace, resource);
+          const patchMethodName = `patchNamespaced${kind}`;
+          const patchMethod = (api as any)[patchMethodName];
+          await patchMethod.call(api, name, resourceNamespace, resource);
           console.log(`[DEPLOY] ✓ Patched ${kind}/${name}`);
         } else {
           throw e;
