@@ -460,6 +460,100 @@ spec:
     includeClusterResources: false`;
 }
 
+function transformWorkloadConfig(
+  type: string,
+  config: Record<string, any>,
+): Record<string, any> {
+  if (type === "Pod") {
+    const transformed: Record<string, any> = {};
+    for (const [key, value] of Object.entries(config)) {
+      if (key.startsWith("pod")) {
+        const newKey = key.slice(3);
+        const lowerKey = newKey.charAt(0).toLowerCase() + newKey.slice(1);
+        transformed[lowerKey] = value;
+      } else {
+        transformed[key] = value;
+      }
+    }
+    return transformed;
+  }
+
+  const prefix =
+    type === "Deployment"
+      ? "deployment"
+      : type === "ReplicaSet"
+        ? "replicaSet"
+        : type === "StatefulSet"
+          ? "statefulSet"
+          : type === "Job"
+            ? "job"
+            : type === "CronJob"
+              ? "cronJob"
+              : "";
+
+  if (!prefix) return config;
+
+  const transformed: Record<string, any> = {};
+
+  for (const [key, value] of Object.entries(config)) {
+    if (key.startsWith(prefix)) {
+      const newKey = key.slice(prefix.length);
+      const lowerKey = newKey.charAt(0).toLowerCase() + newKey.slice(1);
+      transformed[lowerKey] = value;
+    } else {
+      transformed[key] = value;
+    }
+  }
+
+  // For CronJob, include the Job Template configuration
+  if (type === "CronJob") {
+    if (!transformed.spec) {
+      transformed.spec = {};
+    }
+
+    // Build Job Template from job-prefixed config keys
+    const jobTemplate: Record<string, any> = {};
+    const jobSpec: Record<string, any> = {};
+    const jobMetadata: Record<string, any> = {};
+
+    for (const [key, value] of Object.entries(config)) {
+      if (key.startsWith("job")) {
+        const jobKey = key.slice(3); // Remove "job" prefix
+        const lowerKey = jobKey.charAt(0).toLowerCase() + jobKey.slice(1);
+
+        if (lowerKey === "spec") {
+          Object.assign(jobSpec, value);
+        } else if (lowerKey === "template") {
+          jobTemplate.template = value;
+        } else if (
+          lowerKey === "labels" ||
+          lowerKey === "annotations" ||
+          lowerKey === "namespace" ||
+          lowerKey === "ownerReferences" ||
+          lowerKey === "deletionGracePeriodSeconds"
+        ) {
+          jobMetadata[lowerKey] = value;
+        }
+      }
+    }
+
+    // Assemble the job template structure
+    if (
+      Object.keys(jobTemplate).length > 0 ||
+      Object.keys(jobSpec).length > 0 ||
+      Object.keys(jobMetadata).length > 0
+    ) {
+      transformed.spec.jobTemplate = {
+        metadata: jobMetadata,
+        spec: jobSpec,
+        ...jobTemplate,
+      };
+    }
+  }
+
+  return transformed;
+}
+
 export function combineYamlDocuments(result: TemplateGenerationResult): string {
   // Only show ClusterIP and HTTPRoute to the user
   const documents: string[] = [];
