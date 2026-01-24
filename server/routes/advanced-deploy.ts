@@ -409,9 +409,17 @@ async function applyResource(
         console.log(`[DEPLOY] Creating custom resource ${kind}/${name}`);
         console.log(`[DEPLOY] Parameters: group="${customGroup}" (${typeof customGroup}), version="${customVersion}" (${typeof customVersion}), namespace="${resourceNamespace}" (${typeof resourceNamespace}), plural="${customPlural}" (${typeof customPlural})`);
 
-        // Ensure we're calling the method correctly by binding context
-        const createMethod = api.createNamespacedCustomObject.bind(api);
-        await createMethod(
+        // Log available methods on the api object
+        const availableMethods = Object.getOwnPropertyNames(Object.getPrototypeOf(api)).filter(m => m.includes("createNamespaced") || m.includes("patchNamespaced"));
+        console.log(`[DEPLOY] Available create/patch methods: ${availableMethods.join(", ")}`);
+
+        // Check if the method exists
+        if (typeof api.createNamespacedCustomObject !== 'function') {
+          throw new Error(`createNamespacedCustomObject is not a function on ${api.constructor.name}`);
+        }
+
+        // Call with explicit parameter names using object binding
+        await api.createNamespacedCustomObject(
           customGroup,
           customVersion,
           resourceNamespace,
@@ -424,8 +432,11 @@ async function applyResource(
           // Already exists, try to patch
           console.log(`[DEPLOY] ${kind}/${name} already exists, patching...`);
           try {
-            const patchMethod = api.patchNamespacedCustomObject.bind(api);
-            await patchMethod(
+            if (typeof api.patchNamespacedCustomObject !== 'function') {
+              throw new Error(`patchNamespacedCustomObject is not a function on ${api.constructor.name}`);
+            }
+
+            await api.patchNamespacedCustomObject(
               customGroup,
               customVersion,
               resourceNamespace,
