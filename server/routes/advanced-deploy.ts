@@ -330,10 +330,25 @@ async function applyResource(
     }
 
     const server = cluster.server;
-    const user = kubeConfig.getCurrentUser();
-    
-    // Get the auth handler
-    const auth = kubeConfig.getAuthenticationHandler(user);
+
+    // Get the auth token - either from kubeConfig or from service account
+    let token: string | null = null;
+    try {
+      const tokenPath = "/var/run/secrets/kubernetes.io/serviceaccount/token";
+      token = await fs.readFile(tokenPath, "utf-8");
+      console.log("[DEPLOY] Using in-cluster service account token");
+    } catch {
+      // Try to get token from kubeConfig
+      const user = kubeConfig.getCurrentUser();
+      if (user && user.token) {
+        token = user.token;
+        console.log("[DEPLOY] Using kubeConfig token");
+      }
+    }
+
+    if (!token) {
+      throw new Error("No authentication token available");
+    }
 
     // Construct API path
     const apiPath = buildApiPath(kind, apiVersion, resourceNamespace, name);
@@ -344,7 +359,7 @@ async function applyResource(
       server,
       apiPath,
       resource,
-      auth,
+      token,
       "PUT"
     );
 
