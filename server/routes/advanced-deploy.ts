@@ -294,14 +294,13 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
   }
 };
 
-// Helper function to apply a Kubernetes resource
+// Helper function to apply a Kubernetes resource using kubectl
 async function applyResource(
   kubeConfig: k8s.KubeConfig,
   resource: any,
   namespace: string,
 ): Promise<void> {
   const kind = resource.kind;
-  const apiVersion = resource.apiVersion || "v1";
 
   // Ensure metadata exists
   if (!resource.metadata) {
@@ -324,232 +323,26 @@ async function applyResource(
   console.log(`[DEPLOY] Applying ${kind}/${name} in namespace ${resourceNamespace}`);
 
   try {
-    // Handle standard API resources FIRST (before custom resources check)
-    let api: any;
-    let isCustomResource = false;
+    // Convert the resource to YAML
+    const resourceYaml = yaml.dump(resource);
+    console.log(`[DEPLOY] Resource YAML:\n${resourceYaml}`);
 
-    console.log(`[DEPLOY] Determining API client for apiVersion="${apiVersion}"`);
+    // Use kubectl apply to apply the resource
+    console.log(`[DEPLOY] Executing: kubectl apply -f -`);
+    const result = execSync("kubectl apply -f -", {
+      input: resourceYaml,
+      encoding: "utf-8",
+      stdio: ["pipe", "pipe", "pipe"],
+    });
 
-    if (apiVersion.startsWith("apps/")) {
-      api = kubeConfig.makeApiClient(k8s.AppsV1Api);
-      console.log(`[DEPLOY] Using AppsV1Api`);
-    } else if (apiVersion.startsWith("batch/")) {
-      api = kubeConfig.makeApiClient(k8s.BatchV1Api);
-      console.log(`[DEPLOY] Using BatchV1Api`);
-    } else if (apiVersion.startsWith("networking.k8s.io/")) {
-      api = kubeConfig.makeApiClient(k8s.NetworkingV1Api);
-      console.log(`[DEPLOY] Using NetworkingV1Api`);
-    } else if (apiVersion.startsWith("autoscaling/")) {
-      api = kubeConfig.makeApiClient(k8s.AutoscalingV2Api);
-      console.log(`[DEPLOY] Using AutoscalingV2Api`);
-    } else if (apiVersion.startsWith("rbac.authorization.k8s.io/")) {
-      api = kubeConfig.makeApiClient(k8s.RbacAuthorizationV1Api);
-      console.log(`[DEPLOY] Using RbacAuthorizationV1Api`);
-    } else if (apiVersion.includes(".") && !apiVersion.startsWith("v1")) {
-      // Custom resources (HTTPRoute, Certificate, Schedule, etc)
-      console.log(`[DEPLOY] Detected custom resource (includes dot, not v1)`);
-      try {
-        api = kubeConfig.makeApiClient(k8s.CustomObjectsApi);
-        console.log(`[DEPLOY] Successfully created CustomObjectsApi instance`);
-        console.log(`[DEPLOY] CustomObjectsApi constructor: ${api.constructor.name}`);
-        console.log(`[DEPLOY] CustomObjectsApi has createNamespacedCustomObject: ${typeof api.createNamespacedCustomObject === 'function'}`);
-      } catch (e) {
-        console.error(`[DEPLOY] Failed to create CustomObjectsApi:`, e);
-        throw e;
-      }
-      isCustomResource = true;
-      console.log(`[DEPLOY] Using CustomObjectsApi`);
-    } else {
-      api = kubeConfig.makeApiClient(k8s.CoreV1Api);
-      console.log(`[DEPLOY] Using CoreV1Api`);
-    }
-
-    if (!api) {
-      throw new Error(`Failed to create API client for apiVersion="${apiVersion}"`);
-    }
-    console.log(`[DEPLOY] API client created successfully`);
-    console.log(`[DEPLOY] API client type: ${api.constructor.name}`);
-    console.log(`[DEPLOY] API client methods: ${Object.getOwnPropertyNames(Object.getPrototypeOf(api)).slice(0, 10).join(", ")}...`);
-
-    // Handle custom resources separately
-    if (isCustomResource) {
-      // Parse API version: "group/version"
-      const versionParts = apiVersion.split("/");
-      const customGroup = versionParts[0];
-      const customVersion = versionParts[1] || "v1";
-
-      // Convert kind to plural form - handle special cases
-      let customPlural = kind.toLowerCase();
-      if (!customPlural.endsWith("s")) {
-        customPlural += "s";
-      }
-      // Handle special pluralization
-      if (kind === "Schedule") {
-        customPlural = "schedules";
-      } else if (kind === "Certificate") {
-        customPlural = "certificates";
-      } else if (kind === "HTTPRoute") {
-        customPlural = "httproutes";
-      }
-
-      // Validate all parameters separately
-      console.log(`[DEPLOY] Validating custom resource parameters...`);
-
-      if (!customGroup || customGroup === undefined || customGroup === null) {
-        throw new Error(`Invalid group: group is ${customGroup}`);
-      }
-      if (typeof customGroup !== "string") {
-        throw new Error(`Invalid group type: expected string, got ${typeof customGroup}`);
-      }
-      console.log(`[DEPLOY] ✓ group validated: "${customGroup}"`);
-
-      if (!customVersion || customVersion === undefined || customVersion === null) {
-        throw new Error(`Invalid version: version is ${customVersion}`);
-      }
-      if (typeof customVersion !== "string") {
-        throw new Error(`Invalid version type: expected string, got ${typeof customVersion}`);
-      }
-      console.log(`[DEPLOY] ✓ version validated: "${customVersion}"`);
-
-      if (!resourceNamespace || resourceNamespace === undefined || resourceNamespace === null) {
-        throw new Error(`Invalid namespace: namespace is ${resourceNamespace}`);
-      }
-      if (typeof resourceNamespace !== "string") {
-        throw new Error(`Invalid namespace type: expected string, got ${typeof resourceNamespace}`);
-      }
-      console.log(`[DEPLOY] ✓ namespace validated: "${resourceNamespace}"`);
-
-      if (!customPlural || customPlural === undefined || customPlural === null) {
-        throw new Error(`Invalid plural: plural is ${customPlural}`);
-      }
-      if (typeof customPlural !== "string") {
-        throw new Error(`Invalid plural type: expected string, got ${typeof customPlural}`);
-      }
-      console.log(`[DEPLOY] ✓ plural validated: "${customPlural}"`);
-
-      if (!resource || resource === undefined || resource === null) {
-        throw new Error(`Invalid resource: resource is ${resource}`);
-      }
-      if (typeof resource !== "object") {
-        throw new Error(`Invalid resource type: expected object, got ${typeof resource}`);
-      }
-      console.log(`[DEPLOY] ✓ resource body validated`);
-
-      console.log(`[DEPLOY] Custom resource: group=${customGroup}, version=${customVersion}, plural=${customPlural}`);
-      console.log(`[DEPLOY] API instance type: ${api?.constructor?.name}`);
-      console.log(`[DEPLOY] Has createNamespacedCustomObject: ${typeof api?.createNamespacedCustomObject}`);
-
-      try {
-        // Try to create the custom resource
-        console.log(`[DEPLOY] Creating custom resource ${kind}/${name}`);
-        console.log(`[DEPLOY] Parameters: group="${customGroup}" (${typeof customGroup}), version="${customVersion}" (${typeof customVersion}), namespace="${resourceNamespace}" (${typeof resourceNamespace}), plural="${customPlural}" (${typeof customPlural})`);
-
-        // Log available methods on the api object
-        const availableMethods = Object.getOwnPropertyNames(Object.getPrototypeOf(api)).filter(m => m.includes("createNamespaced") || m.includes("patchNamespaced"));
-        console.log(`[DEPLOY] Available create/patch methods: ${availableMethods.join(", ")}`);
-
-        // Check if the method exists
-        if (typeof api.createNamespacedCustomObject !== 'function') {
-          throw new Error(`createNamespacedCustomObject is not a function on ${api.constructor.name}`);
-        }
-
-        // Pre-validate all parameters before calling
-        const params = [customGroup, customVersion, resourceNamespace, customPlural, resource];
-        console.log(`[DEPLOY] About to call createNamespacedCustomObject with params:`, params.map((p, i) => `${i}: ${typeof p} = ${p === null ? 'NULL' : p === undefined ? 'UNDEFINED' : typeof p === 'object' ? '[object]' : String(p).substring(0, 50)}`));
-
-        // Call with explicit context binding to ensure 'this' is correct
-        const createMethod = api.createNamespacedCustomObject;
-        console.log(`[DEPLOY] Method type: ${typeof createMethod}, is bound: ${createMethod.name}`);
-
-        const result = await createMethod.call(
-          api,
-          customGroup,
-          customVersion,
-          resourceNamespace,
-          customPlural,
-          resource,
-        );
-        console.log(`[DEPLOY] ✓ Created ${kind}/${name}`);
-      } catch (createError: any) {
-        console.error(`[DEPLOY] Create failed with error:`, createError.message);
-        console.error(`[DEPLOY] Error status code:`, createError.statusCode);
-        console.error(`[DEPLOY] Error body:`, createError.body);
-
-        if (createError.statusCode === 409) {
-          // Already exists, try to patch
-          console.log(`[DEPLOY] ${kind}/${name} already exists, patching...`);
-          try {
-            if (typeof api.patchNamespacedCustomObject !== 'function') {
-              throw new Error(`patchNamespacedCustomObject is not a function on ${api.constructor.name}`);
-            }
-
-            console.log(`[DEPLOY] About to patch with parameters: group="${customGroup}", version="${customVersion}", namespace="${resourceNamespace}", plural="${customPlural}", name="${name}"`);
-
-            const patchMethod = api.patchNamespacedCustomObject;
-            await patchMethod.call(
-              api,
-              customGroup,
-              customVersion,
-              resourceNamespace,
-              customPlural,
-              name,
-              resource,
-            );
-            console.log(`[DEPLOY] ✓ Patched ${kind}/${name}`);
-          } catch (patchError: any) {
-            console.error(`[DEPLOY] Patch failed: ${patchError.message}`);
-            throw patchError;
-          }
-        } else {
-          throw createError;
-        }
-      }
-      return;
-    }
-
-    // Directly create the resource (simpler approach - just try to create)
-    if (kind === "Namespace") {
-      console.log(`[DEPLOY] Creating namespace: ${name}`);
-      try {
-        await api.createNamespace(resource);
-        console.log(`[DEPLOY] ✓ Created ${kind}/${name}`);
-      } catch (createError: any) {
-        if (createError.statusCode === 409) {
-          // Already exists
-          console.log(`[DEPLOY] ✓ ${kind}/${name} already exists`);
-        } else {
-          throw createError;
-        }
-      }
-    } else {
-      // For namespaced resources, use createNamespaced${kind} method
-      const createNamespacedMethod = `createNamespaced${kind}`;
-      if (typeof api[createNamespacedMethod] === "function") {
-        console.log(`[DEPLOY] Creating ${kind}/${name} in namespace ${resourceNamespace}`);
-        try {
-          await api[createNamespacedMethod](resourceNamespace, resource);
-          console.log(`[DEPLOY] ✓ Created ${kind}/${name}`);
-        } catch (createError: any) {
-          if (createError.statusCode === 409) {
-            // Already exists, try to patch
-            console.log(`[DEPLOY] ${kind}/${name} already exists, patching...`);
-            const patchNamespacedMethod = `patchNamespaced${kind}`;
-            if (typeof api[patchNamespacedMethod] === "function") {
-              await api[patchNamespacedMethod](name, resourceNamespace, resource);
-              console.log(`[DEPLOY] ✓ Patched ${kind}/${name}`);
-            }
-          } else {
-            throw createError;
-          }
-        }
-      } else {
-        console.error(`[DEPLOY] Method ${createNamespacedMethod} not found for ${kind}`);
-      }
-    }
+    console.log(`[DEPLOY] ✓ Applied ${kind}/${name}`);
+    console.log(`[DEPLOY] Output: ${result}`);
   } catch (error: any) {
-    console.error(`[DEPLOY] Error applying ${kind}/${name}:`, error.message || error);
+    console.error(`[DEPLOY] Error applying ${kind}/${name}:`, error.message);
+    console.error(`[DEPLOY] Stderr:`, error.stderr?.toString() || "");
+    console.error(`[DEPLOY] Stdout:`, error.stdout?.toString() || "");
     throw new Error(
-      `${kind} operation failed: ${error.body?.message || error.message || error.statusCode}`,
+      `${kind} operation failed: ${error.message}`,
     );
   }
 }
