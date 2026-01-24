@@ -373,9 +373,9 @@ async function applyResource(
     // Handle custom resources separately
     if (isCustomResource) {
       // Parse API version: "group/version"
-      const parts = apiVersion.split("/");
-      const customGroup = parts[0];
-      const customVersion = parts[1] || "v1";
+      const versionParts = apiVersion.split("/");
+      const customGroup = versionParts[0];
+      const customVersion = versionParts[1] || "v1";
 
       // Convert kind to plural form - handle special cases
       let customPlural = kind.toLowerCase();
@@ -391,22 +391,48 @@ async function applyResource(
         customPlural = "httproutes";
       }
 
-      // Validate all parameters
-      if (!customGroup || typeof customGroup !== "string") {
-        throw new Error(`Invalid group: "${customGroup}" (type: ${typeof customGroup})`);
+      // Validate all parameters separately
+      console.log(`[DEPLOY] Validating custom resource parameters...`);
+
+      if (!customGroup || customGroup === undefined || customGroup === null) {
+        throw new Error(`Invalid group: group is ${customGroup}`);
       }
-      if (!customVersion || typeof customVersion !== "string") {
-        throw new Error(`Invalid version: "${customVersion}" (type: ${typeof customVersion})`);
+      if (typeof customGroup !== "string") {
+        throw new Error(`Invalid group type: expected string, got ${typeof customGroup}`);
       }
-      if (!resourceNamespace || typeof resourceNamespace !== "string") {
-        throw new Error(`Invalid namespace: "${resourceNamespace}" (type: ${typeof resourceNamespace})`);
+      console.log(`[DEPLOY] ✓ group validated: "${customGroup}"`);
+
+      if (!customVersion || customVersion === undefined || customVersion === null) {
+        throw new Error(`Invalid version: version is ${customVersion}`);
       }
-      if (!customPlural || typeof customPlural !== "string") {
-        throw new Error(`Invalid plural: "${customPlural}" (type: ${typeof customPlural})`);
+      if (typeof customVersion !== "string") {
+        throw new Error(`Invalid version type: expected string, got ${typeof customVersion}`);
       }
-      if (!resource || typeof resource !== "object") {
-        throw new Error(`Invalid resource body (type: ${typeof resource})`);
+      console.log(`[DEPLOY] ✓ version validated: "${customVersion}"`);
+
+      if (!resourceNamespace || resourceNamespace === undefined || resourceNamespace === null) {
+        throw new Error(`Invalid namespace: namespace is ${resourceNamespace}`);
       }
+      if (typeof resourceNamespace !== "string") {
+        throw new Error(`Invalid namespace type: expected string, got ${typeof resourceNamespace}`);
+      }
+      console.log(`[DEPLOY] ✓ namespace validated: "${resourceNamespace}"`);
+
+      if (!customPlural || customPlural === undefined || customPlural === null) {
+        throw new Error(`Invalid plural: plural is ${customPlural}`);
+      }
+      if (typeof customPlural !== "string") {
+        throw new Error(`Invalid plural type: expected string, got ${typeof customPlural}`);
+      }
+      console.log(`[DEPLOY] ✓ plural validated: "${customPlural}"`);
+
+      if (!resource || resource === undefined || resource === null) {
+        throw new Error(`Invalid resource: resource is ${resource}`);
+      }
+      if (typeof resource !== "object") {
+        throw new Error(`Invalid resource type: expected object, got ${typeof resource}`);
+      }
+      console.log(`[DEPLOY] ✓ resource body validated`);
 
       console.log(`[DEPLOY] Custom resource: group=${customGroup}, version=${customVersion}, plural=${customPlural}`);
       console.log(`[DEPLOY] API instance type: ${api?.constructor?.name}`);
