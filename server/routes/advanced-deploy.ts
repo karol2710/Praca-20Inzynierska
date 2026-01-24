@@ -407,7 +407,9 @@ async function applyResource(
         console.log(`[DEPLOY] Creating custom resource ${kind}/${name}`);
         console.log(`[DEPLOY] Parameters: group="${customGroup}" (${typeof customGroup}), version="${customVersion}" (${typeof customVersion}), namespace="${resourceNamespace}" (${typeof resourceNamespace}), plural="${customPlural}" (${typeof customPlural})`);
 
-        const result = await api.createNamespacedCustomObject(
+        // Ensure we're calling the method correctly by binding context
+        const createMethod = api.createNamespacedCustomObject.bind(api);
+        await createMethod(
           customGroup,
           customVersion,
           resourceNamespace,
@@ -420,7 +422,8 @@ async function applyResource(
           // Already exists, try to patch
           console.log(`[DEPLOY] ${kind}/${name} already exists, patching...`);
           try {
-            await api.patchNamespacedCustomObject(
+            const patchMethod = api.patchNamespacedCustomObject.bind(api);
+            await patchMethod(
               customGroup,
               customVersion,
               resourceNamespace,
