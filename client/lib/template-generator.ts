@@ -83,6 +83,71 @@ export function generateTemplates(
 
   result.workloadPortMappings = workloadPortMappings;
 
+  // Generate Workload YAML (Pods, Deployments, etc.)
+  workloads.forEach((workload) => {
+    const workloadConfig = workload.config || {};
+    const containers = workload.containers || [];
+
+    // Transform config based on workload type
+    const transformedConfig = transformWorkloadConfig(workload.type, workloadConfig);
+
+    let workloadYaml = "";
+    switch (workload.type) {
+      case "Pod":
+        workloadYaml = generatePodYAML(
+          workload.name,
+          transformedConfig,
+          containers,
+          globalConfig.namespace,
+        );
+        break;
+      case "Deployment":
+        workloadYaml = generateDeploymentYAML(
+          workload.name,
+          transformedConfig,
+          containers,
+          globalConfig.namespace,
+        );
+        break;
+      case "ReplicaSet":
+        workloadYaml = generateReplicaSetYAML(
+          workload.name,
+          transformedConfig,
+          containers,
+          globalConfig.namespace,
+        );
+        break;
+      case "StatefulSet":
+        workloadYaml = generateStatefulSetYAML(
+          workload.name,
+          transformedConfig,
+          containers,
+          globalConfig.namespace,
+        );
+        break;
+      case "Job":
+        workloadYaml = generateJobYAML(
+          workload.name,
+          transformedConfig,
+          containers,
+          globalConfig.namespace,
+        );
+        break;
+      case "CronJob":
+        workloadYaml = generateCronJobYAML(
+          workload.name,
+          transformedConfig,
+          containers,
+          globalConfig.namespace,
+        );
+        break;
+    }
+
+    if (workloadYaml) {
+      result.workloads.push(workloadYaml);
+    }
+  });
+
   // Generate ClusterIP services
   if (createClusterIP) {
     workloads.forEach((workload) => {
