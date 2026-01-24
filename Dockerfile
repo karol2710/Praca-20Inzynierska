@@ -19,7 +19,7 @@ COPY . .
 RUN ls -la vite.config.ts tsconfig.json || echo "Config files missing!"
 
 # Clear Vite cache and build application
-RUN rm -rf .vite node_modules/.vite && pnpm run build
+RUN rm -rf .vite node_modules/.vite && npm run build
 
 # Production stage
 FROM node:22-alpine
