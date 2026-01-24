@@ -323,10 +323,30 @@ async function applyResource(
   console.log(`[DEPLOY] Applying ${kind}/${name} in namespace ${resourceNamespace}`);
 
   try {
-    // Handle custom resources (non-standard API groups)
-    if (apiVersion.includes(".") && !apiVersion.startsWith("v1")) {
-      const api = kubeConfig.makeApiClient(k8s.CustomObjectsApi);
+    // Handle standard API resources FIRST (before custom resources check)
+    let api: any;
+    let isCustomResource = false;
 
+    if (apiVersion.startsWith("apps/")) {
+      api = kubeConfig.makeApiClient(k8s.AppsV1Api);
+    } else if (apiVersion.startsWith("batch/")) {
+      api = kubeConfig.makeApiClient(k8s.BatchV1Api);
+    } else if (apiVersion.startsWith("networking.k8s.io/")) {
+      api = kubeConfig.makeApiClient(k8s.NetworkingV1Api);
+    } else if (apiVersion.startsWith("autoscaling/")) {
+      api = kubeConfig.makeApiClient(k8s.AutoscalingV2Api);
+    } else if (apiVersion.startsWith("rbac.authorization.k8s.io/")) {
+      api = kubeConfig.makeApiClient(k8s.RbacAuthorizationV1Api);
+    } else if (apiVersion.includes(".") && !apiVersion.startsWith("v1")) {
+      // Custom resources (HTTPRoute, Certificate, Schedule, etc)
+      api = kubeConfig.makeApiClient(k8s.CustomObjectsApi);
+      isCustomResource = true;
+    } else {
+      api = kubeConfig.makeApiClient(k8s.CoreV1Api);
+    }
+
+    // Handle custom resources separately
+    if (isCustomResource) {
       // Parse API version: "group/version"
       const parts = apiVersion.split("/");
       const group = parts[0];
@@ -371,23 +391,6 @@ async function applyResource(
         }
       }
       return;
-    }
-
-    // Handle standard API resources
-    let api: any;
-
-    if (apiVersion.startsWith("apps/")) {
-      api = kubeConfig.makeApiClient(k8s.AppsV1Api);
-    } else if (apiVersion.startsWith("batch/")) {
-      api = kubeConfig.makeApiClient(k8s.BatchV1Api);
-    } else if (apiVersion.startsWith("networking.k8s.io/")) {
-      api = kubeConfig.makeApiClient(k8s.NetworkingV1Api);
-    } else if (apiVersion.startsWith("autoscaling/")) {
-      api = kubeConfig.makeApiClient(k8s.AutoscalingV2Api);
-    } else if (apiVersion.startsWith("rbac.authorization.k8s.io/")) {
-      api = kubeConfig.makeApiClient(k8s.RbacAuthorizationV1Api);
-    } else {
-      api = kubeConfig.makeApiClient(k8s.CoreV1Api);
     }
 
     // Try to read the existing resource
