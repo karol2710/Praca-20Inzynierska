@@ -26,8 +26,9 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-# Install curl for health checks only
+# Install curl for health checks and kubectl for deployments
 RUN apk add --no-cache curl
+RUN apk add --no-cache kubectl
 
 # Copy everything from builder including node_modules
 COPY --from=builder /app/package.json /app/pnpm-lock.yaml ./
