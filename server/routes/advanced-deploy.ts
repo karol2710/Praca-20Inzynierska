@@ -6,7 +6,6 @@ import * as fsSync from "fs";
 import * as path from "path";
 import * as k8s from "@kubernetes/client-node";
 import * as yaml from "js-yaml";
-import { execSync } from "child_process";
 
 interface AdvancedDeployRequest {
   workloads: any[];
