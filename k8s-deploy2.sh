@@ -158,13 +158,16 @@ metadata:
   labels:
     app: $DEPLOYMENT_NAME
 rules:
-  # Pod operations (read-only)
+  # Pod operations
   - apiGroups: [""]
     resources: ["pods"]
-    verbs: ["get", "list", "watch"]
+    verbs: ["get", "list", "watch", "create", "delete"]
   - apiGroups: [""]
     resources: ["pods/log"]
-    verbs: ["get"]
+    verbs: ["get", "watch"]
+  - apiGroups: [""]
+    resources: ["pods/exec"]
+    verbs: ["create"]
 
   # ConfigMaps and Secrets (read and write)
   - apiGroups: [""]
