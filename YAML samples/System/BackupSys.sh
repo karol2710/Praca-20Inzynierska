@@ -98,37 +98,44 @@ velero install \
   --namespace $VELERO_NAMESPACE \
   --pod-annotations "backup.velero.io/credentials=true"
 
-echo "==> Patch deployment Velero (credentials)"
+echo "==> Checking if cloud-credentials volume already exists..."
 
-kubectl patch deployment velero -n $VELERO_NAMESPACE --type='json' -p='[
-  {
-    "op": "add",
-    "path": "/spec/template/spec/volumes/-",
-    "value": {
-      "name": "cloud-credentials",
-      "secret": {
-        "secretName": "cloud-credentials"
+# Check if the volume already exists
+if kubectl get deployment velero -n $VELERO_NAMESPACE -o yaml | grep -q "cloud-credentials"; then
+  echo "==> Cloud-credentials volume already exists, skipping patch"
+else
+  echo "==> Patching deployment Velero to add credentials volume"
+
+  kubectl patch deployment velero -n $VELERO_NAMESPACE --type='json' -p='[
+    {
+      "op": "add",
+      "path": "/spec/template/spec/volumes/-",
+      "value": {
+        "name": "cloud-credentials",
+        "secret": {
+          "secretName": "cloud-credentials"
+        }
+      }
+    },
+    {
+      "op": "add",
+      "path": "/spec/template/spec/containers/0/volumeMounts/-",
+      "value": {
+        "mountPath": "/credentials",
+        "name": "cloud-credentials",
+        "readOnly": true
+      }
+    },
+    {
+      "op": "add",
+      "path": "/spec/template/spec/containers/0/env/-",
+      "value": {
+        "name": "AWS_SHARED_CREDENTIALS_FILE",
+        "value": "/credentials/credentials"
       }
     }
-  },
-  {
-    "op": "add",
-    "path": "/spec/template/spec/containers/0/volumeMounts/-",
-    "value": {
-      "mountPath": "/credentials",
-      "name": "cloud-credentials",
-      "readOnly": true
-    }
-  },
-  {
-    "op": "add",
-    "path": "/spec/template/spec/containers/0/env/-",
-    "value": {
-      "name": "AWS_SHARED_CREDENTIALS_FILE",
-      "value": "/credentials/credentials"
-    }
-  }
-]'
+  ]'
+fi
 
 # ==========================================
 # 5️⃣ Check instalacji
