@@ -293,13 +293,14 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
   }
 };
 
-// Helper function to apply a Kubernetes resource using kubectl
+// Helper function to apply a Kubernetes resource
 async function applyResource(
   kubeConfig: k8s.KubeConfig,
   resource: any,
   namespace: string,
 ): Promise<void> {
   const kind = resource.kind;
+  const apiVersion = resource.apiVersion || "v1";
 
   // Ensure metadata exists
   if (!resource.metadata) {
@@ -322,26 +323,149 @@ async function applyResource(
   console.log(`[DEPLOY] Applying ${kind}/${name} in namespace ${resourceNamespace}`);
 
   try {
-    // Convert the resource to YAML
-    const resourceYaml = yaml.dump(resource);
-    console.log(`[DEPLOY] Resource YAML:\n${resourceYaml}`);
+    // Handle each resource type explicitly
+    if (kind === "Namespace") {
+      const api = kubeConfig.makeApiClient(k8s.CoreV1Api);
+      try {
+        await api.createNamespace(resource);
+        console.log(`[DEPLOY] ✓ Created Namespace/${name}`);
+      } catch (e: any) {
+        if (e.statusCode === 409) {
+          // Already exists, try patch
+          try {
+            await api.patchNamespace(name, resource);
+            console.log(`[DEPLOY] ✓ Patched Namespace/${name}`);
+          } catch (patchErr) {
+            console.log(`[DEPLOY] ✓ Namespace/${name} already exists (patch not needed)`);
+          }
+        } else {
+          throw e;
+        }
+      }
+    } else if (apiVersion.startsWith("apps/")) {
+      const api = kubeConfig.makeApiClient(k8s.AppsV1Api);
+      const method = `createNamespaced${kind}` as keyof typeof api;
+      try {
+        await (api[method] as any)(resourceNamespace, resource);
+        console.log(`[DEPLOY] ✓ Created ${kind}/${name}`);
+      } catch (e: any) {
+        if (e.statusCode === 409) {
+          const patchMethod = `patchNamespaced${kind}` as keyof typeof api;
+          await (api[patchMethod] as any)(name, resourceNamespace, resource);
+          console.log(`[DEPLOY] ✓ Patched ${kind}/${name}`);
+        } else {
+          throw e;
+        }
+      }
+    } else if (apiVersion.startsWith("batch/")) {
+      const api = kubeConfig.makeApiClient(k8s.BatchV1Api);
+      const method = `createNamespaced${kind}` as keyof typeof api;
+      try {
+        await (api[method] as any)(resourceNamespace, resource);
+        console.log(`[DEPLOY] ✓ Created ${kind}/${name}`);
+      } catch (e: any) {
+        if (e.statusCode === 409) {
+          const patchMethod = `patchNamespaced${kind}` as keyof typeof api;
+          await (api[patchMethod] as any)(name, resourceNamespace, resource);
+          console.log(`[DEPLOY] ✓ Patched ${kind}/${name}`);
+        } else {
+          throw e;
+        }
+      }
+    } else if (apiVersion.startsWith("networking.k8s.io/")) {
+      const api = kubeConfig.makeApiClient(k8s.NetworkingV1Api);
+      const method = `createNamespaced${kind}` as keyof typeof api;
+      try {
+        await (api[method] as any)(resourceNamespace, resource);
+        console.log(`[DEPLOY] ✓ Created ${kind}/${name}`);
+      } catch (e: any) {
+        if (e.statusCode === 409) {
+          const patchMethod = `patchNamespaced${kind}` as keyof typeof api;
+          await (api[patchMethod] as any)(name, resourceNamespace, resource);
+          console.log(`[DEPLOY] ✓ Patched ${kind}/${name}`);
+        } else {
+          throw e;
+        }
+      }
+    } else if (apiVersion.startsWith("rbac.authorization.k8s.io/")) {
+      const api = kubeConfig.makeApiClient(k8s.RbacAuthorizationV1Api);
+      const method = `createNamespaced${kind}` as keyof typeof api;
+      try {
+        await (api[method] as any)(resourceNamespace, resource);
+        console.log(`[DEPLOY] ✓ Created ${kind}/${name}`);
+      } catch (e: any) {
+        if (e.statusCode === 409) {
+          const patchMethod = `patchNamespaced${kind}` as keyof typeof api;
+          await (api[patchMethod] as any)(name, resourceNamespace, resource);
+          console.log(`[DEPLOY] ✓ Patched ${kind}/${name}`);
+        } else {
+          throw e;
+        }
+      }
+    } else if (apiVersion.includes(".")) {
+      // Custom resources (Gateway API, Cert-Manager, Velero, etc.)
+      const api = kubeConfig.makeApiClient(k8s.CustomObjectsApi);
+      const [group, version] = apiVersion.includes("/")
+        ? apiVersion.split("/")
+        : [apiVersion, "v1"];
 
-    // Use kubectl apply to apply the resource
-    console.log(`[DEPLOY] Executing: kubectl apply -f -`);
-    const result = execSync("kubectl apply -f -", {
-      input: resourceYaml,
-      encoding: "utf-8",
-      stdio: ["pipe", "pipe", "pipe"],
-    });
+      // Determine plural form
+      const plural = kind.toLowerCase() + "s";
 
-    console.log(`[DEPLOY] ✓ Applied ${kind}/${name}`);
-    console.log(`[DEPLOY] Output: ${result}`);
+      console.log(`[DEPLOY] Custom resource - group: ${group}, version: ${version}, plural: ${plural}`);
+
+      try {
+        // Create the custom object
+        const createResult = await (api.createNamespacedCustomObject as any)(
+          group,
+          version,
+          resourceNamespace,
+          plural,
+          resource
+        );
+        console.log(`[DEPLOY] ✓ Created ${kind}/${name}`);
+      } catch (e: any) {
+        if (e.statusCode === 409) {
+          // Resource exists, patch it
+          try {
+            const patchResult = await (api.patchNamespacedCustomObject as any)(
+              group,
+              version,
+              resourceNamespace,
+              plural,
+              name,
+              resource
+            );
+            console.log(`[DEPLOY] ✓ Patched ${kind}/${name}`);
+          } catch (patchErr: any) {
+            console.error(`[DEPLOY] Patch failed:`, patchErr.message);
+            throw patchErr;
+          }
+        } else {
+          throw e;
+        }
+      }
+    } else {
+      // Core API (v1)
+      const api = kubeConfig.makeApiClient(k8s.CoreV1Api);
+      const method = `createNamespaced${kind}` as keyof typeof api;
+      try {
+        await (api[method] as any)(resourceNamespace, resource);
+        console.log(`[DEPLOY] ✓ Created ${kind}/${name}`);
+      } catch (e: any) {
+        if (e.statusCode === 409) {
+          const patchMethod = `patchNamespaced${kind}` as keyof typeof api;
+          await (api[patchMethod] as any)(name, resourceNamespace, resource);
+          console.log(`[DEPLOY] ✓ Patched ${kind}/${name}`);
+        } else {
+          throw e;
+        }
+      }
+    }
   } catch (error: any) {
-    console.error(`[DEPLOY] Error applying ${kind}/${name}:`, error.message);
-    console.error(`[DEPLOY] Stderr:`, error.stderr?.toString() || "");
-    console.error(`[DEPLOY] Stdout:`, error.stdout?.toString() || "");
+    console.error(`[DEPLOY] Error applying ${kind}/${name}:`, error.message || error);
     throw new Error(
-      `${kind} operation failed: ${error.message}`,
+      `${kind} operation failed: ${error.message || error.statusCode}`,
     );
   }
 }
