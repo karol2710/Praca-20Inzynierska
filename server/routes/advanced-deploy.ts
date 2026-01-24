@@ -347,7 +347,15 @@ async function applyResource(
     } else if (apiVersion.includes(".") && !apiVersion.startsWith("v1")) {
       // Custom resources (HTTPRoute, Certificate, Schedule, etc)
       console.log(`[DEPLOY] Detected custom resource (includes dot, not v1)`);
-      api = kubeConfig.makeApiClient(k8s.CustomObjectsApi);
+      try {
+        api = kubeConfig.makeApiClient(k8s.CustomObjectsApi);
+        console.log(`[DEPLOY] Successfully created CustomObjectsApi instance`);
+        console.log(`[DEPLOY] CustomObjectsApi constructor: ${api.constructor.name}`);
+        console.log(`[DEPLOY] CustomObjectsApi has createNamespacedCustomObject: ${typeof api.createNamespacedCustomObject === 'function'}`);
+      } catch (e) {
+        console.error(`[DEPLOY] Failed to create CustomObjectsApi:`, e);
+        throw e;
+      }
       isCustomResource = true;
       console.log(`[DEPLOY] Using CustomObjectsApi`);
     } else {
