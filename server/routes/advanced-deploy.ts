@@ -489,7 +489,7 @@ async function callKubernetesApi(
         if (status >= 200 && status < 300) {
           console.log(`[DEPLOY] REST API response: ${status}`);
           resolve();
-        } else if (status === 404) {
+        } else if (status === 404 && method === "PUT") {
           // Try POST if PUT returns 404
           console.log(`[DEPLOY] Resource not found (404), trying POST...`);
           createResource(server, apiPath, resource, token)
@@ -500,7 +500,8 @@ async function callKubernetesApi(
           console.log(`[DEPLOY] Resource already exists (409), treating as success`);
           resolve();
         } else {
-          reject(new Error(`API returned ${status}: ${data}`));
+          const error = tryParseJsonError(data);
+          reject(new Error(`API returned ${status}: ${error}`));
         }
       });
     });
@@ -509,6 +510,15 @@ async function callKubernetesApi(
     req.write(JSON.stringify(resource));
     req.end();
   });
+}
+
+function tryParseJsonError(data: string): string {
+  try {
+    const json = JSON.parse(data);
+    return json.message || JSON.stringify(json).substring(0, 200);
+  } catch {
+    return data.substring(0, 200);
+  }
 }
 
 async function createResource(
