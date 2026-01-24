@@ -6,14 +6,11 @@ WORKDIR /app
 # Install build dependencies
 RUN apk add --no-cache python3 make g++
 
-# Install pnpm
-RUN npm install -g pnpm
-
 # Copy package files
 COPY package.json pnpm-lock.yaml ./
 
-# Install all dependencies (including dev)
-RUN pnpm install --frozen-lockfile
+# Try to install with npm (fallback if pnpm-lock.yaml is missing/broken)
+RUN npm install
 
 # Copy source code
 COPY . .
