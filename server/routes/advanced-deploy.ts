@@ -57,9 +57,7 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
     output.push(
       `KUBERNETES_SERVICE_PORT: ${process.env.KUBERNETES_SERVICE_PORT || "not set"}\n`,
     );
-    output.push(
-      `NODE_ENV: ${process.env.NODE_ENV || "not set"}\n`,
-    );
+    output.push(`NODE_ENV: ${process.env.NODE_ENV || "not set"}\n`);
 
     // Initialize Kubernetes client
     let kc = new k8s.KubeConfig();
@@ -100,9 +98,7 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
         output.push(
           `✗ Failed to load in-cluster config: ${inClusterError.message}\n`,
         );
-        output.push(
-          `Stack: ${inClusterError.stack}\n`,
-        );
+        output.push(`Stack: ${inClusterError.stack}\n`);
         console.error("[DEPLOY] In-cluster config error:", inClusterError);
         return res.status(500).json({
           success: false,
@@ -134,9 +130,7 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
         !userData.rancher_api_token ||
         !userData.rancher_cluster_id
       ) {
-        output.push(
-          "✗ No Rancher credentials configured in user account\n",
-        );
+        output.push("✗ No Rancher credentials configured in user account\n");
         return res.status(400).json({
           success: false,
           output: output.join("\n"),
@@ -182,14 +176,17 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
         return res.status(500).json({
           success: false,
           output: output.join("\n"),
-          error: "Failed to configure cluster connection with Rancher credentials",
+          error:
+            "Failed to configure cluster connection with Rancher credentials",
         } as AdvancedDeployResponse);
       }
     }
 
     // Create namespace if it doesn't exist - let it be created via YAML instead
     // The namespace will be in the _fullYaml, so we'll let applyResource handle it
-    output.push(`ℹ Namespace '${namespace}' will be created via YAML deployment\n`);
+    output.push(
+      `ℹ Namespace '${namespace}' will be created via YAML deployment\n`,
+    );
 
     // Parse and apply YAML documents
     if (_fullYaml) {
@@ -220,7 +217,9 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
           const resourceName = doc.metadata?.name || "unknown";
           const resourceNamespace = doc.metadata?.namespace || namespace;
 
-          console.log(`[DEPLOY] Parsed YAML document ${i + 1}: kind=${resourceKind}, name=${resourceName}, ns=${resourceNamespace}, apiVersion=${doc.apiVersion}`);
+          console.log(
+            `[DEPLOY] Parsed YAML document ${i + 1}: kind=${resourceKind}, name=${resourceName}, ns=${resourceNamespace}, apiVersion=${doc.apiVersion}`,
+          );
 
           // Apply namespace if not specified
           if (!doc.metadata?.namespace && resourceKind !== "Namespace") {
@@ -248,9 +247,7 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
         }
       }
 
-      output.push(
-        `\n=== Deployment Summary ===\n`,
-      );
+      output.push(`\n=== Deployment Summary ===\n`);
       output.push(`✓ Successfully applied: ${successCount} resources\n`);
       if (errorCount > 0) {
         output.push(`✗ Failed to apply: ${errorCount} resources\n`);
@@ -320,7 +317,9 @@ async function applyResource(
     resource.metadata.namespace = namespace;
   }
 
-  console.log(`[DEPLOY] Applying ${kind}/${name} in namespace ${resourceNamespace}`);
+  console.log(
+    `[DEPLOY] Applying ${kind}/${name} in namespace ${resourceNamespace}`,
+  );
 
   try {
     // Handle standard API resources FIRST (before custom resources check)
@@ -355,7 +354,9 @@ async function applyResource(
       // Convert kind to plural form
       const plural = kind.toLowerCase() + "s";
 
-      console.log(`[DEPLOY] Custom resource: group=${group}, version=${version}, plural=${plural}`);
+      console.log(
+        `[DEPLOY] Custom resource: group=${group}, version=${version}, plural=${plural}`,
+      );
 
       try {
         await api.getNamespacedCustomObject(
@@ -443,7 +444,10 @@ async function applyResource(
       console.log(`[DEPLOY] ✓ Created ${kind}/${name}`);
     }
   } catch (error: any) {
-    console.error(`[DEPLOY] Error applying ${kind}/${name}:`, error.message || error);
+    console.error(
+      `[DEPLOY] Error applying ${kind}/${name}:`,
+      error.message || error,
+    );
     throw new Error(
       `${kind} operation failed: ${error.body?.message || error.message || error.statusCode}`,
     );
