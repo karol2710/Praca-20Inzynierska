@@ -187,31 +187,9 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
       }
     }
 
-    // Create namespace if it doesn't exist
-    try {
-      const k8sApi = kubeConfig.makeApiClient(k8s.CoreV1Api);
-      const namespaceObj: k8s.V1Namespace = {
-        apiVersion: "v1",
-        kind: "Namespace",
-        metadata: {
-          name: namespace,
-        },
-      };
-
-      try {
-        await k8sApi.readNamespace(namespace);
-        output.push(`✓ Namespace '${namespace}' already exists\n`);
-      } catch (nsError: any) {
-        if (nsError.statusCode === 404) {
-          await k8sApi.createNamespace(namespaceObj);
-          output.push(`✓ Created namespace '${namespace}'\n`);
-        } else {
-          throw nsError;
-        }
-      }
-    } catch (nsError: any) {
-      output.push(`⚠ Warning creating namespace: ${nsError.message}\n`);
-    }
+    // Create namespace if it doesn't exist - let it be created via YAML instead
+    // The namespace will be in the _fullYaml, so we'll let applyResource handle it
+    output.push(`ℹ Namespace '${namespace}' will be created via YAML deployment\n`);
 
     // Parse and apply YAML documents
     if (_fullYaml) {
