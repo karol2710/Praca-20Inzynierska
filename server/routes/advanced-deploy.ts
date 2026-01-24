@@ -455,75 +455,16 @@ function getPluralForm(kind: string): string {
   return pluralMap[kind] || kind.toLowerCase() + "s";
 }
 
-async function callKubernetesApi(
-  server: string,
-  apiPath: string,
-  resource: any,
-  token: string,
-  method: string = "PUT"
-): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const url = new URL(server + apiPath);
-    const options: https.RequestOptions = {
-      method,
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      rejectUnauthorized: false,
-    };
-
-    const req = https.request(url, options, (res) => {
-      let data = "";
-      res.on("data", (chunk) => {
-        data += chunk;
-      });
-      res.on("end", () => {
-        const status = res.statusCode || 0;
-        if (status >= 200 && status < 300) {
-          console.log(`[DEPLOY] REST API response: ${status}`);
-          resolve();
-        } else if (status === 404 && method === "PUT") {
-          // Try POST if PUT returns 404
-          console.log(`[DEPLOY] Resource not found (404), trying POST...`);
-          createResource(server, apiPath, resource, token)
-            .then(resolve)
-            .catch(reject);
-        } else if (status === 409) {
-          // Conflict - already exists, treat as success
-          console.log(`[DEPLOY] Resource already exists (409), treating as success`);
-          resolve();
-        } else {
-          const error = tryParseJsonError(data);
-          reject(new Error(`API returned ${status}: ${error}`));
-        }
-      });
-    });
-
-    req.on("error", reject);
-    req.write(JSON.stringify(resource));
-    req.end();
-  });
-}
-
-function tryParseJsonError(data: string): string {
-  try {
-    const json = JSON.parse(data);
-    return json.message || JSON.stringify(json).substring(0, 200);
-  } catch {
-    return data.substring(0, 200);
-  }
-}
-
-async function createResource(
+async function createOrPatchResource(
   server: string,
   apiPath: string,
   resource: any,
   token: string
 ): Promise<void> {
+  // Remove name from path for POST
+  const createPath = apiPath.substring(0, apiPath.lastIndexOf("/"));
+
   return new Promise((resolve, reject) => {
-    // Remove resource name from path for POST
-    const createPath = apiPath.substring(0, apiPath.lastIndexOf("/"));
     const url = new URL(server + createPath);
     const options: https.RequestOptions = {
       method: "POST",
@@ -544,8 +485,15 @@ async function createResource(
         if (status >= 200 && status < 300) {
           console.log(`[DEPLOY] Create response: ${status}`);
           resolve();
+        } else if (status === 409) {
+          // Already exists, try PATCH
+          console.log(`[DEPLOY] Resource already exists (409), trying PATCH...`);
+          patchResource(server, apiPath, resource, token)
+            .then(resolve)
+            .catch(reject);
         } else {
-          reject(new Error(`Create failed with ${status}: ${data}`));
+          const error = tryParseJsonError(data);
+          reject(new Error(`Create failed with ${status}: ${error}`));
         }
       });
     });
@@ -554,4 +502,55 @@ async function createResource(
     req.write(JSON.stringify(resource));
     req.end();
   });
+}
+
+async function patchResource(
+  server: string,
+  apiPath: string,
+  resource: any,
+  token: string
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const url = new URL(server + apiPath);
+
+    // For PATCH, use JSON Merge Patch content type
+    const options: https.RequestOptions = {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/merge-patch+json",
+        Authorization: `Bearer ${token}`,
+      },
+      rejectUnauthorized: false,
+    };
+
+    const req = https.request(url, options, (res) => {
+      let data = "";
+      res.on("data", (chunk) => {
+        data += chunk;
+      });
+      res.on("end", () => {
+        const status = res.statusCode || 0;
+        if (status >= 200 && status < 300) {
+          console.log(`[DEPLOY] Patch response: ${status}`);
+          resolve();
+        } else {
+          const error = tryParseJsonError(data);
+          reject(new Error(`Patch failed with ${status}: ${error}`));
+        }
+      });
+    });
+
+    req.on("error", reject);
+    req.write(JSON.stringify(resource));
+    req.end();
+  });
+}
+
+function tryParseJsonError(data: string): string {
+  try {
+    const json = JSON.parse(data);
+    return json.message || JSON.stringify(json).substring(0, 200);
+  } catch {
+    return data.substring(0, 200);
+  }
 }
