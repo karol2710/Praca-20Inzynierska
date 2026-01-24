@@ -58,7 +58,9 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
     output.push(
       `KUBERNETES_SERVICE_PORT: ${process.env.KUBERNETES_SERVICE_PORT || "not set"}\n`,
     );
-    output.push(`NODE_ENV: ${process.env.NODE_ENV || "not set"}\n`);
+    output.push(
+      `NODE_ENV: ${process.env.NODE_ENV || "not set"}\n`,
+    );
 
     // Initialize Kubernetes client
     let kc = new k8s.KubeConfig();
@@ -99,7 +101,9 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
         output.push(
           `✗ Failed to load in-cluster config: ${inClusterError.message}\n`,
         );
-        output.push(`Stack: ${inClusterError.stack}\n`);
+        output.push(
+          `Stack: ${inClusterError.stack}\n`,
+        );
         console.error("[DEPLOY] In-cluster config error:", inClusterError);
         return res.status(500).json({
           success: false,
@@ -131,7 +135,9 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
         !userData.rancher_api_token ||
         !userData.rancher_cluster_id
       ) {
-        output.push("✗ No Rancher credentials configured in user account\n");
+        output.push(
+          "✗ No Rancher credentials configured in user account\n",
+        );
         return res.status(400).json({
           success: false,
           output: output.join("\n"),
@@ -177,17 +183,14 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
         return res.status(500).json({
           success: false,
           output: output.join("\n"),
-          error:
-            "Failed to configure cluster connection with Rancher credentials",
+          error: "Failed to configure cluster connection with Rancher credentials",
         } as AdvancedDeployResponse);
       }
     }
 
     // Create namespace if it doesn't exist - let it be created via YAML instead
     // The namespace will be in the _fullYaml, so we'll let applyResource handle it
-    output.push(
-      `ℹ Namespace '${namespace}' will be created via YAML deployment\n`,
-    );
+    output.push(`ℹ Namespace '${namespace}' will be created via YAML deployment\n`);
 
     // Parse and apply YAML documents
     if (_fullYaml) {
@@ -218,9 +221,7 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
           const resourceName = doc.metadata?.name || "unknown";
           const resourceNamespace = doc.metadata?.namespace || namespace;
 
-          console.log(
-            `[DEPLOY] Parsed YAML document ${i + 1}: kind=${resourceKind}, name=${resourceName}, ns=${resourceNamespace}, apiVersion=${doc.apiVersion}`,
-          );
+          console.log(`[DEPLOY] Parsed YAML document ${i + 1}: kind=${resourceKind}, name=${resourceName}, ns=${resourceNamespace}, apiVersion=${doc.apiVersion}`);
 
           // Apply namespace if not specified
           if (!doc.metadata?.namespace && resourceKind !== "Namespace") {
@@ -248,7 +249,9 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
         }
       }
 
-      output.push(`\n=== Deployment Summary ===\n`);
+      output.push(
+        `\n=== Deployment Summary ===\n`,
+      );
       output.push(`✓ Successfully applied: ${successCount} resources\n`);
       if (errorCount > 0) {
         output.push(`✗ Failed to apply: ${errorCount} resources\n`);
@@ -291,7 +294,7 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
   }
 };
 
-// Helper function to apply a Kubernetes resource
+// Helper function to apply a Kubernetes resource using REST API
 async function applyResource(
   kubeConfig: k8s.KubeConfig,
   resource: any,
@@ -318,179 +321,184 @@ async function applyResource(
     resource.metadata.namespace = namespace;
   }
 
-  console.log(
-    `[DEPLOY] Applying ${kind}/${name} in namespace ${resourceNamespace}`,
-  );
+  console.log(`[DEPLOY] Applying ${kind}/${name} in namespace ${resourceNamespace}`);
 
   try {
-    // Handle each resource type explicitly
-    if (kind === "Namespace") {
-      const api = kubeConfig.makeApiClient(k8s.CoreV1Api);
-      try {
-        await api.createNamespace(resource);
-        console.log(`[DEPLOY] ✓ Created Namespace/${name}`);
-      } catch (e: any) {
-        if (e.statusCode === 409) {
-          // Already exists, try patch
-          try {
-            await api.patchNamespace(name, resource);
-            console.log(`[DEPLOY] ✓ Patched Namespace/${name}`);
-          } catch (patchErr) {
-            console.log(
-              `[DEPLOY] ✓ Namespace/${name} already exists (patch not needed)`,
-            );
-          }
-        } else {
-          throw e;
-        }
-      }
-    } else if (apiVersion.startsWith("apps/")) {
-      const api = kubeConfig.makeApiClient(k8s.AppsV1Api);
-      try {
-        console.log(`[DEPLOY] Trying createNamespaced${kind}(${resourceNamespace}, resource)`);
-        await (api as any)[`createNamespaced${kind}`](resourceNamespace, resource);
-        console.log(`[DEPLOY] ✓ Created ${kind}/${name}`);
-      } catch (e: any) {
-        console.log(`[DEPLOY] Create failed, trying patch...`);
-        if (e.statusCode === 409) {
-          await (api as any)[`patchNamespaced${kind}`](name, resourceNamespace, resource);
-          console.log(`[DEPLOY] ✓ Patched ${kind}/${name}`);
-        } else {
-          console.log(`[DEPLOY] Error not 409, retrying with swapped params...`);
-          try {
-            await (api as any)[`createNamespaced${kind}`](resource, resourceNamespace);
-            console.log(`[DEPLOY] ✓ Created ${kind}/${name} (swapped params)`);
-          } catch (e2) {
-            throw e;
-          }
-        }
-      }
-    } else if (apiVersion.startsWith("batch/")) {
-      const api = kubeConfig.makeApiClient(k8s.BatchV1Api);
-      try {
-        await (api as any)[`createNamespaced${kind}`](resourceNamespace, resource);
-        console.log(`[DEPLOY] ✓ Created ${kind}/${name}`);
-      } catch (e: any) {
-        if (e.statusCode === 409) {
-          await (api as any)[`patchNamespaced${kind}`](name, resourceNamespace, resource);
-          console.log(`[DEPLOY] ✓ Patched ${kind}/${name}`);
-        } else {
-          throw e;
-        }
-      }
-    } else if (apiVersion.startsWith("networking.k8s.io/")) {
-      const api = kubeConfig.makeApiClient(k8s.NetworkingV1Api);
-      try {
-        await (api as any)[`createNamespaced${kind}`](resourceNamespace, resource);
-        console.log(`[DEPLOY] ✓ Created ${kind}/${name}`);
-      } catch (e: any) {
-        if (e.statusCode === 409) {
-          await (api as any)[`patchNamespaced${kind}`](name, resourceNamespace, resource);
-          console.log(`[DEPLOY] ✓ Patched ${kind}/${name}`);
-        } else {
-          throw e;
-        }
-      }
-    } else if (apiVersion.startsWith("rbac.authorization.k8s.io/")) {
-      const api = kubeConfig.makeApiClient(k8s.RbacAuthorizationV1Api);
-      try {
-        console.log(`[DEPLOY] Trying createNamespaced${kind}(${resourceNamespace}, resource)`);
-        await (api as any)[`createNamespaced${kind}`](resourceNamespace, resource);
-        console.log(`[DEPLOY] ✓ Created ${kind}/${name}`);
-      } catch (e: any) {
-        console.log(`[DEPLOY] Create failed with: ${e.message}`);
-        if (e.statusCode === 409) {
-          await (api as any)[`patchNamespaced${kind}`](name, resourceNamespace, resource);
-          console.log(`[DEPLOY] ✓ Patched ${kind}/${name}`);
-        } else {
-          console.log(`[DEPLOY] Retrying with swapped parameter order...`);
-          try {
-            await (api as any)[`createNamespaced${kind}`](resource, resourceNamespace);
-            console.log(`[DEPLOY] ✓ Created ${kind}/${name} (swapped params)`);
-          } catch (e2) {
-            throw e;
-          }
-        }
-      }
-    } else if (apiVersion.includes(".")) {
-      // Custom resources (Gateway API, Cert-Manager, Velero, etc.)
-      const api = kubeConfig.makeApiClient(k8s.CustomObjectsApi);
-      const [group, version] = apiVersion.includes("/")
-        ? apiVersion.split("/")
-        : [apiVersion, "v1"];
-
-      // Determine plural form
-      const plural = kind.toLowerCase() + "s";
-
-      console.log(
-        `[DEPLOY] Custom resource - group: ${group}, version: ${version}, plural: ${plural}`,
-      );
-
-      try {
-        console.log(`[DEPLOY] Trying createNamespacedCustomObject(${group}, ${version}, ${resourceNamespace}, ${plural}, resource)`);
-        await (api as any).createNamespacedCustomObject(
-          group,
-          version,
-          resourceNamespace,
-          plural,
-          resource,
-        );
-        console.log(`[DEPLOY] ✓ Created ${kind}/${name}`);
-      } catch (e: any) {
-        console.log(`[DEPLOY] Create failed with: ${e.message}`);
-        if (e.statusCode === 409) {
-          try {
-            await (api as any).patchNamespacedCustomObject(
-              group,
-              version,
-              resourceNamespace,
-              plural,
-              name,
-              resource,
-            );
-            console.log(`[DEPLOY] ✓ Patched ${kind}/${name}`);
-          } catch (patchErr: any) {
-            console.error(`[DEPLOY] Patch failed:`, patchErr.message);
-            throw patchErr;
-          }
-        } else {
-          console.log(`[DEPLOY] Retrying with swapped parameter order...`);
-          try {
-            await (api as any).createNamespacedCustomObject(
-              resource,
-              group,
-              version,
-              resourceNamespace,
-              plural,
-            );
-            console.log(`[DEPLOY] ✓ Created ${kind}/${name} (swapped params)`);
-          } catch (e2) {
-            throw e;
-          }
-        }
-      }
-    } else {
-      // Core API (v1)
-      const api = kubeConfig.makeApiClient(k8s.CoreV1Api);
-      try {
-        await (api as any)[`createNamespaced${kind}`](resourceNamespace, resource);
-        console.log(`[DEPLOY] ✓ Created ${kind}/${name}`);
-      } catch (e: any) {
-        if (e.statusCode === 409) {
-          await (api as any)[`patchNamespaced${kind}`](name, resourceNamespace, resource);
-          console.log(`[DEPLOY] ✓ Patched ${kind}/${name}`);
-        } else {
-          throw e;
-        }
-      }
+    const cluster = kubeConfig.getCurrentCluster();
+    if (!cluster) {
+      throw new Error("No cluster configured");
     }
+
+    const server = cluster.server;
+    const user = kubeConfig.getCurrentUser();
+    
+    // Get the auth handler
+    const auth = kubeConfig.getAuthenticationHandler(user);
+
+    // Construct API path
+    const apiPath = buildApiPath(kind, apiVersion, resourceNamespace, name);
+    console.log(`[DEPLOY] Using REST API path: ${apiPath}`);
+
+    // Make HTTP request to Kubernetes API
+    const result = await callKubernetesApi(
+      server,
+      apiPath,
+      resource,
+      auth,
+      "PUT"
+    );
+
+    console.log(`[DEPLOY] ✓ Applied ${kind}/${name}`);
   } catch (error: any) {
-    console.error(
-      `[DEPLOY] Error applying ${kind}/${name}:`,
-      error.message || error,
-    );
-    throw new Error(
-      `${kind} operation failed: ${error.message || error.statusCode}`,
-    );
+    console.error(`[DEPLOY] Error applying ${kind}/${name}:`, error.message);
+    throw error;
   }
+}
+
+function buildApiPath(
+  kind: string,
+  apiVersion: string,
+  namespace: string,
+  name: string
+): string {
+  if (kind === "Namespace") {
+    return `/api/v1/namespaces/${name}`;
+  }
+
+  const plural = getPluralForm(kind);
+
+  if (apiVersion === "v1") {
+    return `/api/v1/namespaces/${namespace}/${plural}/${name}`;
+  } else if (apiVersion.startsWith("apps/")) {
+    return `/apis/apps/v1/namespaces/${namespace}/${plural}/${name}`;
+  } else if (apiVersion.startsWith("batch/")) {
+    return `/apis/batch/v1/namespaces/${namespace}/${plural}/${name}`;
+  } else if (apiVersion.startsWith("networking.k8s.io/")) {
+    return `/apis/networking.k8s.io/v1/namespaces/${namespace}/${plural}/${name}`;
+  } else if (apiVersion.startsWith("rbac.authorization.k8s.io/")) {
+    return `/apis/rbac.authorization.k8s.io/v1/namespaces/${namespace}/${plural}/${name}`;
+  } else if (apiVersion.includes("/")) {
+    const [group, version] = apiVersion.split("/");
+    return `/apis/${group}/${version}/namespaces/${namespace}/${plural}/${name}`;
+  }
+
+  return `/api/v1/namespaces/${namespace}/${plural}/${name}`;
+}
+
+function getPluralForm(kind: string): string {
+  const pluralMap: Record<string, string> = {
+    Role: "roles",
+    RoleBinding: "rolebindings",
+    ClusterRole: "clusterroles",
+    ClusterRoleBinding: "clusterrolebindings",
+    Certificate: "certificates",
+    HTTPRoute: "httproutes",
+    Schedule: "schedules",
+    Deployment: "deployments",
+    Service: "services",
+    Pod: "pods",
+    ConfigMap: "configmaps",
+    Secret: "secrets",
+    Namespace: "namespaces",
+  };
+
+  return pluralMap[kind] || kind.toLowerCase() + "s";
+}
+
+async function callKubernetesApi(
+  server: string,
+  apiPath: string,
+  resource: any,
+  auth: any,
+  method: string = "PUT"
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const url = new URL(server + apiPath);
+    const options: https.RequestOptions = {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      rejectUnauthorized: false,
+    };
+
+    // Apply authentication
+    if (auth && typeof auth.applyToRequest === "function") {
+      auth.applyToRequest(options);
+    }
+
+    const req = https.request(url, options, (res) => {
+      let data = "";
+      res.on("data", (chunk) => {
+        data += chunk;
+      });
+      res.on("end", () => {
+        const status = res.statusCode || 0;
+        if (status >= 200 && status < 300) {
+          console.log(`[DEPLOY] REST API response: ${status}`);
+          resolve();
+        } else if (status === 404) {
+          // Try POST if PUT returns 404
+          console.log(`[DEPLOY] Resource not found (404), trying POST...`);
+          createResource(server, apiPath, resource, auth)
+            .then(resolve)
+            .catch(reject);
+        } else if (status === 409) {
+          // Conflict - already exists, treat as success
+          console.log(`[DEPLOY] Resource already exists (409), treating as success`);
+          resolve();
+        } else {
+          reject(new Error(`API returned ${status}: ${data}`));
+        }
+      });
+    });
+
+    req.on("error", reject);
+    req.write(JSON.stringify(resource));
+    req.end();
+  });
+}
+
+async function createResource(
+  server: string,
+  apiPath: string,
+  resource: any,
+  auth: any
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    // Remove resource name from path for POST
+    const createPath = apiPath.substring(0, apiPath.lastIndexOf("/"));
+    const url = new URL(server + createPath);
+    const options: https.RequestOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      rejectUnauthorized: false,
+    };
+
+    if (auth && typeof auth.applyToRequest === "function") {
+      auth.applyToRequest(options);
+    }
+
+    const req = https.request(url, options, (res) => {
+      let data = "";
+      res.on("data", (chunk) => {
+        data += chunk;
+      });
+      res.on("end", () => {
+        const status = res.statusCode || 0;
+        if (status >= 200 && status < 300) {
+          console.log(`[DEPLOY] Create response: ${status}`);
+          resolve();
+        } else {
+          reject(new Error(`Create failed with ${status}: ${data}`));
+        }
+      });
+    });
+
+    req.on("error", reject);
+    req.write(JSON.stringify(resource));
+    req.end();
+  });
 }
