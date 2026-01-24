@@ -446,6 +446,7 @@ function getPluralForm(kind: string): string {
     ConfigMap: "configmaps",
     Secret: "secrets",
     Namespace: "namespaces",
+    NetworkPolicy: "networkpolicies",
   };
 
   return pluralMap[kind] || kind.toLowerCase() + "s";
