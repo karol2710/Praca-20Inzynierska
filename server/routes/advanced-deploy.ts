@@ -418,8 +418,12 @@ async function applyResource(
           throw new Error(`createNamespacedCustomObject is not a function on ${api.constructor.name}`);
         }
 
-        // Call with explicit parameter names using object binding
-        await api.createNamespacedCustomObject(
+        // Pre-validate all parameters before calling
+        const params = [customGroup, customVersion, resourceNamespace, customPlural, resource];
+        console.log(`[DEPLOY] About to call createNamespacedCustomObject with params:`, params.map((p, i) => `${i}: ${typeof p} = ${p === null ? 'NULL' : p === undefined ? 'UNDEFINED' : typeof p === 'object' ? '[object]' : String(p).substring(0, 50)}`));
+
+        // Call with explicit parameter validation
+        const result = await api.createNamespacedCustomObject(
           customGroup,
           customVersion,
           resourceNamespace,
@@ -428,6 +432,10 @@ async function applyResource(
         );
         console.log(`[DEPLOY] ✓ Created ${kind}/${name}`);
       } catch (createError: any) {
+        console.error(`[DEPLOY] Create failed with error:`, createError.message);
+        console.error(`[DEPLOY] Error status code:`, createError.statusCode);
+        console.error(`[DEPLOY] Error body:`, createError.body);
+
         if (createError.statusCode === 409) {
           // Already exists, try to patch
           console.log(`[DEPLOY] ${kind}/${name} already exists, patching...`);
@@ -435,6 +443,8 @@ async function applyResource(
             if (typeof api.patchNamespacedCustomObject !== 'function') {
               throw new Error(`patchNamespacedCustomObject is not a function on ${api.constructor.name}`);
             }
+
+            console.log(`[DEPLOY] About to patch with parameters: group="${customGroup}", version="${customVersion}", namespace="${resourceNamespace}", plural="${customPlural}", name="${name}"`);
 
             await api.patchNamespacedCustomObject(
               customGroup,
