@@ -31,6 +31,7 @@ interface TemplateGenerationResult {
   clusterIpServices: string[];
   httpRoute: string | null;
   workloadPortMappings: Record<string, number[]>;
+  workloads: string[];
   namespace?: string;
   rateLimit?: string;
   resourceQuota?: string;
