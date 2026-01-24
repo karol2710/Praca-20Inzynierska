@@ -225,19 +225,18 @@ rules:
     verbs: ["get", "list", "create", "patch", "update", "delete"]
 EOF
 
-# Create RoleBinding
-echo "Creating RoleBinding for $DEPLOYMENT_NAME"
+# Create ClusterRoleBinding (cluster-wide)
+echo "Creating ClusterRoleBinding for $DEPLOYMENT_NAME"
 cat <<EOF | kubectl apply -f -
 apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
+kind: ClusterRoleBinding
 metadata:
   name: $DEPLOYMENT_NAME
-  namespace: $KUBE_NAMESPACE
   labels:
     app: $DEPLOYMENT_NAME
 roleRef:
   apiGroup: rbac.authorization.k8s.io
-  kind: Role
+  kind: ClusterRole
   name: $DEPLOYMENT_NAME
 subjects:
   - kind: ServiceAccount
