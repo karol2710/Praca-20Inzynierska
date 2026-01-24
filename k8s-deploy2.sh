@@ -374,7 +374,7 @@ spec:
       initContainers:
         - name: wait-for-postgres
           image: busybox:latest
-          command: ['sh', '-c', 'until nc -z postgres.$KUBE_NAMESPACE.svc.cluster.local 5432; do echo waiting for postgres; sleep 2; done; RANDOM_DELAY=$((RANDOM % 120 + 60)); echo "PostgreSQL ready, waiting $RANDOM_DELAY seconds to avoid race conditions..."; sleep $RANDOM_DELAY']
+          command: ['sh', '-c', 'until nc -z postgres.$KUBE_NAMESPACE.svc.cluster.local 5432; do echo waiting for postgres; sleep 2; done; RANDOM_DELAY=$(($(od -An -N1 -tu1 /dev/urandom | tr -d " ") % 120 + 60)); echo "PostgreSQL ready, waiting $RANDOM_DELAY seconds to avoid race conditions..."; sleep $RANDOM_DELAY']
       containers:
         - name: $DEPLOYMENT_NAME
           image: $KUBECHART_IMAGE
