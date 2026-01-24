@@ -349,45 +349,45 @@ async function applyResource(
     if (isCustomResource) {
       // Parse API version: "group/version"
       const parts = apiVersion.split("/");
-      const group = parts[0];
-      const version = parts[1] || "v1";
+      const customGroup = parts[0];
+      const customVersion = parts[1] || "v1";
 
       // Convert kind to plural form
-      const plural = kind.toLowerCase() + "s";
+      const customPlural = kind.toLowerCase() + "s";
 
-      console.log(`[DEPLOY] Custom resource: group=${group}, version=${version}, plural=${plural}`);
+      console.log(`[DEPLOY] Custom resource: group=${customGroup}, version=${customVersion}, plural=${customPlural}`);
 
       try {
-        await api.getNamespacedCustomObject(
-          group,
-          version,
+        // Try to create the custom resource
+        console.log(`[DEPLOY] Creating custom resource ${kind}/${name}`);
+        await api.createNamespacedCustomObject(
+          customGroup,
+          customVersion,
           resourceNamespace,
-          plural,
-          name,
-        );
-        // Exists, patch it
-        await api.patchNamespacedCustomObject(
-          group,
-          version,
-          resourceNamespace,
-          plural,
-          name,
+          customPlural,
           resource,
         );
-        console.log(`[DEPLOY] ✓ Patched ${kind}/${name}`);
-      } catch (readError: any) {
-        if (readError.statusCode === 404) {
-          // Create it
-          await api.createNamespacedCustomObject(
-            group,
-            version,
-            resourceNamespace,
-            plural,
-            resource,
-          );
-          console.log(`[DEPLOY] ✓ Created ${kind}/${name}`);
+        console.log(`[DEPLOY] ✓ Created ${kind}/${name}`);
+      } catch (createError: any) {
+        if (createError.statusCode === 409) {
+          // Already exists, try to patch
+          console.log(`[DEPLOY] ${kind}/${name} already exists, patching...`);
+          try {
+            await api.patchNamespacedCustomObject(
+              customGroup,
+              customVersion,
+              resourceNamespace,
+              customPlural,
+              name,
+              resource,
+            );
+            console.log(`[DEPLOY] ✓ Patched ${kind}/${name}`);
+          } catch (patchError: any) {
+            console.error(`[DEPLOY] Patch failed: ${patchError.message}`);
+            throw patchError;
+          }
         } else {
-          throw readError;
+          throw createError;
         }
       }
       return;
