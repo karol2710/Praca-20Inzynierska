@@ -312,12 +312,6 @@ async function applyResource(
 
   // Validate that name exists
   if (!name) {
-    console.error(`[DEPLOY] ${kind} resource missing metadata.name`, {
-      kind,
-      apiVersion,
-      metadata: resource.metadata,
-      resource: JSON.stringify(resource).substring(0, 200),
-    });
     throw new Error(`${kind} resource missing metadata.name`);
   }
 
@@ -326,24 +320,12 @@ async function applyResource(
     resource.metadata.namespace = namespace;
   }
 
-  // Get the appropriate API client based on API version
-  let api: any;
+  console.log(`[DEPLOY] Applying ${kind}/${name} in namespace ${resourceNamespace}`);
 
   try {
-    if (apiVersion.startsWith("apps/")) {
-      api = kubeConfig.makeApiClient(k8s.AppsV1Api);
-    } else if (apiVersion.startsWith("batch/")) {
-      api = kubeConfig.makeApiClient(k8s.BatchV1Api);
-    } else if (apiVersion.startsWith("networking.k8s.io/")) {
-      api = kubeConfig.makeApiClient(k8s.NetworkingV1Api);
-    } else if (apiVersion.startsWith("autoscaling/")) {
-      api = kubeConfig.makeApiClient(k8s.AutoscalingV2Api);
-    } else if (apiVersion.startsWith("rbac.authorization.k8s.io/")) {
-      // RBAC resources (Role, RoleBinding, etc)
-      api = kubeConfig.makeApiClient(k8s.RbacAuthorizationV1Api);
-    } else if (apiVersion.includes(".") && !apiVersion.startsWith("v1")) {
-      // Custom resource (HTTPRoute, Schedule, Certificate, etc)
-      api = kubeConfig.makeApiClient(k8s.CustomObjectsApi);
+    // Handle custom resources (non-standard API groups)
+    if (apiVersion.includes(".") && !apiVersion.startsWith("v1")) {
+      const api = kubeConfig.makeApiClient(k8s.CustomObjectsApi);
 
       // Parse API version: "group/version"
       const parts = apiVersion.split("/");
@@ -352,6 +334,8 @@ async function applyResource(
 
       // Convert kind to plural form
       const plural = kind.toLowerCase() + "s";
+
+      console.log(`[DEPLOY] Custom resource: group=${group}, version=${version}, plural=${plural}`);
 
       try {
         await api.getNamespacedCustomObject(
@@ -370,6 +354,7 @@ async function applyResource(
           name,
           resource,
         );
+        console.log(`[DEPLOY] ✓ Patched ${kind}/${name}`);
       } catch (readError: any) {
         if (readError.statusCode === 404) {
           // Create it
@@ -380,11 +365,27 @@ async function applyResource(
             plural,
             resource,
           );
+          console.log(`[DEPLOY] ✓ Created ${kind}/${name}`);
         } else {
           throw readError;
         }
       }
       return;
+    }
+
+    // Handle standard API resources
+    let api: any;
+
+    if (apiVersion.startsWith("apps/")) {
+      api = kubeConfig.makeApiClient(k8s.AppsV1Api);
+    } else if (apiVersion.startsWith("batch/")) {
+      api = kubeConfig.makeApiClient(k8s.BatchV1Api);
+    } else if (apiVersion.startsWith("networking.k8s.io/")) {
+      api = kubeConfig.makeApiClient(k8s.NetworkingV1Api);
+    } else if (apiVersion.startsWith("autoscaling/")) {
+      api = kubeConfig.makeApiClient(k8s.AutoscalingV2Api);
+    } else if (apiVersion.startsWith("rbac.authorization.k8s.io/")) {
+      api = kubeConfig.makeApiClient(k8s.RbacAuthorizationV1Api);
     } else {
       api = kubeConfig.makeApiClient(k8s.CoreV1Api);
     }
@@ -395,20 +396,23 @@ async function applyResource(
       if (kind === "Namespace") {
         await api.readNamespace(name);
         exists = true;
+        console.log(`[DEPLOY] Found existing ${kind}/${name}`);
       } else {
         // For namespaced resources, use readNamespaced${kind} method
         const readNamespacedMethod = `readNamespaced${kind}`;
         if (typeof api[readNamespacedMethod] === "function") {
           await api[readNamespacedMethod](name, resourceNamespace);
           exists = true;
+          console.log(`[DEPLOY] Found existing ${kind}/${name}`);
         }
       }
     } catch (readError: any) {
-      if (readError.statusCode !== 404) {
+      if (readError.statusCode === 404) {
+        exists = false;
+        console.log(`[DEPLOY] ${kind}/${name} does not exist, will create`);
+      } else {
         throw readError;
       }
-      // Resource doesn't exist, we'll create it
-      exists = false;
     }
 
     // Apply the resource (create or patch)
@@ -419,29 +423,24 @@ async function applyResource(
       } else {
         const patchNamespacedMethod = `patchNamespaced${kind}`;
         if (typeof api[patchNamespacedMethod] === "function") {
-          await api[patchNamespacedMethod](
-            name,
-            resourceNamespace,
-            resource,
-          );
+          await api[patchNamespacedMethod](name, resourceNamespace, resource);
         }
       }
+      console.log(`[DEPLOY] ✓ Patched ${kind}/${name}`);
     } else {
       // Create new resource
       if (kind === "Namespace") {
         await api.createNamespace(resource);
       } else {
-        // For namespaced resources, use createNamespaced${kind} method
         const createNamespacedMethod = `createNamespaced${kind}`;
         if (typeof api[createNamespacedMethod] === "function") {
-          await api[createNamespacedMethod](
-            resourceNamespace,
-            resource,
-          );
+          await api[createNamespacedMethod](resourceNamespace, resource);
         }
       }
+      console.log(`[DEPLOY] ✓ Created ${kind}/${name}`);
     }
   } catch (error: any) {
+    console.error(`[DEPLOY] Error applying ${kind}/${name}:`, error.message || error);
     throw new Error(
       `${kind} operation failed: ${error.body?.message || error.message || error.statusCode}`,
     );
