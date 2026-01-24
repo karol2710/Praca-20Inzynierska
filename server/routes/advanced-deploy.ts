@@ -456,8 +456,12 @@ async function applyResource(
         const params = [customGroup, customVersion, resourceNamespace, customPlural, resource];
         console.log(`[DEPLOY] About to call createNamespacedCustomObject with params:`, params.map((p, i) => `${i}: ${typeof p} = ${p === null ? 'NULL' : p === undefined ? 'UNDEFINED' : typeof p === 'object' ? '[object]' : String(p).substring(0, 50)}`));
 
-        // Call with explicit parameter validation
-        const result = await api.createNamespacedCustomObject(
+        // Call with explicit context binding to ensure 'this' is correct
+        const createMethod = api.createNamespacedCustomObject;
+        console.log(`[DEPLOY] Method type: ${typeof createMethod}, is bound: ${createMethod.name}`);
+
+        const result = await createMethod.call(
+          api,
           customGroup,
           customVersion,
           resourceNamespace,
@@ -480,7 +484,9 @@ async function applyResource(
 
             console.log(`[DEPLOY] About to patch with parameters: group="${customGroup}", version="${customVersion}", namespace="${resourceNamespace}", plural="${customPlural}", name="${name}"`);
 
-            await api.patchNamespacedCustomObject(
+            const patchMethod = api.patchNamespacedCustomObject;
+            await patchMethod.call(
+              api,
               customGroup,
               customVersion,
               resourceNamespace,
