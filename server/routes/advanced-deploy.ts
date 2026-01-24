@@ -393,63 +393,44 @@ async function applyResource(
       return;
     }
 
-    // Try to read the existing resource
-    let exists = false;
-    try {
-      if (kind === "Namespace") {
-        console.log(`[DEPLOY] Reading namespace: ${name}`);
-        await api.readNamespace(name);
-        exists = true;
-        console.log(`[DEPLOY] Found existing ${kind}/${name}`);
-      } else {
-        // For namespaced resources, use readNamespaced${kind} method
-        const readNamespacedMethod = `readNamespaced${kind}`;
-        console.log(`[DEPLOY] Checking if ${readNamespacedMethod}(${name}, ${resourceNamespace}) exists`);
-        if (typeof api[readNamespacedMethod] === "function") {
-          await api[readNamespacedMethod](name, resourceNamespace);
-          exists = true;
-          console.log(`[DEPLOY] Found existing ${kind}/${name}`);
-        } else {
-          console.log(`[DEPLOY] Method ${readNamespacedMethod} not found in API, will create new`);
-        }
-      }
-    } catch (readError: any) {
-      if (readError.statusCode === 404) {
-        exists = false;
-        console.log(`[DEPLOY] ${kind}/${name} does not exist, will create`);
-      } else {
-        console.log(`[DEPLOY] Read error for ${kind}/${name}: ${readError.message}`);
-        throw readError;
-      }
-    }
-
-    // Apply the resource (create or patch)
-    if (exists) {
-      // Use patch to update existing resource
-      if (kind === "Namespace") {
-        console.log(`[DEPLOY] Patching namespace: ${name}`);
-        await api.patchNamespace(name, resource);
-      } else {
-        const patchNamespacedMethod = `patchNamespaced${kind}`;
-        if (typeof api[patchNamespacedMethod] === "function") {
-          console.log(`[DEPLOY] ${patchNamespacedMethod}(${name}, ${resourceNamespace}, ...)`);
-          await api[patchNamespacedMethod](name, resourceNamespace, resource);
-        }
-      }
-      console.log(`[DEPLOY] ✓ Patched ${kind}/${name}`);
-    } else {
-      // Create new resource
-      if (kind === "Namespace") {
-        console.log(`[DEPLOY] Creating namespace: ${name}`);
+    // Directly create the resource (simpler approach - just try to create)
+    if (kind === "Namespace") {
+      console.log(`[DEPLOY] Creating namespace: ${name}`);
+      try {
         await api.createNamespace(resource);
-      } else {
-        const createNamespacedMethod = `createNamespaced${kind}`;
-        if (typeof api[createNamespacedMethod] === "function") {
-          console.log(`[DEPLOY] ${createNamespacedMethod}(${resourceNamespace}, ...)`);
-          await api[createNamespacedMethod](resourceNamespace, resource);
+        console.log(`[DEPLOY] ✓ Created ${kind}/${name}`);
+      } catch (createError: any) {
+        if (createError.statusCode === 409) {
+          // Already exists
+          console.log(`[DEPLOY] ✓ ${kind}/${name} already exists`);
+        } else {
+          throw createError;
         }
       }
-      console.log(`[DEPLOY] ✓ Created ${kind}/${name}`);
+    } else {
+      // For namespaced resources, use createNamespaced${kind} method
+      const createNamespacedMethod = `createNamespaced${kind}`;
+      if (typeof api[createNamespacedMethod] === "function") {
+        console.log(`[DEPLOY] Creating ${kind}/${name} in namespace ${resourceNamespace}`);
+        try {
+          await api[createNamespacedMethod](resourceNamespace, resource);
+          console.log(`[DEPLOY] ✓ Created ${kind}/${name}`);
+        } catch (createError: any) {
+          if (createError.statusCode === 409) {
+            // Already exists, try to patch
+            console.log(`[DEPLOY] ${kind}/${name} already exists, patching...`);
+            const patchNamespacedMethod = `patchNamespaced${kind}`;
+            if (typeof api[patchNamespacedMethod] === "function") {
+              await api[patchNamespacedMethod](name, resourceNamespace, resource);
+              console.log(`[DEPLOY] ✓ Patched ${kind}/${name}`);
+            }
+          } else {
+            throw createError;
+          }
+        }
+      } else {
+        console.error(`[DEPLOY] Method ${createNamespacedMethod} not found for ${kind}`);
+      }
     }
   } catch (error: any) {
     console.error(`[DEPLOY] Error applying ${kind}/${name}:`, error.message || error);
