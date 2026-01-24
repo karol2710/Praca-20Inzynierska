@@ -418,8 +418,11 @@ async function applyResource(
       console.log(`[DEPLOY] Custom resource - group: ${group}, version: ${version}, plural: ${plural}`);
 
       try {
-        // Create the custom object
-        const createResult = await (api.createNamespacedCustomObject as any)(
+        // Create the custom object with proper binding
+        console.log(`[DEPLOY] Calling createNamespacedCustomObject(${group}, ${version}, ${resourceNamespace}, ${plural}, ...)`);
+        const createMethod = (api as any).createNamespacedCustomObject;
+        await createMethod.call(
+          api,
           group,
           version,
           resourceNamespace,
@@ -431,7 +434,10 @@ async function applyResource(
         if (e.statusCode === 409) {
           // Resource exists, patch it
           try {
-            const patchResult = await (api.patchNamespacedCustomObject as any)(
+            console.log(`[DEPLOY] Calling patchNamespacedCustomObject(${group}, ${version}, ${resourceNamespace}, ${plural}, ${name}, ...)`);
+            const patchMethod = (api as any).patchNamespacedCustomObject;
+            await patchMethod.call(
+              api,
               group,
               version,
               resourceNamespace,
