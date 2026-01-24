@@ -1140,7 +1140,28 @@ export default function CreateChart() {
     setGeneratedYaml(displayYaml);
 
     // Store all templates for deployment
-    const allYaml = combineAllYamlDocuments(templateResult);
+    let allYaml = combineAllYamlDocuments(templateResult);
+
+    // Add user-created resources to the YAML
+    const userResourceYamls: string[] = [];
+    for (const resource of resources) {
+      const resourceYaml = generateResourceYAML(
+        resource.name,
+        resource.type,
+        resource,
+        globalNamespace,
+      );
+      if (resourceYaml) {
+        userResourceYamls.push(resourceYaml);
+      }
+    }
+
+    // Combine all YAML documents
+    if (userResourceYamls.length > 0) {
+      const allDocs = allYaml.split("\n---\n").filter((doc) => doc.trim());
+      allDocs.push(...userResourceYamls);
+      allYaml = allDocs.join("\n---\n");
+    }
 
     setAdvancedDeploymentError(""); // Clear any previous errors
     setAdvancedDeploymentResult("");
