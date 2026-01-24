@@ -1,4 +1,12 @@
 import { ContainerConfig } from "@/components/ContainerConfiguration";
+import {
+  generatePodYAML,
+  generateDeploymentYAML,
+  generateReplicaSetYAML,
+  generateStatefulSetYAML,
+  generateJobYAML,
+  generateCronJobYAML,
+} from "./yaml-builder";
 
 interface WorkloadContainer extends ContainerConfig {
   id: string;
@@ -9,6 +17,7 @@ interface Workload {
   name: string;
   type: string;
   containers?: WorkloadContainer[];
+  config?: Record<string, any>;
 }
 
 interface GlobalConfig {
