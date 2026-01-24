@@ -347,14 +347,22 @@ async function applyResource(
     } else if (apiVersion.startsWith("apps/")) {
       const api = kubeConfig.makeApiClient(k8s.AppsV1Api);
       try {
+        console.log(`[DEPLOY] Trying createNamespaced${kind}(${resourceNamespace}, resource)`);
         await (api as any)[`createNamespaced${kind}`](resourceNamespace, resource);
         console.log(`[DEPLOY] ✓ Created ${kind}/${name}`);
       } catch (e: any) {
+        console.log(`[DEPLOY] Create failed, trying patch...`);
         if (e.statusCode === 409) {
           await (api as any)[`patchNamespaced${kind}`](name, resourceNamespace, resource);
           console.log(`[DEPLOY] ✓ Patched ${kind}/${name}`);
         } else {
-          throw e;
+          console.log(`[DEPLOY] Error not 409, retrying with swapped params...`);
+          try {
+            await (api as any)[`createNamespaced${kind}`](resource, resourceNamespace);
+            console.log(`[DEPLOY] ✓ Created ${kind}/${name} (swapped params)`);
+          } catch (e2) {
+            throw e;
+          }
         }
       }
     } else if (apiVersion.startsWith("batch/")) {
@@ -386,19 +394,22 @@ async function applyResource(
     } else if (apiVersion.startsWith("rbac.authorization.k8s.io/")) {
       const api = kubeConfig.makeApiClient(k8s.RbacAuthorizationV1Api);
       try {
-        console.log(
-          `[DEPLOY] Calling createNamespaced${kind}(${resourceNamespace}, ...)`,
-        );
-        // Call directly on the api object - don't extract the method
+        console.log(`[DEPLOY] Trying createNamespaced${kind}(${resourceNamespace}, resource)`);
         await (api as any)[`createNamespaced${kind}`](resourceNamespace, resource);
         console.log(`[DEPLOY] ✓ Created ${kind}/${name}`);
       } catch (e: any) {
+        console.log(`[DEPLOY] Create failed with: ${e.message}`);
         if (e.statusCode === 409) {
-          // Call directly on the api object for patch
           await (api as any)[`patchNamespaced${kind}`](name, resourceNamespace, resource);
           console.log(`[DEPLOY] ✓ Patched ${kind}/${name}`);
         } else {
-          throw e;
+          console.log(`[DEPLOY] Retrying with swapped parameter order...`);
+          try {
+            await (api as any)[`createNamespaced${kind}`](resource, resourceNamespace);
+            console.log(`[DEPLOY] ✓ Created ${kind}/${name} (swapped params)`);
+          } catch (e2) {
+            throw e;
+          }
         }
       }
     } else if (apiVersion.includes(".")) {
@@ -416,10 +427,7 @@ async function applyResource(
       );
 
       try {
-        // Create the custom object - call directly on api object
-        console.log(
-          `[DEPLOY] Calling createNamespacedCustomObject(${group}, ${version}, ${resourceNamespace}, ${plural}, ...)`,
-        );
+        console.log(`[DEPLOY] Trying createNamespacedCustomObject(${group}, ${version}, ${resourceNamespace}, ${plural}, resource)`);
         await (api as any).createNamespacedCustomObject(
           group,
           version,
@@ -429,12 +437,9 @@ async function applyResource(
         );
         console.log(`[DEPLOY] ✓ Created ${kind}/${name}`);
       } catch (e: any) {
+        console.log(`[DEPLOY] Create failed with: ${e.message}`);
         if (e.statusCode === 409) {
-          // Resource exists, patch it
           try {
-            console.log(
-              `[DEPLOY] Calling patchNamespacedCustomObject(${group}, ${version}, ${resourceNamespace}, ${plural}, ${name}, ...)`,
-            );
             await (api as any).patchNamespacedCustomObject(
               group,
               version,
@@ -449,7 +454,19 @@ async function applyResource(
             throw patchErr;
           }
         } else {
-          throw e;
+          console.log(`[DEPLOY] Retrying with swapped parameter order...`);
+          try {
+            await (api as any).createNamespacedCustomObject(
+              resource,
+              group,
+              version,
+              resourceNamespace,
+              plural,
+            );
+            console.log(`[DEPLOY] ✓ Created ${kind}/${name} (swapped params)`);
+          } catch (e2) {
+            throw e;
+          }
         }
       }
     } else {
