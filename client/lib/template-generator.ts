@@ -579,6 +579,11 @@ export function combineAllYamlDocuments(
     documents.push(result.namespace);
   }
 
+  // Include actual workloads (Pods, Deployments, etc.)
+  result.workloads.forEach((workload) => {
+    documents.push(workload);
+  });
+
   result.clusterIpServices.forEach((service) => {
     documents.push(service);
   });
