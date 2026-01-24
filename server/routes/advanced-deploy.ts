@@ -204,6 +204,7 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
 
       let successCount = 0;
       let errorCount = 0;
+      const failedResources: any[] = [];
 
       for (let i = 0; i < yamlDocuments.length; i++) {
         const yamlDoc = yamlDocuments[i].trim();
@@ -240,12 +241,42 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
           } catch (applyError: any) {
             output.push(` ✗ (${applyError.message})\n`);
             errorCount++;
+            failedResources.push({doc, error: applyError, attempt: 1});
           }
         } catch (parseError: any) {
           output.push(
             `✗ Failed to parse YAML document ${i + 1}: ${parseError.message}\n`,
           );
           errorCount++;
+        }
+      }
+
+      // Retry failed resources (in case they were dependent on other resources)
+      if (failedResources.length > 0) {
+        output.push(`\n=== Retrying ${failedResources.length} failed resources ===\n`);
+        console.log(`[DEPLOY] Retrying ${failedResources.length} failed resources...`);
+
+        // Wait a bit before retrying
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        for (const item of failedResources) {
+          const { doc, error } = item;
+          const resourceKind = doc.kind;
+          const resourceName = doc.metadata?.name || "unknown";
+          const resourceNamespace = doc.metadata?.namespace || namespace;
+
+          output.push(
+            `↻ Retrying ${resourceKind}/${resourceName}...`,
+          );
+
+          try {
+            await applyResource(kubeConfig, doc, namespace);
+            output.push(" ✓\n");
+            successCount++;
+            errorCount--;
+          } catch (retryError: any) {
+            output.push(` ✗ (${retryError.message})\n`);
+          }
         }
       }
 
