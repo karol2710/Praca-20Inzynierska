@@ -233,6 +233,7 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
           const doc = yaml.load(yamlDoc) as any;
 
           if (!doc || !doc.kind) {
+            console.log(`[DEPLOY] Skipping invalid YAML document ${i + 1}`);
             output.push(`⚠ Skipping invalid YAML document ${i + 1}\n`);
             continue;
           }
@@ -240,6 +241,8 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
           const resourceKind = doc.kind;
           const resourceName = doc.metadata?.name || "unknown";
           const resourceNamespace = doc.metadata?.namespace || namespace;
+
+          console.log(`[DEPLOY] Parsed YAML document ${i + 1}: kind=${resourceKind}, name=${resourceName}, ns=${resourceNamespace}, apiVersion=${doc.apiVersion}`);
 
           // Apply namespace if not specified
           if (!doc.metadata?.namespace && resourceKind !== "Namespace") {
