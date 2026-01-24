@@ -331,6 +331,12 @@ async function applyResource(
 
   // Validate that name exists
   if (!name) {
+    console.error(`[DEPLOY] ${kind} resource missing metadata.name`, {
+      kind,
+      apiVersion,
+      metadata: resource.metadata,
+      resource: JSON.stringify(resource).substring(0, 200),
+    });
     throw new Error(`${kind} resource missing metadata.name`);
   }
 
@@ -351,23 +357,19 @@ async function applyResource(
       api = kubeConfig.makeApiClient(k8s.NetworkingV1Api);
     } else if (apiVersion.startsWith("autoscaling/")) {
       api = kubeConfig.makeApiClient(k8s.AutoscalingV2Api);
-    } else if (
-      apiVersion.includes(".") &&
-      !apiVersion.startsWith("v1") &&
-      !apiVersion.startsWith("apps/") &&
-      !apiVersion.startsWith("batch/") &&
-      !apiVersion.startsWith("networking.k8s.io/") &&
-      !apiVersion.startsWith("autoscaling/")
-    ) {
-      // Custom resource (HTTPRoute, Schedule, etc)
+    } else if (apiVersion.startsWith("rbac.authorization.k8s.io/")) {
+      // RBAC resources (Role, RoleBinding, etc)
+      api = kubeConfig.makeApiClient(k8s.RbacAuthorizationV1Api);
+    } else if (apiVersion.includes(".") && !apiVersion.startsWith("v1")) {
+      // Custom resource (HTTPRoute, Schedule, Certificate, etc)
       api = kubeConfig.makeApiClient(k8s.CustomObjectsApi);
 
-      // Parse API version: "group/version" or "version"
+      // Parse API version: "group/version"
       const parts = apiVersion.split("/");
-      const group = parts.length > 1 ? parts[0] : "";
-      const version = parts.length > 1 ? parts[1] : parts[0];
+      const group = parts[0];
+      const version = parts[1] || "v1";
 
-      // Convert kind to plural form (simple approach: add 's')
+      // Convert kind to plural form
       const plural = kind.toLowerCase() + "s";
 
       try {
