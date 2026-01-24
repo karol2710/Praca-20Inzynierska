@@ -327,23 +327,38 @@ async function applyResource(
     let api: any;
     let isCustomResource = false;
 
+    console.log(`[DEPLOY] Determining API client for apiVersion="${apiVersion}"`);
+
     if (apiVersion.startsWith("apps/")) {
       api = kubeConfig.makeApiClient(k8s.AppsV1Api);
+      console.log(`[DEPLOY] Using AppsV1Api`);
     } else if (apiVersion.startsWith("batch/")) {
       api = kubeConfig.makeApiClient(k8s.BatchV1Api);
+      console.log(`[DEPLOY] Using BatchV1Api`);
     } else if (apiVersion.startsWith("networking.k8s.io/")) {
       api = kubeConfig.makeApiClient(k8s.NetworkingV1Api);
+      console.log(`[DEPLOY] Using NetworkingV1Api`);
     } else if (apiVersion.startsWith("autoscaling/")) {
       api = kubeConfig.makeApiClient(k8s.AutoscalingV2Api);
+      console.log(`[DEPLOY] Using AutoscalingV2Api`);
     } else if (apiVersion.startsWith("rbac.authorization.k8s.io/")) {
       api = kubeConfig.makeApiClient(k8s.RbacAuthorizationV1Api);
+      console.log(`[DEPLOY] Using RbacAuthorizationV1Api`);
     } else if (apiVersion.includes(".") && !apiVersion.startsWith("v1")) {
       // Custom resources (HTTPRoute, Certificate, Schedule, etc)
+      console.log(`[DEPLOY] Detected custom resource (includes dot, not v1)`);
       api = kubeConfig.makeApiClient(k8s.CustomObjectsApi);
       isCustomResource = true;
+      console.log(`[DEPLOY] Using CustomObjectsApi`);
     } else {
       api = kubeConfig.makeApiClient(k8s.CoreV1Api);
+      console.log(`[DEPLOY] Using CoreV1Api`);
     }
+
+    if (!api) {
+      throw new Error(`Failed to create API client for apiVersion="${apiVersion}"`);
+    }
+    console.log(`[DEPLOY] API client created successfully`);
 
     // Handle custom resources separately
     if (isCustomResource) {
