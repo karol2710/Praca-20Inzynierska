@@ -356,10 +356,13 @@ async function applyResource(
       const customPlural = kind.toLowerCase() + "s";
 
       console.log(`[DEPLOY] Custom resource: group=${customGroup}, version=${customVersion}, plural=${customPlural}`);
+      console.log(`[DEPLOY] API instance type: ${api?.constructor?.name}`);
+      console.log(`[DEPLOY] Has createNamespacedCustomObject: ${typeof api?.createNamespacedCustomObject}`);
 
       try {
         // Try to create the custom resource
         console.log(`[DEPLOY] Creating custom resource ${kind}/${name}`);
+        console.log(`[DEPLOY] Parameters: group="${customGroup}", version="${customVersion}", namespace="${resourceNamespace}", plural="${customPlural}"`);
         await api.createNamespacedCustomObject(
           customGroup,
           customVersion,
