@@ -427,13 +427,11 @@ async function applyResource(
       );
 
       try {
-        // Create the custom object with proper binding
+        // Create the custom object - call directly on api object
         console.log(
           `[DEPLOY] Calling createNamespacedCustomObject(${group}, ${version}, ${resourceNamespace}, ${plural}, ...)`,
         );
-        const createMethod = (api as any).createNamespacedCustomObject;
-        await createMethod.call(
-          api,
+        await (api as any).createNamespacedCustomObject(
           group,
           version,
           resourceNamespace,
@@ -448,9 +446,7 @@ async function applyResource(
             console.log(
               `[DEPLOY] Calling patchNamespacedCustomObject(${group}, ${version}, ${resourceNamespace}, ${plural}, ${name}, ...)`,
             );
-            const patchMethod = (api as any).patchNamespacedCustomObject;
-            await patchMethod.call(
-              api,
+            await (api as any).patchNamespacedCustomObject(
               group,
               version,
               resourceNamespace,
