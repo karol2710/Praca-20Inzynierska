@@ -493,6 +493,11 @@ async function createOrPatchResource(
       rejectUnauthorized: false,
     };
 
+    console.log(`[DEPLOY] POST request to: ${url.href}`);
+    console.log(
+      `[DEPLOY] Resource: ${resource.kind}/${resource.metadata?.name}`,
+    );
+
     const req = https.request(url, options, (res) => {
       let data = "";
       res.on("data", (chunk) => {
@@ -500,6 +505,7 @@ async function createOrPatchResource(
       });
       res.on("end", () => {
         const status = res.statusCode || 0;
+        console.log(`[DEPLOY] POST response status: ${status}`);
         if (status >= 200 && status < 300) {
           console.log(`[DEPLOY] Create response: ${status}`);
           resolve();
@@ -513,12 +519,18 @@ async function createOrPatchResource(
             .catch(reject);
         } else {
           const error = tryParseJsonError(data);
+          console.log(
+            `[DEPLOY] Create failed with ${status}: ${error.substring(0, 200)}`,
+          );
           reject(new Error(`Create failed with ${status}: ${error}`));
         }
       });
     });
 
-    req.on("error", reject);
+    req.on("error", (err) => {
+      console.log(`[DEPLOY] Request error: ${err.message}`);
+      reject(err);
+    });
     req.write(JSON.stringify(resource));
     req.end();
   });
