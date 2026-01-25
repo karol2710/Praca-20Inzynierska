@@ -555,6 +555,11 @@ async function patchResource(
       rejectUnauthorized: false,
     };
 
+    console.log(`[DEPLOY] PATCH request to: ${url.href}`);
+    console.log(
+      `[DEPLOY] Resource: ${resource.kind}/${resource.metadata?.name}`,
+    );
+
     const req = https.request(url, options, (res) => {
       let data = "";
       res.on("data", (chunk) => {
@@ -562,17 +567,24 @@ async function patchResource(
       });
       res.on("end", () => {
         const status = res.statusCode || 0;
+        console.log(`[DEPLOY] PATCH response status: ${status}`);
         if (status >= 200 && status < 300) {
           console.log(`[DEPLOY] Patch response: ${status}`);
           resolve();
         } else {
           const error = tryParseJsonError(data);
+          console.log(
+            `[DEPLOY] Patch failed with ${status}: ${error.substring(0, 200)}`,
+          );
           reject(new Error(`Patch failed with ${status}: ${error}`));
         }
       });
     });
 
-    req.on("error", reject);
+    req.on("error", (err) => {
+      console.log(`[DEPLOY] PATCH request error: ${err.message}`);
+      reject(err);
+    });
     req.write(JSON.stringify(resource));
     req.end();
   });
