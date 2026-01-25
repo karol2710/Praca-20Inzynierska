@@ -210,6 +210,13 @@ export default function Deployments() {
                   </div>
 
                   <div className="flex gap-2">
+                    <Link
+                      to={`/deployments/${deployment.id}/edit`}
+                      className="flex items-center gap-2 px-4 py-2 bg-blue-500/10 text-blue-600 rounded-lg hover:bg-blue-500/20 text-sm transition-all"
+                    >
+                      <Edit className="w-4 h-4" />
+                      Edit
+                    </Link>
                     <button
                       onClick={() => viewYaml(deployment)}
                       className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 text-sm"
