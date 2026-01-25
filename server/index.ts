@@ -18,6 +18,8 @@ import {
   handleGetDeployments,
   handleGetDeploymentYaml,
   handleDeleteDeployment,
+  handleGetDeploymentForEdit,
+  handleUpdateDeployment,
 } from "./routes/deployments.js";
 import { authMiddleware } from "./auth.js";
 import { initializeDatabase } from "./db.js";
