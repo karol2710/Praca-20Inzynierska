@@ -21,6 +21,7 @@ export default function Deployments() {
     useState<Deployment | null>(null);
   const [showYaml, setShowYaml] = useState(false);
   const [yamlContent, setYamlContent] = useState<string>("");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchDeployments();
