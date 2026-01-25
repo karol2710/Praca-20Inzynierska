@@ -218,10 +218,15 @@ export default function Deployments() {
                     </button>
                     <button
                       onClick={() => deleteDeployment(deployment.id)}
-                      className="flex items-center gap-2 px-4 py-2 bg-destructive/10 text-destructive rounded-lg hover:bg-destructive/20 text-sm"
+                      disabled={deletingId === deployment.id}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-all ${
+                        deletingId === deployment.id
+                          ? "bg-destructive/20 text-destructive cursor-not-allowed opacity-60"
+                          : "bg-destructive/10 text-destructive hover:bg-destructive/20"
+                      }`}
                     >
                       <Trash2 className="w-4 h-4" />
-                      Delete
+                      {deletingId === deployment.id ? "Deleting..." : "Delete"}
                     </button>
                   </div>
                 </div>
