@@ -449,6 +449,7 @@ export const handleUpdateDeployment: RequestHandler = async (req, res) => {
       globalDomain,
       requestsPerSecond,
       resourceQuota,
+      _fullYaml,
     } = req.body;
 
     // Validate
@@ -465,8 +466,6 @@ export const handleUpdateDeployment: RequestHandler = async (req, res) => {
       });
     }
 
-    // For now, just update the deployment_config in the database
-    // The actual cluster update would happen through a separate apply endpoint
     const deploymentConfig = {
       workloads,
       resources,
@@ -476,16 +475,18 @@ export const handleUpdateDeployment: RequestHandler = async (req, res) => {
       resourceQuota: resourceQuota || {},
     };
 
+    // Update deployment in database
     await query(
       `UPDATE deployments
-       SET deployment_config = $1, updated_at = CURRENT_TIMESTAMP
-       WHERE id = $2`,
-      [JSON.stringify(deploymentConfig), deploymentId],
+       SET deployment_config = $1, yaml_config = $2, updated_at = CURRENT_TIMESTAMP
+       WHERE id = $3`,
+      [JSON.stringify(deploymentConfig), _fullYaml || oldYamlConfig, deploymentId],
     );
 
     res.status(200).json({
       success: true,
-      message: "Deployment configuration updated. Please review and apply changes.",
+      message: "Deployment updated successfully",
+      deploymentId,
     });
   } catch (error) {
     console.error("Update deployment error:", error);
