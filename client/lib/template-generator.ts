@@ -394,6 +394,9 @@ spec:
 }
 
 function generateRBAC(namespace: string): string {
+  // Simple RBAC for the default service account in the namespace
+  // Advanced permissions (ResourceQuota, BackendTrafficPolicy, etc.) come from the
+  // cluster-level ClusterRole created by k8s-deploy2.sh for the kubechart service account
   return `apiVersion: v1
 kind: ServiceAccount
 metadata:
