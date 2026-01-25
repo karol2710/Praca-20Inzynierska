@@ -9,6 +9,7 @@ import Signup from "./pages/Signup";
 import Account from "./pages/Account";
 import CreateChart from "./pages/CreateChart";
 import Deployments from "./pages/Deployments";
+import EditDeployment from "./pages/EditDeployment";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
