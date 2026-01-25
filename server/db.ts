@@ -33,6 +33,7 @@ export async function initializeDatabase() {
           type VARCHAR(50) NOT NULL,
           namespace VARCHAR(255) NOT NULL,
           yaml_config TEXT NOT NULL,
+          deployment_config JSONB,
           status VARCHAR(50) DEFAULT 'pending',
           environment VARCHAR(50) DEFAULT 'production',
           workloads_count INT DEFAULT 0,
@@ -40,6 +41,11 @@ export async function initializeDatabase() {
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
+      `);
+
+      // Add deployment_config column if it doesn't exist (migration)
+      await client.query(`
+        ALTER TABLE deployments ADD COLUMN IF NOT EXISTS deployment_config JSONB;
       `);
 
       // Create index for faster lookups
