@@ -12,6 +12,9 @@ interface AdvancedDeployRequest {
   workloads: any[];
   resources: any[];
   globalNamespace: string;
+  globalDomain?: string;
+  requestsPerSecond?: string;
+  resourceQuota?: Record<string, any>;
   deploymentOptions?: {
     environment: "staging" | "production";
   };
@@ -28,8 +31,16 @@ interface AdvancedDeployResponse {
 
 export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
   const user = (req as any).user;
-  const { workloads, resources, globalNamespace, generatedYaml, _fullYaml } =
-    req.body as AdvancedDeployRequest;
+  const {
+    workloads,
+    resources,
+    globalNamespace,
+    globalDomain,
+    requestsPerSecond,
+    resourceQuota,
+    generatedYaml,
+    _fullYaml,
+  } = req.body as AdvancedDeployRequest;
 
   if (!user || !user.userId) {
     return res.status(401).json({ error: "Not authenticated" });
@@ -320,10 +331,10 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
     const deploymentConfig = {
       workloads,
       resources,
-      globalNamespace: globalNamespace,
-      globalDomain: globalDomain,
-      requestsPerSecond: (req.body as any).requestsPerSecond || "",
-      resourceQuota: (req.body as any).resourceQuota || {},
+      globalNamespace,
+      globalDomain: globalDomain || "",
+      requestsPerSecond: requestsPerSecond || "",
+      resourceQuota: resourceQuota || {},
       deploymentOptions: (req.body as any).deploymentOptions || {},
     };
 
