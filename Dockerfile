@@ -6,11 +6,14 @@ WORKDIR /app
 # Install build dependencies
 RUN apk add --no-cache python3 make g++
 
+# Install pnpm
+RUN npm install -g pnpm
+
 # Copy package files
 COPY package.json pnpm-lock.yaml ./
 
-# Try to install with npm (fallback if pnpm-lock.yaml is missing/broken)
-RUN npm install
+# Install dependencies with pnpm
+RUN pnpm install --frozen-lockfile
 
 # Copy source code
 COPY . .
@@ -19,7 +22,7 @@ COPY . .
 RUN ls -la vite.config.ts tsconfig.json || echo "Config files missing!"
 
 # Clear Vite cache and build application
-RUN rm -rf .vite node_modules/.vite && npm run build
+RUN rm -rf .vite node_modules/.vite && pnpm run build
 
 # Production stage
 FROM node:22-alpine
