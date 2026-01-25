@@ -234,11 +234,20 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
           );
 
           try {
+            console.log(
+              `[DEPLOY] About to apply resource: ${resourceKind}/${resourceName}`,
+            );
             await applyResource(kubeConfig, doc, namespace);
             output.push(" ✓\n");
+            console.log(
+              `[DEPLOY] Successfully applied: ${resourceKind}/${resourceName}`,
+            );
             successCount++;
           } catch (applyError: any) {
             output.push(` ✗ (${applyError.message})\n`);
+            console.log(
+              `[DEPLOY] Failed to apply ${resourceKind}/${resourceName}: ${applyError.message}`,
+            );
             errorCount++;
             failedResources.push({ doc, error: applyError, attempt: 1 });
           }
