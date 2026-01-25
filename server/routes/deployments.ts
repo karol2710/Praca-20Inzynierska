@@ -30,8 +30,8 @@ export const handleGetDeployments: RequestHandler = async (req, res) => {
   try {
     const result = await query(
       `SELECT id, name, namespace, yaml_config, status, environment, created_at, workloads_count, resources_count
-       FROM deployments 
-       WHERE user_id = $1 
+       FROM deployments
+       WHERE user_id = $1 AND status != 'deleted'
        ORDER BY created_at DESC`,
       [user.userId],
     );
