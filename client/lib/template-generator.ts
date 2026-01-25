@@ -579,29 +579,21 @@ export function combineAllYamlDocuments(
   // Include all templates for backend deployment
   const documents: string[] = [];
 
-  console.log(`[COMBINE] Starting combineAllYamlDocuments...`);
-
   if (result.namespace) {
     documents.push(result.namespace);
-    console.log(`[COMBINE] Added namespace`);
   }
 
   // Include actual workloads (Pods, Deployments, etc.)
   result.workloads.forEach((workload) => {
     documents.push(workload);
-    console.log(`[COMBINE] Added workload`);
   });
 
   result.clusterIpServices.forEach((service) => {
     documents.push(service);
-    console.log(`[COMBINE] Added ClusterIP service`);
   });
 
   if (result.httpRoute) {
     documents.push(result.httpRoute);
-    console.log(`[COMBINE] Added HTTPRoute`);
-  } else {
-    console.log(`[COMBINE] HTTPRoute is null/undefined, skipping`);
   }
 
   if (result.rateLimit) {
