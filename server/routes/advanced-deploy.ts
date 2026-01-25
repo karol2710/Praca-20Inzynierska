@@ -312,19 +312,31 @@ export const handleAdvancedDeploy: RequestHandler = async (req, res) => {
       output.push("Verify with: kubectl get all -n " + namespace);
     }
 
-    // Store deployment record
+    // Store deployment record with configuration for later editing
     const status = output.join("\n").includes("Failed to apply")
       ? "partial"
       : "deployed";
+
+    const deploymentConfig = {
+      workloads,
+      resources,
+      globalNamespace: globalNamespace,
+      globalDomain: globalDomain,
+      requestsPerSecond: (req.body as any).requestsPerSecond || "",
+      resourceQuota: (req.body as any).resourceQuota || {},
+      deploymentOptions: (req.body as any).deploymentOptions || {},
+    };
+
     await query(
-      `INSERT INTO deployments (user_id, name, type, namespace, yaml_config, status)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
+      `INSERT INTO deployments (user_id, name, type, namespace, yaml_config, deployment_config, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
       [
         user.userId,
         `deployment-${Date.now()}`,
         "advanced",
         namespace,
         _fullYaml || generatedYaml || "",
+        JSON.stringify(deploymentConfig),
         status,
       ],
     );
