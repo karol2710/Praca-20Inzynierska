@@ -363,6 +363,10 @@ async function applyResource(
   const name = resource.metadata.name;
   const resourceNamespace = resource.metadata.namespace || namespace;
 
+  console.log(
+    `[DEPLOY] applyResource called: kind=${kind}, name=${name}, apiVersion=${apiVersion}, namespace=${resourceNamespace}`,
+  );
+
   // Validate that name exists
   if (!name) {
     throw new Error(`${kind} resource missing metadata.name`);
