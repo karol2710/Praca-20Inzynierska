@@ -319,7 +319,7 @@ spec:
   rateLimit:
     local:
       rules:
-          limit:
+        - limit:
             requests: ${requestsPerSecond}
             unit: Second
   timeout:
