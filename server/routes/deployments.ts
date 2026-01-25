@@ -317,6 +317,7 @@ function getPluralForm(kind: string): string {
     Certificate: "certificates",
     HTTPRoute: "httproutes",
     GRPCRoute: "grpcroutes",
+    BackendTrafficPolicy: "backendtrafficpolicies",
     Schedule: "schedules",
     Deployment: "deployments",
     Service: "services",
@@ -326,6 +327,7 @@ function getPluralForm(kind: string): string {
     Namespace: "namespaces",
     NetworkPolicy: "networkpolicies",
     ServiceAccount: "serviceaccounts",
+    ResourceQuota: "resourcequotas",
   };
 
   return pluralMap[kind] || kind.toLowerCase() + "s";
