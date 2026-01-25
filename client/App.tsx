@@ -50,6 +50,14 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/deployments/:deploymentId/edit"
+              element={
+                <ProtectedRoute>
+                  <EditDeployment />
+                </ProtectedRoute>
+              }
+            />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
