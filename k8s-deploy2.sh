@@ -222,6 +222,11 @@ rules:
     resources: ["networkpolicies"]
     verbs: ["get", "list", "create", "patch", "update", "delete"]
 
+  # ResourceQuotas (across all namespaces)
+  - apiGroups: [""]
+    resources: ["resourcequotas"]
+    verbs: ["get", "list", "create", "patch", "update", "delete"]
+
   # HorizontalPodAutoscalers
   - apiGroups: ["autoscaling"]
     resources: ["horizontalpodautoscalers"]
@@ -253,6 +258,11 @@ rules:
   # Gateway API
   - apiGroups: ["gateway.networking.k8s.io"]
     resources: ["httproutes", "tcproutes", "udproutes", "tlsroutes", "gateways", "gatewayclasses"]
+    verbs: ["get", "list", "create", "patch", "update", "delete"]
+
+  # Envoy Gateway BackendTrafficPolicy
+  - apiGroups: ["gateway.envoyproxy.io"]
+    resources: ["backendtrafficpolicies"]
     verbs: ["get", "list", "create", "patch", "update", "delete"]
 
   # Velero Schedules and other Velero resources
