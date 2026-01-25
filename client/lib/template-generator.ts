@@ -268,6 +268,12 @@ function generateHTTPRoute(
     })
     .join("\n");
 
+  // Build hostnames section - only include if domain is specified
+  let hostnamesSection = "";
+  if (domain && domain.trim()) {
+    hostnamesSection = `  hostnames:\n    - ${domain}\n`;
+  }
+
   return `apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -277,9 +283,7 @@ spec:
   parentRefs:
     - name: platform-gateway
       namespace: envoy-gateway-system
-  hostnames:
-    - ${domain}
-  rules:
+${hostnamesSection}  rules:
     - matches:
         - path:
             type: PathPrefix
