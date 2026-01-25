@@ -128,6 +128,16 @@ export async function createServer() {
     authMiddleware,
     handleGetDeploymentYaml,
   );
+  app.get(
+    "/api/deployments/:deploymentId/edit",
+    authMiddleware,
+    handleGetDeploymentForEdit,
+  );
+  app.put(
+    "/api/deployments/:deploymentId",
+    authMiddleware,
+    handleUpdateDeployment,
+  );
   app.delete(
     "/api/deployments/:deploymentId",
     authMiddleware,
