@@ -217,7 +217,7 @@ export default function Deployments() {
                   <div className="flex gap-2">
                     <Link
                       to={`/deployments/${deployment.id}/edit`}
-                      className="flex items-center gap-2 px-4 py-2 bg-blue-500/10 text-blue-600 rounded-lg hover:bg-blue-500/20 text-sm transition-all"
+                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm transition-all font-medium"
                     >
                       <Edit className="w-4 h-4" />
                       Edit
