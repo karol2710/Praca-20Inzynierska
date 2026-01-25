@@ -169,6 +169,8 @@ export function generateTemplates(
       (w) => workloadPortMappings[w.name]?.length > 0,
     );
 
+    console.log(`[TEMPLATE] createHTTPRoute=${createHTTPRoute}, workloadsWithPorts.length=${workloadsWithPorts.length}`);
+
     if (workloadsWithPorts.length > 0) {
       result.httpRoute = generateHTTPRoute(
         workloadsWithPorts,
@@ -176,7 +178,12 @@ export function generateTemplates(
         globalConfig.domain,
         options?.userCreatedClusterIPNames,
       );
+      console.log(`[TEMPLATE] HTTPRoute generated: ${result.httpRoute?.substring(0, 100)}...`);
+    } else {
+      console.log(`[TEMPLATE] No workloads with ports found, skipping HTTPRoute generation`);
     }
+  } else {
+    console.log(`[TEMPLATE] createHTTPRoute=false, skipping HTTPRoute generation`);
   }
 
   // Generate Namespace
