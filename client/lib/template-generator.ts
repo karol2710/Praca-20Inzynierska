@@ -403,17 +403,35 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: default-role
+  name: deployer-role
   namespace: ${namespace}
 rules:
   - apiGroups: [""]
     resources: ["pods", "pods/log", "pods/exec"]
-    verbs: ["get", "list", "watch", "create"]
+    verbs: ["get", "list", "watch", "create", "patch", "update", "delete"]
   - apiGroups: [""]
-    resources: ["resourcequotas"]
+    resources: ["services", "serviceaccounts", "resourcequotas"]
+    verbs: ["create", "get", "list", "watch", "patch", "update", "delete"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "statefulsets", "replicasets"]
+    verbs: ["create", "get", "list", "watch", "patch", "update", "delete"]
+  - apiGroups: ["batch"]
+    resources: ["jobs", "cronjobs"]
+    verbs: ["create", "get", "list", "watch", "patch", "update", "delete"]
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources: ["roles", "rolebindings"]
+    verbs: ["create", "get", "list", "watch", "patch", "update", "delete"]
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["networkpolicies"]
+    verbs: ["create", "get", "list", "watch", "patch", "update", "delete"]
+  - apiGroups: ["gateway.networking.k8s.io"]
+    resources: ["httproutes", "grpcroutes"]
     verbs: ["create", "get", "list", "watch", "patch", "update", "delete"]
   - apiGroups: ["gateway.envoyproxy.io"]
     resources: ["backendtrafficpolicies"]
+    verbs: ["create", "get", "list", "watch", "patch", "update", "delete"]
+  - apiGroups: ["cert-manager.io"]
+    resources: ["certificates"]
     verbs: ["create", "get", "list", "watch", "patch", "update", "delete"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -424,11 +442,25 @@ metadata:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: default-role
+  name: deployer-role
 subjects:
   - kind: ServiceAccount
     name: default
-    namespace: ${namespace}`;
+    namespace: ${namespace}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: kubechart-deployer-binding
+  namespace: ${namespace}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: deployer-role
+subjects:
+  - kind: ServiceAccount
+    name: kubechart
+    namespace: kubechart`;
 }
 
 function generateCertificate(
