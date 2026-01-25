@@ -1141,6 +1141,7 @@ export default function CreateChart() {
 
     // Store all templates for deployment
     let allYaml = combineAllYamlDocuments(templateResult);
+    console.log(`[CREATECHART] combineAllYamlDocuments returned ${allYaml.split('\n---\n').length} documents`);
 
     // Add user-created resources to the YAML
     const userResourceYamls: string[] = [];
@@ -1153,15 +1154,21 @@ export default function CreateChart() {
       );
       if (resourceYaml) {
         userResourceYamls.push(resourceYaml);
+        console.log(`[CREATECHART] Added user resource: ${resource.type}/${resource.name}`);
       }
     }
 
     // Combine all YAML documents
     if (userResourceYamls.length > 0) {
       const allDocs = allYaml.split("\n---\n").filter((doc) => doc.trim());
+      console.log(`[CREATECHART] Before adding user resources: ${allDocs.length} documents`);
       allDocs.push(...userResourceYamls);
+      console.log(`[CREATECHART] After adding user resources: ${allDocs.length} documents`);
       allYaml = allDocs.join("\n---\n");
     }
+
+    console.log(`[CREATECHART] Final allYaml has ${allYaml.split('\n---\n').length} documents`);
+    console.log(`[CREATECHART] Final _allYaml preview:`, allYaml.substring(0, 200));
 
     setAdvancedDeploymentError(""); // Clear any previous errors
     setAdvancedDeploymentResult("");
