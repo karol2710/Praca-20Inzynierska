@@ -381,3 +381,114 @@ function tryParseJsonError(data: string): string {
     return data.substring(0, 200);
   }
 }
+
+// Get deployment for editing
+export const handleGetDeploymentForEdit: RequestHandler = async (req, res) => {
+  const user = (req as any).user;
+  const { deploymentId } = req.params;
+
+  if (!user || !user.userId) {
+    return res.status(401).json({ error: "Not authenticated" });
+  }
+
+  try {
+    const result = await query(
+      `SELECT deployment_config FROM deployments
+       WHERE id = $1 AND user_id = $2`,
+      [deploymentId, user.userId],
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Deployment not found" });
+    }
+
+    const deploymentConfig = result.rows[0].deployment_config;
+
+    if (!deploymentConfig) {
+      return res.status(400).json({
+        error:
+          "Deployment configuration not available. This deployment was created before edit feature was added.",
+      });
+    }
+
+    res.status(200).json(deploymentConfig);
+  } catch (error) {
+    console.error("Get deployment for edit error:", error);
+    res.status(500).json({ error: "Failed to fetch deployment configuration" });
+  }
+};
+
+// Update deployment
+export const handleUpdateDeployment: RequestHandler = async (req, res) => {
+  const user = (req as any).user;
+  const { deploymentId } = req.params;
+
+  if (!user || !user.userId) {
+    return res.status(401).json({ error: "Not authenticated" });
+  }
+
+  try {
+    // Verify ownership
+    const deploymentResult = await query(
+      `SELECT namespace, yaml_config FROM deployments
+       WHERE id = $1 AND user_id = $2`,
+      [deploymentId, user.userId],
+    );
+
+    if (deploymentResult.rows.length === 0) {
+      return res.status(404).json({ error: "Deployment not found" });
+    }
+
+    const namespace = deploymentResult.rows[0].namespace;
+    const oldYamlConfig = deploymentResult.rows[0].yaml_config;
+
+    const {
+      workloads,
+      resources,
+      globalNamespace,
+      globalDomain,
+      requestsPerSecond,
+      resourceQuota,
+    } = req.body;
+
+    // Validate
+    if (!workloads || !Array.isArray(workloads) || workloads.length === 0) {
+      return res.status(400).json({
+        error: "At least one workload is required",
+      });
+    }
+
+    // Note: globalNamespace must stay the same - no changing namespace
+    if (globalNamespace !== namespace) {
+      return res.status(400).json({
+        error: "Cannot change deployment namespace",
+      });
+    }
+
+    // For now, just update the deployment_config in the database
+    // The actual cluster update would happen through a separate apply endpoint
+    const deploymentConfig = {
+      workloads,
+      resources,
+      globalNamespace,
+      globalDomain,
+      requestsPerSecond: requestsPerSecond || "",
+      resourceQuota: resourceQuota || {},
+    };
+
+    await query(
+      `UPDATE deployments
+       SET deployment_config = $1, updated_at = CURRENT_TIMESTAMP
+       WHERE id = $2`,
+      [JSON.stringify(deploymentConfig), deploymentId],
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Deployment configuration updated. Please review and apply changes.",
+    });
+  } catch (error) {
+    console.error("Update deployment error:", error);
+    res.status(500).json({ error: "Failed to update deployment" });
+  }
+};
