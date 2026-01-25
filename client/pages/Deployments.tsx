@@ -73,8 +73,9 @@ export default function Deployments() {
   };
 
   const deleteDeployment = async (deploymentId: string) => {
-    if (!confirm("Are you sure you want to delete this deployment?")) return;
+    if (!confirm("Are you sure you want to delete this deployment? This will remove all resources from the cluster.")) return;
 
+    setDeletingId(deploymentId);
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(`/api/deployments/${deploymentId}`, {
@@ -86,11 +87,17 @@ export default function Deployments() {
 
       if (response.ok) {
         setDeployments(deployments.filter((d) => d.id !== deploymentId));
+        setError(null);
       } else {
-        setError("Failed to delete deployment");
+        const data = await response.json();
+        setError(data.error || "Failed to delete deployment");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      setError(
+        `Error deleting deployment: ${err instanceof Error ? err.message : "An error occurred"}`,
+      );
+    } finally {
+      setDeletingId(null);
     }
   };
 
