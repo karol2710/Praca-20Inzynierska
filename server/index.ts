@@ -29,11 +29,18 @@ export async function createServer() {
 
   // Log Kubernetes environment at startup
   console.log("=== Kubernetes Environment Detection ===");
-  console.log(`KUBERNETES_SERVICE_HOST: ${process.env.KUBERNETES_SERVICE_HOST || "NOT SET"}`);
-  console.log(`KUBERNETES_SERVICE_PORT: ${process.env.KUBERNETES_SERVICE_PORT || "NOT SET"}`);
-  console.log(`KUBERNETES_SERVICE_PROTOCOL: ${process.env.KUBERNETES_SERVICE_PROTOCOL || "NOT SET"}`);
+  console.log(
+    `KUBERNETES_SERVICE_HOST: ${process.env.KUBERNETES_SERVICE_HOST || "NOT SET"}`,
+  );
+  console.log(
+    `KUBERNETES_SERVICE_PORT: ${process.env.KUBERNETES_SERVICE_PORT || "NOT SET"}`,
+  );
+  console.log(
+    `KUBERNETES_SERVICE_PROTOCOL: ${process.env.KUBERNETES_SERVICE_PROTOCOL || "NOT SET"}`,
+  );
 
-  const inCluster = process.env.KUBERNETES_SERVICE_HOST && process.env.KUBERNETES_SERVICE_PORT;
+  const inCluster =
+    process.env.KUBERNETES_SERVICE_HOST && process.env.KUBERNETES_SERVICE_PORT;
   console.log(`In-Cluster Detection: ${inCluster ? "YES ✓" : "NO ✗"}`);
   console.log("=====================================\n");
 

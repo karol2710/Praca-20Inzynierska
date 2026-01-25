@@ -110,7 +110,9 @@ export const handleDeleteDeployment: RequestHandler = async (req, res) => {
     // Delete resources from cluster
     try {
       await deleteResourcesFromCluster(yamlConfig, namespace);
-      console.log(`[DELETE] Successfully deleted resources for deployment ${deploymentId}`);
+      console.log(
+        `[DELETE] Successfully deleted resources for deployment ${deploymentId}`,
+      );
     } catch (deleteError: any) {
       console.error(
         `[DELETE] Error deleting resources: ${deleteError.message}`,
@@ -144,8 +146,7 @@ async function deleteResourcesFromCluster(
 
   // Check if we're running inside a Kubernetes cluster
   const isInClusterEnv =
-    process.env.KUBERNETES_SERVICE_HOST &&
-    process.env.KUBERNETES_SERVICE_PORT;
+    process.env.KUBERNETES_SERVICE_HOST && process.env.KUBERNETES_SERVICE_PORT;
 
   let isInClusterToken = false;
   try {
@@ -174,9 +175,7 @@ async function deleteResourcesFromCluster(
   }
 
   // Parse and delete YAML documents (in reverse order to handle dependencies)
-  const yamlDocuments = yamlConfig
-    .split(/^---$/m)
-    .filter((doc) => doc.trim());
+  const yamlDocuments = yamlConfig.split(/^---$/m).filter((doc) => doc.trim());
 
   console.log(`[DELETE] Deleting ${yamlDocuments.length} resources...`);
 
@@ -210,7 +209,9 @@ async function deleteResourcesFromCluster(
         );
       }
     } catch (parseError: any) {
-      console.warn(`[DELETE] Warning parsing YAML document: ${parseError.message}`);
+      console.warn(
+        `[DELETE] Warning parsing YAML document: ${parseError.message}`,
+      );
     }
   }
 }
@@ -255,7 +256,12 @@ async function deleteResource(
     }
 
     // Construct API path
-    const apiPath = buildDeleteApiPath(kind, apiVersion, resourceNamespace, name);
+    const apiPath = buildDeleteApiPath(
+      kind,
+      apiVersion,
+      resourceNamespace,
+      name,
+    );
     console.log(`[DELETE] Using REST API path: ${apiPath}`);
 
     // Delete the resource
@@ -480,7 +486,11 @@ export const handleUpdateDeployment: RequestHandler = async (req, res) => {
       `UPDATE deployments
        SET deployment_config = $1, yaml_config = $2, updated_at = CURRENT_TIMESTAMP
        WHERE id = $3`,
-      [JSON.stringify(deploymentConfig), _fullYaml || oldYamlConfig, deploymentId],
+      [
+        JSON.stringify(deploymentConfig),
+        _fullYaml || oldYamlConfig,
+        deploymentId,
+      ],
     );
 
     res.status(200).json({

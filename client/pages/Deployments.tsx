@@ -74,7 +74,12 @@ export default function Deployments() {
   };
 
   const deleteDeployment = async (deploymentId: string) => {
-    if (!confirm("Are you sure you want to delete this deployment? This will remove all resources from the cluster.")) return;
+    if (
+      !confirm(
+        "Are you sure you want to delete this deployment? This will remove all resources from the cluster.",
+      )
+    )
+      return;
 
     setDeletingId(deploymentId);
     try {

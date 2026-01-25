@@ -20,7 +20,10 @@ import {
   generateCronJobYAML,
   generateResourceYAML,
 } from "@/lib/yaml-builder";
-import { generateTemplates, combineAllYamlDocuments } from "@/lib/template-generator";
+import {
+  generateTemplates,
+  combineAllYamlDocuments,
+} from "@/lib/template-generator";
 
 type WorkloadType =
   | "Pod"
@@ -248,7 +251,10 @@ export default function EditDeployment() {
                 Edit Deployment
               </h1>
               <p className="text-lg text-foreground/60">
-                Namespace: <code className="bg-muted px-2 py-1 rounded">{globalNamespace}</code>
+                Namespace:{" "}
+                <code className="bg-muted px-2 py-1 rounded">
+                  {globalNamespace}
+                </code>
                 <span className="text-sm ml-4 text-orange-600">
                   (Cannot be changed)
                 </span>
@@ -267,10 +273,13 @@ export default function EditDeployment() {
           <div className="mb-6 p-4 bg-orange-100 border border-orange-300 rounded-lg flex gap-3">
             <AlertCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
             <div>
-              <h3 className="font-semibold text-orange-900">Edit Restrictions</h3>
+              <h3 className="font-semibold text-orange-900">
+                Edit Restrictions
+              </h3>
               <p className="text-sm text-orange-800 mt-1">
-                You can only edit workloads and resources you created. Auto-generated resources
-                (Services, HTTPRoutes, RBAC, etc.) are managed automatically.
+                You can only edit workloads and resources you created.
+                Auto-generated resources (Services, HTTPRoutes, RBAC, etc.) are
+                managed automatically.
               </p>
             </div>
           </div>
@@ -296,7 +305,9 @@ export default function EditDeployment() {
             {/* Left Panel: Workloads List */}
             <div className="lg:col-span-1">
               <div className="bg-card border border-border rounded-xl p-6">
-                <h2 className="text-lg font-bold text-foreground mb-4">Workloads</h2>
+                <h2 className="text-lg font-bold text-foreground mb-4">
+                  Workloads
+                </h2>
                 {workloads.length === 0 ? (
                   <p className="text-sm text-foreground/60">No workloads</p>
                 ) : (
@@ -311,8 +322,12 @@ export default function EditDeployment() {
                             : "bg-muted hover:bg-muted/80 text-foreground"
                         }`}
                       >
-                        <div className="font-medium text-sm">{workload.name}</div>
-                        <div className="text-xs opacity-75">{workload.type}</div>
+                        <div className="font-medium text-sm">
+                          {workload.name}
+                        </div>
+                        <div className="text-xs opacity-75">
+                          {workload.type}
+                        </div>
                       </button>
                     ))}
                   </div>
@@ -320,7 +335,9 @@ export default function EditDeployment() {
               </div>
 
               <div className="bg-card border border-border rounded-xl p-6 mt-6">
-                <h2 className="text-lg font-bold text-foreground mb-4">Resources</h2>
+                <h2 className="text-lg font-bold text-foreground mb-4">
+                  Resources
+                </h2>
                 {resources.length === 0 ? (
                   <p className="text-sm text-foreground/60">No resources</p>
                 ) : (
@@ -335,8 +352,12 @@ export default function EditDeployment() {
                             : "bg-muted hover:bg-muted/80 text-foreground"
                         }`}
                       >
-                        <div className="font-medium text-sm">{resource.name}</div>
-                        <div className="text-xs opacity-75">{resource.type}</div>
+                        <div className="font-medium text-sm">
+                          {resource.name}
+                        </div>
+                        <div className="text-xs opacity-75">
+                          {resource.type}
+                        </div>
                       </button>
                     ))}
                   </div>
@@ -353,7 +374,10 @@ export default function EditDeployment() {
                       {activeWorkload.name}
                     </h2>
                     <p className="text-foreground/60">
-                      Type: <code className="bg-muted px-2 py-1 rounded">{activeWorkload.type}</code>
+                      Type:{" "}
+                      <code className="bg-muted px-2 py-1 rounded">
+                        {activeWorkload.type}
+                      </code>
                     </p>
                   </div>
 
@@ -396,7 +420,10 @@ export default function EditDeployment() {
                           setWorkloads(
                             workloads.map((w) =>
                               w.id === activeWorkload.id
-                                ? { ...w, config: { ...w.config, [key]: value } }
+                                ? {
+                                    ...w,
+                                    config: { ...w.config, [key]: value },
+                                  }
                                 : w,
                             ),
                           );
@@ -413,7 +440,10 @@ export default function EditDeployment() {
                           setWorkloads(
                             workloads.map((w) =>
                               w.id === activeWorkload.id
-                                ? { ...w, config: { ...w.config, [key]: value } }
+                                ? {
+                                    ...w,
+                                    config: { ...w.config, [key]: value },
+                                  }
                                 : w,
                             ),
                           );
@@ -443,7 +473,9 @@ export default function EditDeployment() {
                 </div>
               ) : (
                 <div className="bg-card border border-border rounded-xl p-6 text-center">
-                  <p className="text-foreground/60">Select a workload or resource to edit</p>
+                  <p className="text-foreground/60">
+                    Select a workload or resource to edit
+                  </p>
                 </div>
               )}
             </div>

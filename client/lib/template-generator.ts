@@ -89,7 +89,10 @@ export function generateTemplates(
     const containers = workload.containers || [];
 
     // Transform config based on workload type
-    const transformedConfig = transformWorkloadConfig(workload.type, workloadConfig);
+    const transformedConfig = transformWorkloadConfig(
+      workload.type,
+      workloadConfig,
+    );
 
     let workloadYaml = "";
     switch (workload.type) {
