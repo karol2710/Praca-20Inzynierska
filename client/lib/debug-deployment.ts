@@ -42,9 +42,18 @@ export function debugDeploymentPayload(payload: any): void {
     );
   }
 
-  console.log("\n=== GENERATED YAML ===");
+  console.log("\n=== GENERATED YAML (User-Editable) ===");
   if (payload.generatedYaml) {
     console.log(payload.generatedYaml);
+  } else {
+    console.log("(empty or not set)");
+  }
+
+  console.log("\n=== FULL YAML (For Backend Deployment) ===");
+  if (payload._fullYaml) {
+    console.log(payload._fullYaml);
+  } else {
+    console.log("(empty or not set)");
   }
 
   console.log("\n=== END PAYLOAD ===");
