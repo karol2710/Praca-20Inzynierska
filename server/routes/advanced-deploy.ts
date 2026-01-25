@@ -483,6 +483,8 @@ function getPluralForm(kind: string): string {
     ClusterRoleBinding: "clusterrolebindings",
     Certificate: "certificates",
     HTTPRoute: "httproutes",
+    GRPCRoute: "grpcroutes",
+    BackendTrafficPolicy: "backendtrafficpolicies",
     Schedule: "schedules",
     Deployment: "deployments",
     Service: "services",
@@ -491,6 +493,7 @@ function getPluralForm(kind: string): string {
     Secret: "secrets",
     Namespace: "namespaces",
     NetworkPolicy: "networkpolicies",
+    ResourceQuota: "resourcequotas",
   };
 
   return pluralMap[kind] || kind.toLowerCase() + "s";
