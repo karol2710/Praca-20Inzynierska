@@ -392,7 +392,7 @@ export default function Deployments() {
                         key={idx}
                         className="flex items-center justify-between p-4 bg-muted rounded-lg border border-border"
                       >
-                        <div>
+                        <div className="flex-1">
                           <p className="font-semibold text-foreground">
                             {resource.kind}/{resource.name}
                           </p>
@@ -400,15 +400,21 @@ export default function Deployments() {
                             {resource.namespace} • {resource.apiVersion}
                           </p>
                         </div>
-                        <button
-                          onClick={() =>
-                            deleteResource(selectedDeployment.id, resource)
-                          }
-                          className="flex items-center gap-2 px-3 py-2 bg-destructive/10 text-destructive hover:bg-destructive/20 rounded text-sm transition-all"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          Delete
-                        </button>
+                        {resource.deletable ? (
+                          <button
+                            onClick={() =>
+                              deleteResource(selectedDeployment.id, resource)
+                            }
+                            className="flex items-center gap-2 px-3 py-2 bg-destructive/10 text-destructive hover:bg-destructive/20 rounded text-sm transition-all"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            Delete
+                          </button>
+                        ) : (
+                          <span className="text-xs text-foreground/50 px-3 py-2">
+                            Auto-generated
+                          </span>
+                        )}
                       </div>
                     ))}
                   </div>
