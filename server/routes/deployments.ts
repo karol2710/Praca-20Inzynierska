@@ -505,3 +505,121 @@ export const handleUpdateDeployment: RequestHandler = async (req, res) => {
     res.status(500).json({ error: "Failed to update deployment" });
   }
 };
+
+// Get all deployed resources for a deployment
+export const handleGetDeploymentResources: RequestHandler = async (req, res) => {
+  const user = (req as any).user;
+  const { deploymentId } = req.params;
+
+  if (!user || !user.userId) {
+    return res.status(401).json({ error: "Not authenticated" });
+  }
+
+  try {
+    const result = await query(
+      `SELECT yaml_config FROM deployments
+       WHERE id = $1 AND user_id = $2`,
+      [deploymentId, user.userId],
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Deployment not found" });
+    }
+
+    const yamlConfig = result.rows[0].yaml_config;
+    const resources: any[] = [];
+
+    // Parse YAML documents to extract resources
+    const yamlDocuments = yamlConfig.split(/^---$/m).filter((doc) => doc.trim());
+
+    for (const doc of yamlDocuments) {
+      try {
+        const resource = yaml.load(doc) as any;
+        if (resource && resource.kind && resource.metadata?.name) {
+          resources.push({
+            kind: resource.kind,
+            name: resource.metadata.name,
+            namespace: resource.metadata.namespace || "default",
+            apiVersion: resource.apiVersion || "v1",
+          });
+        }
+      } catch {
+        // Skip invalid YAML documents
+      }
+    }
+
+    res.status(200).json({ resources });
+  } catch (error) {
+    console.error("Get deployment resources error:", error);
+    res.status(500).json({ error: "Failed to fetch deployment resources" });
+  }
+};
+
+// Delete a specific resource from deployment
+export const handleDeleteDeploymentResource: RequestHandler = async (req, res) => {
+  const user = (req as any).user;
+  const { deploymentId } = req.params;
+  const { kind, name, namespace } = req.body;
+
+  if (!user || !user.userId) {
+    return res.status(401).json({ error: "Not authenticated" });
+  }
+
+  if (!kind || !name || !namespace) {
+    return res.status(400).json({ error: "Missing resource information" });
+  }
+
+  try {
+    // Get deployment to verify ownership
+    const result = await query(
+      `SELECT namespace FROM deployments WHERE id = $1 AND user_id = $2`,
+      [deploymentId, user.userId],
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Deployment not found" });
+    }
+
+    // Initialize Kubernetes client
+    let kc = new k8s.KubeConfig();
+
+    const isInClusterEnv =
+      process.env.KUBERNETES_SERVICE_HOST && process.env.KUBERNETES_SERVICE_PORT;
+
+    let isInClusterToken = false;
+    try {
+      fsSync.accessSync("/var/run/secrets/kubernetes.io/serviceaccount/token");
+      isInClusterToken = true;
+    } catch {
+      isInClusterToken = false;
+    }
+
+    const isInCluster = isInClusterEnv || isInClusterToken;
+
+    if (isInCluster) {
+      kc.loadFromCluster();
+    } else {
+      throw new Error("Cannot delete: Not running inside Kubernetes cluster");
+    }
+
+    // Create temporary resource object for deletion
+    const resource = {
+      kind,
+      apiVersion: "v1",
+      metadata: { name, namespace },
+    };
+
+    // Delete from cluster
+    await deleteResource(kc, resource, namespace);
+
+    res.status(200).json({
+      success: true,
+      message: `Resource ${kind}/${name} deleted successfully`,
+    });
+  } catch (error) {
+    console.error("Delete resource error:", error);
+    res.status(500).json({
+      error: error instanceof Error ? error.message : "Failed to delete resource",
+    });
+  }
+};
