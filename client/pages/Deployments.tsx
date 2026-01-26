@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
-import { Copy, Trash2, RotateCcw, ExternalLink, Edit } from "lucide-react";
+import { Copy, Trash2, RotateCcw, ExternalLink, Edit, Boxes, X, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface Deployment {
@@ -14,6 +14,13 @@ interface Deployment {
   resources: number;
 }
 
+interface K8sResource {
+  kind: string;
+  name: string;
+  namespace: string;
+  apiVersion: string;
+}
+
 export default function Deployments() {
   const [deployments, setDeployments] = useState<Deployment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -23,6 +30,9 @@ export default function Deployments() {
   const [showYaml, setShowYaml] = useState(false);
   const [yamlContent, setYamlContent] = useState<string>("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [showResources, setShowResources] = useState(false);
+  const [resources, setResources] = useState<K8sResource[]>([]);
+  const [resourcesLoading, setResourcesLoading] = useState(false);
 
   useEffect(() => {
     fetchDeployments();
@@ -109,6 +119,67 @@ export default function Deployments() {
 
   const copyYaml = () => {
     navigator.clipboard.writeText(yamlContent);
+  };
+
+  const viewResources = async (deployment: Deployment) => {
+    try {
+      setResourcesLoading(true);
+      const token = localStorage.getItem("token");
+      const response = await fetch(`/api/deployments/${deployment.id}/resources`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setResources(data.resources || []);
+        setSelectedDeployment(deployment);
+        setShowResources(true);
+      } else {
+        setError("Failed to fetch resources");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setResourcesLoading(false);
+    }
+  };
+
+  const deleteResource = async (
+    deploymentId: string,
+    resource: K8sResource,
+  ) => {
+    if (
+      !confirm(
+        `Delete ${resource.kind}/${resource.name} from cluster? This action cannot be undone.`,
+      )
+    )
+      return;
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`/api/deployments/${deploymentId}/resources`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(resource),
+      });
+
+      if (response.ok) {
+        setResources(resources.filter((r) => !(r.name === resource.name && r.kind === resource.kind)));
+        setError(null);
+      } else {
+        const data = await response.json();
+        setError(data.error || "Failed to delete resource");
+      }
+    } catch (err) {
+      setError(
+        `Error deleting resource: ${err instanceof Error ? err.message : "An error occurred"}`,
+      );
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -214,7 +285,7 @@ export default function Deployments() {
                     <div></div>
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
                     <Link
                       to={`/deployments/${deployment.id}/edit`}
                       className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm transition-all font-medium"
@@ -222,6 +293,13 @@ export default function Deployments() {
                       <Edit className="w-4 h-4" />
                       Edit
                     </Link>
+                    <button
+                      onClick={() => viewResources(deployment)}
+                      className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm transition-all font-medium"
+                    >
+                      <Boxes className="w-4 h-4" />
+                      Resources
+                    </button>
                     <button
                       onClick={() => viewYaml(deployment)}
                       className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 text-sm"
