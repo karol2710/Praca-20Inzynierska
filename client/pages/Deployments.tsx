@@ -19,6 +19,7 @@ interface K8sResource {
   name: string;
   namespace: string;
   apiVersion: string;
+  deletable: boolean;
 }
 
 export default function Deployments() {
