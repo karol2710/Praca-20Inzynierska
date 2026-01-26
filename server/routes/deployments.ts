@@ -19,6 +19,22 @@ interface DeploymentRecord {
   resources_count: number;
 }
 
+// Resources that users are allowed to delete
+const DELETABLE_RESOURCE_KINDS = new Set([
+  "Pod",
+  "Deployment",
+  "StatefulSet",
+  "ReplicaSet",
+  "Job",
+  "CronJob",
+  "Service", // User-created ClusterIP services
+  "HTTPRoute", // Auto-generated HTTPRoute can be deleted
+]);
+
+function isResourceDeletable(kind: string): boolean {
+  return DELETABLE_RESOURCE_KINDS.has(kind);
+}
+
 // Get all deployments for current user
 export const handleGetDeployments: RequestHandler = async (req, res) => {
   const user = (req as any).user;
