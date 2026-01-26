@@ -17,3 +17,6 @@ echo "==> Token zapisany w $DEST"
 echo
 echo "TOKEN:"
 cat $DEST
+
+
+# if token is note received instantly, then do ctl+c on receiving side nad it will be send.
