@@ -557,6 +557,7 @@ export const handleGetDeploymentResources: RequestHandler = async (req, res) => 
             name: resource.metadata.name,
             namespace: resource.metadata.namespace || "default",
             apiVersion: resource.apiVersion || "v1",
+            deletable: isResourceDeletable(resource.kind),
           });
         }
       } catch {
