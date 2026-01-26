@@ -364,6 +364,66 @@ export default function Deployments() {
             </div>
           </div>
         )}
+
+        {showResources && selectedDeployment && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <div className="bg-card rounded-lg max-w-2xl w-full max-h-96 overflow-hidden flex flex-col">
+              <div className="flex items-center justify-between p-6 border-b border-border">
+                <h2 className="text-xl font-bold text-foreground">
+                  {selectedDeployment.name} - Deployed Resources
+                </h2>
+                <button
+                  onClick={() => setShowResources(false)}
+                  className="text-foreground/50 hover:text-foreground"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-auto p-6">
+                {resourcesLoading ? (
+                  <p className="text-foreground/60 text-center py-8">Loading resources...</p>
+                ) : resources.length === 0 ? (
+                  <p className="text-foreground/60 text-center py-8">No resources deployed</p>
+                ) : (
+                  <div className="space-y-3">
+                    {resources.map((resource, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-center justify-between p-4 bg-muted rounded-lg border border-border"
+                      >
+                        <div>
+                          <p className="font-semibold text-foreground">
+                            {resource.kind}/{resource.name}
+                          </p>
+                          <p className="text-xs text-foreground/60">
+                            {resource.namespace} • {resource.apiVersion}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() =>
+                            deleteResource(selectedDeployment.id, resource)
+                          }
+                          className="flex items-center gap-2 px-3 py-2 bg-destructive/10 text-destructive hover:bg-destructive/20 rounded text-sm transition-all"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          Delete
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="flex gap-2 p-6 border-t border-border">
+                <button
+                  onClick={() => setShowResources(false)}
+                  className="flex-1 px-4 py-2 bg-muted text-foreground rounded-lg hover:bg-muted/80"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </Layout>
   );
