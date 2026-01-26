@@ -5,6 +5,7 @@ Complete installation instructions for KubeChart in different environments.
 ## System Requirements
 
 ### Minimum Requirements
+
 - **OS**: Linux, macOS, or Windows (WSL2)
 - **RAM**: 2GB minimum (4GB recommended)
 - **Disk Space**: 1GB free space
@@ -12,6 +13,7 @@ Complete installation instructions for KubeChart in different environments.
 - **npm/pnpm**: Latest version
 
 ### Recommended Setup
+
 - **OS**: Linux (Ubuntu 20.04 LTS or newer)
 - **RAM**: 8GB or more
 - **Disk Space**: 10GB or more

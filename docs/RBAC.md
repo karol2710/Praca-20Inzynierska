@@ -69,7 +69,7 @@ metadata:
 rules:
   # Core API group
   - apiGroups: [""]
-    resources: 
+    resources:
       - pods
       - services
       - configmaps
@@ -239,6 +239,7 @@ subjects:
 ### KubeChart Service Account Permissions
 
 **Unrestricted Access**:
+
 - ✅ View all resource types
 - ✅ Create/update/delete in any namespace
 - ✅ Manage RBAC resources
@@ -246,6 +247,7 @@ subjects:
 - ✅ Manage storage resources
 
 **Why**:
+
 - Needs to deploy user workloads
 - Needs to manage user namespaces
 - Needs to create/update/delete user resources
@@ -253,12 +255,14 @@ subjects:
 ### User Application Permissions (If Generated)
 
 **Limited Access**:
+
 - ✅ View pods in own namespace
 - ❌ Cannot create resources
 - ❌ Cannot access other namespaces
 - ❌ Cannot manage RBAC
 
 **Why**:
+
 - Least privilege principle
 - Security isolation
 - Prevent privilege escalation
@@ -329,6 +333,7 @@ kubectl describe clusterrole kubechart
 **Cause**: Service account lacks required permissions
 
 **Solution**:
+
 ```bash
 # Check permissions
 kubectl auth can-i create deployments \
@@ -349,6 +354,7 @@ kubectl edit clusterrole kubechart
 **Cause**: Missing gateway.networking.k8s.io rules
 
 **Solution**:
+
 ```bash
 # Verify rule exists
 kubectl describe clusterrole kubechart | grep -A5 "gateway.networking"
@@ -367,6 +373,7 @@ kubectl describe clusterrole kubechart | grep -A5 "gateway.networking"
 **Cause**: Missing rules in ClusterRole
 
 **Solution**:
+
 ```bash
 # Verify rules
 kubectl describe clusterrole kubechart | grep -E "resourcequotas|networkpolicies"
@@ -382,7 +389,7 @@ kubectl patch clusterrole kubechart \
 
 - Grant only necessary permissions
 - Use namespace-scoped Roles when possible
-- Avoid wildcard (*) permissions
+- Avoid wildcard (\*) permissions
 
 ### 2. Service Account Isolation
 

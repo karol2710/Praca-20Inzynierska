@@ -175,7 +175,7 @@ Docker Compose allows running multiple containers together.
 ### docker-compose.yml
 
 ```yaml
-version: '3.8'
+version: "3.8"
 
 services:
   app:
@@ -457,7 +457,7 @@ CMD ["node", "dist/server/index.js"]
 ### Production docker-compose
 
 ```yaml
-version: '3.8'
+version: "3.8"
 
 services:
   app:
@@ -472,7 +472,15 @@ services:
       db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/"]
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8080/",
+        ]
       interval: 30s
       timeout: 3s
       retries: 3

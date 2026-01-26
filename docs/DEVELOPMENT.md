@@ -69,6 +69,7 @@ pnpm lint
 See [Project Structure Guide](PROJECT_STRUCTURE.md) for detailed directory layout.
 
 Quick reference:
+
 - `client/` - React frontend
 - `server/` - Express backend
 - `shared/` - Shared types
@@ -80,6 +81,7 @@ Quick reference:
 ### React & TypeScript
 
 The frontend is built with:
+
 - **React 18** - UI framework
 - **TypeScript** - Type safety
 - **Vite** - Fast build tool
@@ -89,10 +91,11 @@ The frontend is built with:
 ### Creating a New Page
 
 1. **Create page component**:
+
    ```typescript
    // client/pages/MyPage.tsx
    import Layout from "@/components/Layout";
-   
+
    export default function MyPage() {
      return (
        <Layout>
@@ -105,10 +108,11 @@ The frontend is built with:
    ```
 
 2. **Add route**:
+
    ```typescript
    // client/App.tsx
    import MyPage from "@/pages/MyPage";
-   
+
    <Routes>
      <Route path="/my-page" element={<MyPage />} />
    </Routes>
@@ -169,7 +173,7 @@ export default function MyComponent() {
   }, [token]);
 
   if (!user) return <div>Not authenticated</div>;
-  
+
   return <div>{data && <pre>{JSON.stringify(data)}</pre>}</div>;
 }
 ```
@@ -179,6 +183,7 @@ export default function MyComponent() {
 ### Express & TypeScript
 
 The backend is built with:
+
 - **Express** - Web framework
 - **TypeScript** - Type safety
 - **PostgreSQL** - Database
@@ -187,17 +192,18 @@ The backend is built with:
 ### Creating a New API Route
 
 1. **Create route handler**:
+
    ```typescript
    // server/routes/my-route.ts
    import { RequestHandler } from "express";
-   
+
    export const handleMyRoute: RequestHandler = async (req, res) => {
      const user = (req as any).user;
-     
+
      if (!user) {
        return res.status(401).json({ error: "Not authenticated" });
      }
-     
+
      try {
        // Your logic here
        res.status(200).json({ success: true, data: {} });
@@ -209,10 +215,11 @@ The backend is built with:
    ```
 
 2. **Register route**:
+
    ```typescript
    // server/index.ts
    import { handleMyRoute } from "./routes/my-route";
-   
+
    // In createServer function:
    app.get("/api/my-route", handleMyRoute);
    ```
@@ -230,11 +237,10 @@ import { query } from "../db";
 
 export const handleGetData: RequestHandler = async (req, res) => {
   try {
-    const result = await query(
-      "SELECT * FROM deployments WHERE user_id = $1",
-      [userId]
-    );
-    
+    const result = await query("SELECT * FROM deployments WHERE user_id = $1", [
+      userId,
+    ]);
+
     res.json({ data: result.rows });
   } catch (error) {
     console.error("Query error:", error);
@@ -326,7 +332,7 @@ interface MyType {
 // 3. Component
 export default function MyPage() {
   const { user } = useAuth();
-  
+
   return <div>{/* Component JSX */}</div>;
 }
 ```
@@ -335,7 +341,7 @@ export default function MyPage() {
 
 ```typescript
 // Use Tailwind utilities
-className="flex items-center justify-between gap-4 p-6 bg-white rounded-lg"
+className = "flex items-center justify-between gap-4 p-6 bg-white rounded-lg";
 
 // For complex styles, use CSS modules or tailwind @apply
 ```
@@ -362,6 +368,7 @@ refactor: simplify template generator
 ### Making a Pull Request
 
 1. **Create branch**:
+
    ```bash
    git checkout -b feature/my-feature
    ```
@@ -369,6 +376,7 @@ refactor: simplify template generator
 2. **Make changes** and test locally
 
 3. **Commit changes**:
+
    ```bash
    git add .
    git commit -m "feat: add my feature"
@@ -419,6 +427,7 @@ kubectl logs -f -n kubechart deployment/kubechart
 ### Adding a New Database Table
 
 1. **Create migration** (or SQL directly):
+
    ```sql
    CREATE TABLE new_table (
      id UUID PRIMARY KEY,
@@ -429,6 +438,7 @@ kubectl logs -f -n kubechart deployment/kubechart
    ```
 
 2. **Execute in database**:
+
    ```bash
    psql $DATABASE_URL < migration.sql
    ```

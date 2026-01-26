@@ -49,6 +49,7 @@ The application will start on `http://localhost:8080`
 ### 4. Access the Application
 
 Open your browser and navigate to:
+
 ```
 http://localhost:8080
 ```
@@ -91,6 +92,7 @@ pnpm dev
 ```
 
 Features in development mode:
+
 - ✅ Hot module reload
 - ✅ Full source maps for debugging
 - ✅ Development console logs
@@ -126,6 +128,7 @@ pnpm start
 ```
 
 This script will:
+
 - Create a namespace (`kubechart`)
 - Set up service accounts and RBAC
 - Deploy the KubeChart application
@@ -231,15 +234,15 @@ If not set, configure your `.env` file with proper database credentials.
 
 ## Common Commands
 
-| Command | Purpose |
-|---------|---------|
-| `pnpm dev` | Start development server |
-| `pnpm build` | Build for production |
-| `pnpm start` | Start production server |
-| `pnpm test` | Run tests |
-| `pnpm typecheck` | Check TypeScript types |
-| `./k8s-deploy2.sh` | Deploy to Kubernetes |
-| `docker build .` | Build Docker image |
+| Command            | Purpose                  |
+| ------------------ | ------------------------ |
+| `pnpm dev`         | Start development server |
+| `pnpm build`       | Build for production     |
+| `pnpm start`       | Start production server  |
+| `pnpm test`        | Run tests                |
+| `pnpm typecheck`   | Check TypeScript types   |
+| `./k8s-deploy2.sh` | Deploy to Kubernetes     |
+| `docker build .`   | Build Docker image       |
 
 ## Getting Help
 

@@ -25,6 +25,7 @@ See Authentication endpoints below.
 All responses are JSON with the following structure:
 
 **Success (2xx)**:
+
 ```json
 {
   "data": {},
@@ -34,6 +35,7 @@ All responses are JSON with the following structure:
 ```
 
 **Error (4xx, 5xx)**:
+
 ```json
 {
   "error": "Error description",
@@ -330,6 +332,7 @@ Response:
 ### Example: Create Deployment
 
 **Request**:
+
 ```bash
 curl -X POST http://localhost:8080/api/deployments \
   -H "Authorization: Bearer eyJhbGc..." \
@@ -359,6 +362,7 @@ curl -X POST http://localhost:8080/api/deployments \
 ```
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -370,12 +374,14 @@ curl -X POST http://localhost:8080/api/deployments \
 ### Example: Get Deployments
 
 **Request**:
+
 ```bash
 curl -H "Authorization: Bearer eyJhbGc..." \
   http://localhost:8080/api/deployments
 ```
 
 **Response**:
+
 ```json
 {
   "deployments": [
@@ -396,6 +402,7 @@ curl -H "Authorization: Bearer eyJhbGc..." \
 ### Example: Delete Resource
 
 **Request**:
+
 ```bash
 curl -X DELETE http://localhost:8080/api/deployments/550e8400-e29b-41d4-a716-446655440000/resources \
   -H "Authorization: Bearer eyJhbGc..." \
@@ -408,6 +415,7 @@ curl -X DELETE http://localhost:8080/api/deployments/550e8400-e29b-41d4-a716-446
 ```
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -421,14 +429,14 @@ curl -X DELETE http://localhost:8080/api/deployments/550e8400-e29b-41d4-a716-446
 
 ```typescript
 {
-  id: string;              // UUID
-  name: string;            // Deployment name
-  namespace: string;       // Kubernetes namespace
-  status: string;          // "active" | "failed" | "pending"
-  environment: string;     // "staging" | "production"
-  createdAt: string;       // ISO 8601 timestamp
-  workloads: number;       // Number of workloads
-  resources: number;       // Number of resources
+  id: string; // UUID
+  name: string; // Deployment name
+  namespace: string; // Kubernetes namespace
+  status: string; // "active" | "failed" | "pending"
+  environment: string; // "staging" | "production"
+  createdAt: string; // ISO 8601 timestamp
+  workloads: number; // Number of workloads
+  resources: number; // Number of resources
 }
 ```
 
@@ -461,11 +469,11 @@ curl -X DELETE http://localhost:8080/api/deployments/550e8400-e29b-41d4-a716-446
 
 ```typescript
 {
-  kind: string;            // Resource kind
-  name: string;            // Resource name
-  namespace: string;       // Namespace
-  apiVersion: string;      // API version
-  deletable: boolean;      // Can be deleted via UI
+  kind: string; // Resource kind
+  name: string; // Resource name
+  namespace: string; // Namespace
+  apiVersion: string; // API version
+  deletable: boolean; // Can be deleted via UI
 }
 ```
 
@@ -484,6 +492,7 @@ Not implemented. Use client-side filtering if needed.
 ## Versioning
 
 API version is included in request paths where needed:
+
 - Core API: `/api/v1/...`
 - Extended API: `/api/extended/...`
 
@@ -492,6 +501,7 @@ Current version is implicitly `v1`.
 ## Deprecation Policy
 
 Deprecated endpoints will be marked with:
+
 ```json
 {
   "deprecated": true,

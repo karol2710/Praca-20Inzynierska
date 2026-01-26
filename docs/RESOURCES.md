@@ -10,42 +10,42 @@ KubeChart manages various Kubernetes resource types. This guide covers resource 
 
 ### Workloads
 
-| Type | Purpose | Persistence |
-|------|---------|-------------|
-| **Pod** | Single container instance | No |
-| **Deployment** | Stateless application scaling | No |
-| **StatefulSet** | Stateful application with identity | Yes |
-| **ReplicaSet** | Pod replication | No |
-| **Job** | One-time batch job | No |
-| **CronJob** | Scheduled recurring job | No |
-| **DaemonSet** | Run on every node | No |
+| Type            | Purpose                            | Persistence |
+| --------------- | ---------------------------------- | ----------- |
+| **Pod**         | Single container instance          | No          |
+| **Deployment**  | Stateless application scaling      | No          |
+| **StatefulSet** | Stateful application with identity | Yes         |
+| **ReplicaSet**  | Pod replication                    | No          |
+| **Job**         | One-time batch job                 | No          |
+| **CronJob**     | Scheduled recurring job            | No          |
+| **DaemonSet**   | Run on every node                  | No          |
 
 ### Services & Networking
 
-| Type | Purpose |
-|------|---------|
+| Type                    | Purpose                    |
+| ----------------------- | -------------------------- |
 | **Service (ClusterIP)** | Internal service discovery |
-| **HTTPRoute** | Envoy Gateway routing |
-| **NetworkPolicy** | Pod communication control |
+| **HTTPRoute**           | Envoy Gateway routing      |
+| **NetworkPolicy**       | Pod communication control  |
 
 ### Configuration & Storage
 
-| Type | Purpose |
-|------|---------|
-| **ConfigMap** | Non-sensitive configuration |
-| **Secret** | Sensitive data storage |
-| **PersistentVolume** | Cluster storage |
-| **PersistentVolumeClaim** | Storage request |
+| Type                      | Purpose                     |
+| ------------------------- | --------------------------- |
+| **ConfigMap**             | Non-sensitive configuration |
+| **Secret**                | Sensitive data storage      |
+| **PersistentVolume**      | Cluster storage             |
+| **PersistentVolumeClaim** | Storage request             |
 
 ### Policy & Control
 
-| Type | Purpose |
-|------|---------|
-| **Role** | Namespace-scoped permissions |
-| **RoleBinding** | Bind role to user/SA |
-| **ResourceQuota** | Limit namespace resources |
-| **LimitRange** | Limit pod/container resources |
-| **BackendTrafficPolicy** | Rate limiting & policies |
+| Type                     | Purpose                       |
+| ------------------------ | ----------------------------- |
+| **Role**                 | Namespace-scoped permissions  |
+| **RoleBinding**          | Bind role to user/SA          |
+| **ResourceQuota**        | Limit namespace resources     |
+| **LimitRange**           | Limit pod/container resources |
+| **BackendTrafficPolicy** | Rate limiting & policies      |
 
 ## Resource Lifecycle
 
@@ -98,16 +98,19 @@ Database Record Updated
 ### Via KubeChart UI
 
 1. **Navigate to Deployments**
+
    ```
    Click "Deployments" in sidebar
    ```
 
 2. **Select Deployment**
+
    ```
    Click on deployment card
    ```
 
 3. **Click "Resources" Button**
+
    ```
    Shows modal with all resources
    ```
@@ -148,6 +151,7 @@ kubectl get pod <name> -n <namespace> -o yaml
 The following resources can be deleted through KubeChart UI:
 
 ✅ **User Workloads**
+
 - Pod
 - Deployment
 - StatefulSet
@@ -156,6 +160,7 @@ The following resources can be deleted through KubeChart UI:
 - CronJob
 
 ✅ **User-Exposed Services**
+
 - Service (ClusterIP)
 - HTTPRoute
 
@@ -164,19 +169,23 @@ The following resources can be deleted through KubeChart UI:
 The following resources are auto-generated and marked as read-only:
 
 ❌ **RBAC**
+
 - Role
 - RoleBinding
 - ClusterRole
 - ClusterRoleBinding
 
 ❌ **Network Policies**
+
 - NetworkPolicy
 
 ❌ **Quotas & Limits**
+
 - ResourceQuota
 - LimitRange
 
 ❌ **Advanced**
+
 - BackendTrafficPolicy (rate limiting)
 - Certificate (TLS)
 
@@ -187,16 +196,19 @@ The following resources are auto-generated and marked as read-only:
 ### Delete via KubeChart UI
 
 1. **Open Resources Modal**
+
    ```
    Deployment Card → Resources Button
    ```
 
 2. **Find Resource**
+
    ```
    Locate in resource list
    ```
 
 3. **Click Delete**
+
    ```
    Only shows for deletable resources
    ```
@@ -235,11 +247,11 @@ Set per container:
 ```yaml
 resources:
   requests:
-    cpu: 100m      # Minimum CPU
-    memory: 128Mi   # Minimum memory
+    cpu: 100m # Minimum CPU
+    memory: 128Mi # Minimum memory
   limits:
-    cpu: 500m      # Maximum CPU
-    memory: 512Mi   # Maximum memory
+    cpu: 500m # Maximum CPU
+    memory: 512Mi # Maximum memory
 ```
 
 ### Namespace ResourceQuota
@@ -273,13 +285,13 @@ metadata:
   namespace: user-namespace
 spec:
   limits:
-  - max:
-      cpu: "2"
-      memory: "2Gi"
-    min:
-      cpu: "100m"
-      memory: "128Mi"
-    type: Container
+    - max:
+        cpu: "2"
+        memory: "2Gi"
+      min:
+        cpu: "100m"
+        memory: "128Mi"
+      type: Container
 ```
 
 ## Storage Management
@@ -482,6 +494,7 @@ Namespace per application/environment
 ### Resource Limits
 
 **Always set limits:**
+
 ```yaml
 resources:
   requests:
@@ -495,6 +508,7 @@ resources:
 ### Health Checks
 
 **Implement probes:**
+
 ```yaml
 livenessProbe:
   httpGet:
@@ -511,12 +525,14 @@ readinessProbe:
 ### Issue: Cannot Delete Resource
 
 **Check permissions**:
+
 ```bash
 kubectl auth can-i delete pods
 kubectl auth can-i delete deployments
 ```
 
 **Check resource locks**:
+
 ```bash
 kubectl describe pod <name> -n <namespace>
 # Look for finalizers or owner references

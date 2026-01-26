@@ -41,7 +41,7 @@ metadata:
 spec:
   podSelector: {}
   policyTypes:
-  - Ingress
+    - Ingress
 ```
 
 **Effect**: No pod can receive traffic from any source
@@ -59,15 +59,15 @@ spec:
     matchLabels:
       app: web
   policyTypes:
-  - Ingress
+    - Ingress
   ingress:
-  - from:
-    - podSelector:
-        matchLabels:
-          app: frontend
-    ports:
-    - protocol: TCP
-      port: 8080
+    - from:
+        - podSelector:
+            matchLabels:
+              app: frontend
+      ports:
+        - protocol: TCP
+          port: 8080
 ```
 
 **Effect**: Only pods with label `app: frontend` can access `app: web` on port 8080
@@ -85,13 +85,13 @@ spec:
     matchLabels:
       app: api
   policyTypes:
-  - Ingress
+    - Ingress
   ingress:
-  - from:
-    - namespaceSelector: {}
-    ports:
-    - protocol: TCP
-      port: 8080
+    - from:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 8080
 ```
 
 **Effect**: Allow traffic from any namespace (external traffic through ingress)
@@ -109,22 +109,22 @@ spec:
     matchLabels:
       app: web
   policyTypes:
-  - Egress
+    - Egress
   egress:
-  # Allow DNS
-  - to:
-    - namespaceSelector: {}
-    ports:
-    - protocol: UDP
-      port: 53
-  # Allow HTTP/HTTPS
-  - to:
-    - namespaceSelector: {}
-    ports:
-    - protocol: TCP
-      port: 80
-    - protocol: TCP
-      port: 443
+    # Allow DNS
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+    # Allow HTTP/HTTPS
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 80
+        - protocol: TCP
+          port: 443
 ```
 
 **Effect**: Web pods can only access DNS, HTTP, and HTTPS traffic
@@ -144,13 +144,13 @@ spec:
     matchLabels:
       tier: frontend
   ingress:
-  - from:
-    - namespaceSelector: {}  # External traffic
-    ports:
-    - protocol: TCP
-      port: 80
-    - protocol: TCP
-      port: 443
+    - from:
+        - namespaceSelector: {} # External traffic
+      ports:
+        - protocol: TCP
+          port: 80
+        - protocol: TCP
+          port: 443
 
 ---
 # Backend tier - allow from frontend only
@@ -163,13 +163,13 @@ spec:
     matchLabels:
       tier: backend
   ingress:
-  - from:
-    - podSelector:
-        matchLabels:
-          tier: frontend
-    ports:
-    - protocol: TCP
-      port: 8080
+    - from:
+        - podSelector:
+            matchLabels:
+              tier: frontend
+      ports:
+        - protocol: TCP
+          port: 8080
 
 ---
 # Database tier - allow from backend only
@@ -182,13 +182,13 @@ spec:
     matchLabels:
       tier: database
   ingress:
-  - from:
-    - podSelector:
-        matchLabels:
-          tier: backend
-    ports:
-    - protocol: TCP
-      port: 5432
+    - from:
+        - podSelector:
+            matchLabels:
+              tier: backend
+      ports:
+        - protocol: TCP
+          port: 5432
 ```
 
 ### Example 2: Default Deny with Explicit Allow
@@ -202,7 +202,7 @@ metadata:
 spec:
   podSelector: {}
   policyTypes:
-  - Ingress
+    - Ingress
 
 ---
 # Deny all egress
@@ -213,7 +213,7 @@ metadata:
 spec:
   podSelector: {}
   policyTypes:
-  - Egress
+    - Egress
 
 ---
 # Allow specific service access
@@ -226,30 +226,30 @@ spec:
     matchLabels:
       app: myapp
   policyTypes:
-  - Ingress
-  - Egress
+    - Ingress
+    - Egress
   ingress:
-  - from:
-    - podSelector:
-        matchLabels:
-          role: client
-    ports:
-    - protocol: TCP
-      port: 8080
+    - from:
+        - podSelector:
+            matchLabels:
+              role: client
+      ports:
+        - protocol: TCP
+          port: 8080
   egress:
-  - to:
-    - podSelector:
-        matchLabels:
-          role: database
-    ports:
-    - protocol: TCP
-      port: 5432
-  # Allow DNS
-  - to:
-    - namespaceSelector: {}
-    ports:
-    - protocol: UDP
-      port: 53
+    - to:
+        - podSelector:
+            matchLabels:
+              role: database
+      ports:
+        - protocol: TCP
+          port: 5432
+    # Allow DNS
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
 ```
 
 ### Example 3: Cross-Namespace Communication
@@ -265,13 +265,13 @@ spec:
     matchLabels:
       app: service
   ingress:
-  - from:
-    - namespaceSelector:
-        matchLabels:
-          name: client-ns
-    ports:
-    - protocol: TCP
-      port: 8080
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: client-ns
+      ports:
+        - protocol: TCP
+          port: 8080
 ```
 
 ## Selectors
@@ -367,6 +367,7 @@ curl http://<pod-ip>:<port>
 **Symptoms**: Connection timeout when pods try to reach each other
 
 **Causes**:
+
 1. Network policy blocking traffic
 2. Incorrect labels in selectors
 3. Network plugin not installed
@@ -395,6 +396,7 @@ kubectl delete networkpolicy <name> -n <namespace>
 **Symptoms**: External traffic cannot reach pods
 
 **Causes**:
+
 1. Default deny ingress policy
 2. Ingress controller not allowed
 3. Incorrect port in policy
@@ -418,6 +420,7 @@ from:
 **Symptoms**: Pods cannot resolve domain names
 
 **Causes**:
+
 1. DNS (UDP port 53) not allowed in egress policy
 2. kube-dns pod unreachable
 
@@ -426,10 +429,10 @@ from:
 ```yaml
 # Add to network policy egress
 - to:
-  - namespaceSelector: {}
+    - namespaceSelector: {}
   ports:
-  - protocol: UDP
-    port: 53  # DNS
+    - protocol: UDP
+      port: 53 # DNS
 ```
 
 ## Best Practices
@@ -506,18 +509,18 @@ spec:
     matchLabels:
       service: api
   egress:
-  - to:
-    - podSelector:
-        matchLabels:
-          service: database
-    ports:
-    - protocol: TCP
-      port: 5432
-  - to:
-    - namespaceSelector: {}
-    ports:
-    - protocol: TCP
-      port: 443  # HTTPS to external APIs
+    - to:
+        - podSelector:
+            matchLabels:
+              service: database
+      ports:
+        - protocol: TCP
+          port: 5432
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 443 # HTTPS to external APIs
 ```
 
 ### Blue-Green Deployment
@@ -535,10 +538,10 @@ spec:
       app: myapp
       version: blue
   ingress:
-  - from:
-    - podSelector:
-        matchLabels:
-          role: client
+    - from:
+        - podSelector:
+            matchLabels:
+              role: client
 ```
 
 ## Related Documentation

@@ -523,7 +523,10 @@ export const handleUpdateDeployment: RequestHandler = async (req, res) => {
 };
 
 // Get all deployed resources for a deployment
-export const handleGetDeploymentResources: RequestHandler = async (req, res) => {
+export const handleGetDeploymentResources: RequestHandler = async (
+  req,
+  res,
+) => {
   const user = (req as any).user;
   const { deploymentId } = req.params;
 
@@ -546,7 +549,9 @@ export const handleGetDeploymentResources: RequestHandler = async (req, res) => 
     const resources: any[] = [];
 
     // Parse YAML documents to extract resources
-    const yamlDocuments = yamlConfig.split(/^---$/m).filter((doc) => doc.trim());
+    const yamlDocuments = yamlConfig
+      .split(/^---$/m)
+      .filter((doc) => doc.trim());
 
     for (const doc of yamlDocuments) {
       try {
@@ -573,7 +578,10 @@ export const handleGetDeploymentResources: RequestHandler = async (req, res) => 
 };
 
 // Delete a specific resource from deployment
-export const handleDeleteDeploymentResource: RequestHandler = async (req, res) => {
+export const handleDeleteDeploymentResource: RequestHandler = async (
+  req,
+  res,
+) => {
   const user = (req as any).user;
   const { deploymentId } = req.params;
   const { kind, name, namespace } = req.body;
@@ -601,7 +609,8 @@ export const handleDeleteDeploymentResource: RequestHandler = async (req, res) =
     let kc = new k8s.KubeConfig();
 
     const isInClusterEnv =
-      process.env.KUBERNETES_SERVICE_HOST && process.env.KUBERNETES_SERVICE_PORT;
+      process.env.KUBERNETES_SERVICE_HOST &&
+      process.env.KUBERNETES_SERVICE_PORT;
 
     let isInClusterToken = false;
     try {
@@ -636,7 +645,8 @@ export const handleDeleteDeploymentResource: RequestHandler = async (req, res) =
   } catch (error) {
     console.error("Delete resource error:", error);
     res.status(500).json({
-      error: error instanceof Error ? error.message : "Failed to delete resource",
+      error:
+        error instanceof Error ? error.message : "Failed to delete resource",
     });
   }
 };

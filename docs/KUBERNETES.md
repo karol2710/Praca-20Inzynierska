@@ -67,25 +67,25 @@ KubeChart uses a ClusterRole with specific permissions:
 
 ```yaml
 rules:
-- apiGroups: [""]
-  resources: ["pods", "services", "configmaps", "secrets"]
-  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: [""]
+    resources: ["pods", "services", "configmaps", "secrets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 
-- apiGroups: ["apps"]
-  resources: ["deployments", "statefulsets", "replicasets"]
-  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "statefulsets", "replicasets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 
-- apiGroups: ["batch"]
-  resources: ["jobs", "cronjobs"]
-  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["batch"]
+    resources: ["jobs", "cronjobs"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 
-- apiGroups: ["networking.k8s.io"]
-  resources: ["networkpolicies", "ingresses"]
-  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["networkpolicies", "ingresses"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 
-- apiGroups: ["gateway.networking.k8s.io"]
-  resources: ["httproutes", "backendtrafficpolicies"]
-  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["gateway.networking.k8s.io"]
+    resources: ["httproutes", "backendtrafficpolicies"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 ```
 
 ## Deploying to Kubernetes
@@ -251,18 +251,18 @@ metadata:
   namespace: user-namespace
 spec:
   hostnames:
-  - app.example.com
+    - app.example.com
   parentRefs:
-  - name: envoy-gateway
-    namespace: envoy-gateway-system
+    - name: envoy-gateway
+      namespace: envoy-gateway-system
   rules:
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /
-    backendRefs:
-    - name: app-service
-      port: 8080
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: app-service
+          port: 8080
 ```
 
 ### Gateway Configuration
@@ -478,18 +478,18 @@ kubectl delete networkpolicy <name> -n <namespace>
 
 ## Kubernetes Commands Reference
 
-| Command | Purpose |
-|---------|---------|
-| `kubectl apply -f file.yaml` | Apply manifest |
-| `kubectl get <resource> -A` | List all resources |
-| `kubectl describe <resource> <name>` | Show details |
-| `kubectl logs <pod>` | View pod logs |
-| `kubectl exec -it <pod> -- sh` | Shell into pod |
-| `kubectl port-forward <service> 8080:8080` | Port forward |
-| `kubectl scale deployment <name> --replicas=3` | Scale |
-| `kubectl rollout history deployment/<name>` | View history |
-| `kubectl rollout undo deployment/<name>` | Rollback |
-| `kubectl delete <resource> <name>` | Delete resource |
+| Command                                        | Purpose            |
+| ---------------------------------------------- | ------------------ |
+| `kubectl apply -f file.yaml`                   | Apply manifest     |
+| `kubectl get <resource> -A`                    | List all resources |
+| `kubectl describe <resource> <name>`           | Show details       |
+| `kubectl logs <pod>`                           | View pod logs      |
+| `kubectl exec -it <pod> -- sh`                 | Shell into pod     |
+| `kubectl port-forward <service> 8080:8080`     | Port forward       |
+| `kubectl scale deployment <name> --replicas=3` | Scale              |
+| `kubectl rollout history deployment/<name>`    | View history       |
+| `kubectl rollout undo deployment/<name>`       | Rollback           |
+| `kubectl delete <resource> <name>`             | Delete resource    |
 
 ## Related Documentation
 

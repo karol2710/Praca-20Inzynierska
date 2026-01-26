@@ -126,12 +126,14 @@ docker-compose down
 ### Prerequisites for K8s Deployment
 
 1. **Kubernetes Cluster Access**
+
    ```bash
    kubectl cluster-info
    kubectl auth can-i create deployments
    ```
 
 2. **Create ConfigMap/Secret** (optional)
+
    ```bash
    kubectl create configmap kubechart-config \
      --from-literal=NODE_ENV=production \
@@ -236,6 +238,7 @@ kubectl run -it --rm debug --image=postgres --restart=Never -- \
 When you first access KubeChart:
 
 1. **Create Account**
+
    ```
    Navigate to http://localhost:8080
    Click "Create Account"
@@ -244,6 +247,7 @@ When you first access KubeChart:
    ```
 
 2. **Login**
+
    ```
    Enter your username
    Enter your password
@@ -341,12 +345,14 @@ kubectl top nodes
 ## Production Deployment Best Practices
 
 ### 1. Use Environment Variables
+
 ```bash
 # Don't hardcode secrets
 # Use environment variables for all sensitive data
 ```
 
 ### 2. Database Backup
+
 ```bash
 # Regular backups
 pg_dump $DATABASE_URL > backup.sql
@@ -356,6 +362,7 @@ pg_dump $DATABASE_URL > backup.sql
 ```
 
 ### 3. Monitoring
+
 ```bash
 # Monitor application logs
 kubectl logs -f -n kubechart deployment/kubechart
@@ -366,6 +373,7 @@ kubectl top pods -n kubechart
 ```
 
 ### 4. Scaling
+
 ```bash
 # Scale deployment to multiple replicas
 kubectl scale deployment kubechart \
@@ -422,13 +430,13 @@ psql $DATABASE_URL -c "SELECT COUNT(*) FROM deployments"
 
 ### Regular Tasks
 
-| Task | Frequency | Command |
-|---|---|---|
-| Database backup | Daily | `pg_dump > backup.sql` |
-| Log rotation | Weekly | Check logging config |
-| Dependency updates | Monthly | `pnpm update` |
-| Security patches | As needed | `pnpm audit` |
-| Capacity monitoring | Weekly | `kubectl top` |
+| Task                | Frequency | Command                |
+| ------------------- | --------- | ---------------------- |
+| Database backup     | Daily     | `pg_dump > backup.sql` |
+| Log rotation        | Weekly    | Check logging config   |
+| Dependency updates  | Monthly   | `pnpm update`          |
+| Security patches    | As needed | `pnpm audit`           |
+| Capacity monitoring | Weekly    | `kubectl top`          |
 
 ### Update KubeChart
 
@@ -496,6 +504,7 @@ kubectl logs -f -n kubechart deployment/kubechart
 ---
 
 See also:
+
 - [Getting Started](GETTING_STARTED.md)
 - [Kubernetes Integration](KUBERNETES.md)
 - [Troubleshooting](TROUBLESHOOTING.md)

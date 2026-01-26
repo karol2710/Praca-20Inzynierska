@@ -66,6 +66,7 @@ KubeChart is a web application designed to simplify Kubernetes deployment manage
 **Location**: `client/`
 
 #### Key Directories
+
 - `pages/` - Route components (Auth, Deployments, CreateChart, etc.)
 - `components/` - Reusable UI components
 - `components/ui/` - Pre-built UI component library
@@ -73,6 +74,7 @@ KubeChart is a web application designed to simplify Kubernetes deployment manage
 - `lib/` - Utilities (template generator, YAML builder)
 
 #### Key Features
+
 - **React Router 6** - Client-side routing
 - **Vite** - Fast build tool and dev server
 - **TypeScript** - Type safety
@@ -202,6 +204,7 @@ Token Verification (Middleware)
 ## Technology Stack
 
 ### Frontend
+
 - **React 18** - UI framework
 - **TypeScript** - Type safety
 - **Vite** - Build tool
@@ -211,6 +214,7 @@ Token Verification (Middleware)
 - **js-yaml** - YAML parsing
 
 ### Backend
+
 - **Node.js** - Runtime
 - **Express** - Web framework
 - **TypeScript** - Type safety
@@ -220,6 +224,7 @@ Token Verification (Middleware)
 - **jsonwebtoken** - JWT tokens
 
 ### Infrastructure
+
 - **PostgreSQL 12+** - Relational database
 - **Kubernetes 1.24+** - Container orchestration
 - **Docker** - Containerization
@@ -299,6 +304,7 @@ Kubernetes Cluster
 ### Resource Types Supported
 
 **Workloads**
+
 - Pod
 - Deployment
 - StatefulSet
@@ -308,17 +314,20 @@ Kubernetes Cluster
 - DaemonSet
 
 **Networking**
+
 - Service (ClusterIP)
 - HTTPRoute (Envoy Gateway)
 - NetworkPolicy
 
 **Configuration**
+
 - ConfigMap
 - Secret
 - ResourceQuota
 - LimitRange
 
 **RBAC**
+
 - Role
 - RoleBinding
 - ClusterRole

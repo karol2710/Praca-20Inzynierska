@@ -155,37 +155,37 @@ kubechart/
 
 ### Configuration Files
 
-| File | Purpose |
-|------|---------|
-| `.env` | Environment variables (create locally) |
-| `tsconfig.json` | TypeScript settings |
-| `vite.config.ts` | Frontend build configuration |
-| `tailwind.config.ts` | Tailwind CSS theme |
-| `package.json` | Project dependencies |
+| File                 | Purpose                                |
+| -------------------- | -------------------------------------- |
+| `.env`               | Environment variables (create locally) |
+| `tsconfig.json`      | TypeScript settings                    |
+| `vite.config.ts`     | Frontend build configuration           |
+| `tailwind.config.ts` | Tailwind CSS theme                     |
+| `package.json`       | Project dependencies                   |
 
 ### Frontend Entry Points
 
-| File | Purpose |
-|------|---------|
-| `client/main.tsx` | React app entry point |
-| `client/App.tsx` | Main app component and routes |
-| `index.html` | HTML template |
+| File              | Purpose                       |
+| ----------------- | ----------------------------- |
+| `client/main.tsx` | React app entry point         |
+| `client/App.tsx`  | Main app component and routes |
+| `index.html`      | HTML template                 |
 
 ### Backend Entry Points
 
-| File | Purpose |
-|------|---------|
+| File              | Purpose              |
+| ----------------- | -------------------- |
 | `server/index.ts` | Express server setup |
-| `server/db.ts` | Database connection |
+| `server/db.ts`    | Database connection  |
 
 ### Important Utilities
 
-| File | Purpose |
-|------|---------|
-| `client/lib/template-generator.ts` | Generates YAML from form input |
-| `client/lib/yaml-builder.ts` | Builds Kubernetes YAML documents |
-| `server/security-validator.ts` | Validates user inputs |
-| `shared/api.ts` | Shared TypeScript interfaces |
+| File                               | Purpose                          |
+| ---------------------------------- | -------------------------------- |
+| `client/lib/template-generator.ts` | Generates YAML from form input   |
+| `client/lib/yaml-builder.ts`       | Builds Kubernetes YAML documents |
+| `server/security-validator.ts`     | Validates user inputs            |
+| `shared/api.ts`                    | Shared TypeScript interfaces     |
 
 ## File Naming Conventions
 
@@ -237,6 +237,7 @@ sample-config.yaml
 ### `client/pages/`
 
 Contains page components that map to routes:
+
 - Each file represents a route
 - `Index.tsx` = home page (`/`)
 - `Login.tsx` = login page (`/login`)
@@ -245,12 +246,14 @@ Contains page components that map to routes:
 ### `client/components/`
 
 Reusable components:
+
 - `ui/` - Basic UI components (buttons, modals, forms)
 - Other files - Feature-specific components
 
 ### `server/routes/`
 
 API endpoint handlers:
+
 - Each file handles related endpoints
 - Implements request/response logic
 - Handles database operations
@@ -258,6 +261,7 @@ API endpoint handlers:
 ### `kubernetes/`
 
 Kubernetes manifests for KubeChart itself:
+
 - `deployment.yaml` - KubeChart deployment
 - `service.yaml` - KubeChart service
 - Example configurations

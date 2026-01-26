@@ -674,19 +674,19 @@ Request Authorized
 
 ## Interface Relationships Summary
 
-| Interface | Relations | Purpose |
-|-----------|-----------|---------|
-| **User** | 1:N → Deployment | Represents user accounts |
-| **Deployment** | 1:N → Workload, 1:1 → GlobalConfig | Represents K8s deployments |
-| **Workload** | 1:N → Container | Represents workload types |
-| **Container** | 1:N → Port, 1:N → EnvVar, 1:1 → Resources | Container configuration |
-| **GlobalConfig** | N:1 ← Deployment | Global namespace settings |
-| **K8sResource** | 1:N ← Deployment | Kubernetes resources |
-| **AuthToken** | 1:1 ← User | Authentication tokens |
-| **AuthService** | Manages → User | Authentication operations |
-| **DeploymentService** | CRUD → Deployment | Deployment operations |
-| **TemplateGenerator** | Generates → YAML | Template generation |
-| **DatabaseConnection** | Stores → All data | Database operations |
+| Interface              | Relations                                 | Purpose                    |
+| ---------------------- | ----------------------------------------- | -------------------------- |
+| **User**               | 1:N → Deployment                          | Represents user accounts   |
+| **Deployment**         | 1:N → Workload, 1:1 → GlobalConfig        | Represents K8s deployments |
+| **Workload**           | 1:N → Container                           | Represents workload types  |
+| **Container**          | 1:N → Port, 1:N → EnvVar, 1:1 → Resources | Container configuration    |
+| **GlobalConfig**       | N:1 ← Deployment                          | Global namespace settings  |
+| **K8sResource**        | 1:N ← Deployment                          | Kubernetes resources       |
+| **AuthToken**          | 1:1 ← User                                | Authentication tokens      |
+| **AuthService**        | Manages → User                            | Authentication operations  |
+| **DeploymentService**  | CRUD → Deployment                         | Deployment operations      |
+| **TemplateGenerator**  | Generates → YAML                          | Template generation        |
+| **DatabaseConnection** | Stores → All data                         | Database operations        |
 
 ---
 

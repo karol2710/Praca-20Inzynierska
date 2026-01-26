@@ -34,13 +34,13 @@ This creates a rate limit of 1000 requests per second for the namespace.
 
 ### Example Configurations
 
-| Use Case | Requests/Sec | Notes |
-|----------|-------------|-------|
-| API (low traffic) | 100 | Small or test API |
-| Web app (medium) | 1000 | Typical web application |
-| High-traffic API | 5000-10000 | Popular service |
-| Real-time service | 50000+ | High-frequency updates |
-| Test/dev | 10000-100000 | Development environment |
+| Use Case          | Requests/Sec | Notes                   |
+| ----------------- | ------------ | ----------------------- |
+| API (low traffic) | 100          | Small or test API       |
+| Web app (medium)  | 1000         | Typical web application |
+| High-traffic API  | 5000-10000   | Popular service         |
+| Real-time service | 50000+       | High-frequency updates  |
+| Test/dev          | 10000-100000 | Development environment |
 
 ## Kubernetes BackendTrafficPolicy
 
@@ -56,9 +56,9 @@ spec:
   rateLimit:
     local:
       rules:
-      - limit:
-          requests: 1000  # 1000 requests per second
-          unit: Second
+        - limit:
+            requests: 1000 # 1000 requests per second
+            unit: Second
 ```
 
 ### Viewing Policy
@@ -79,6 +79,7 @@ kubectl get backendtrafficpolicy rate-limit -n <namespace> -o yaml
 ### Success Response
 
 **When quota available**:
+
 ```
 HTTP/1.1 200 OK
 Content-Type: application/json
@@ -87,6 +88,7 @@ Content-Type: application/json
 ### Rate Limited Response
 
 **When quota exceeded**:
+
 ```
 HTTP/1.1 429 Too Many Requests
 Content-Type: application/json
@@ -140,14 +142,14 @@ spec:
   rateLimit:
     local:
       rules:
-      # Rule 1: 1000 requests per second globally
-      - limit:
-          requests: 1000
-          unit: Second
-      # Rule 2: 10000 requests per minute
-      - limit:
-          requests: 10000
-          unit: Minute
+        # Rule 1: 1000 requests per second globally
+        - limit:
+            requests: 1000
+            unit: Second
+        # Rule 2: 10000 requests per minute
+        - limit:
+            requests: 10000
+            unit: Minute
 ```
 
 ### Per-Route Rate Limiting
@@ -159,13 +161,13 @@ metadata:
   name: api-route
 spec:
   rules:
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /api
-    backendRefs:
-    - name: api-service
-      port: 8080
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api
+      backendRefs:
+        - name: api-service
+          port: 8080
 ```
 
 Then apply rate limit to specific route.
@@ -183,25 +185,25 @@ async function fetchWithRetry(url, options = {}) {
   while (retries < maxRetries) {
     try {
       const response = await fetch(url, options);
-      
+
       if (response.status === 429) {
         // Rate limited, wait before retry
-        const resetTime = response.headers.get('X-RateLimit-Reset');
+        const resetTime = response.headers.get("X-RateLimit-Reset");
         const waitMs = (resetTime - Date.now() / 1000) * 1000;
         console.log(`Rate limited, waiting ${waitMs}ms`);
-        await new Promise(resolve => setTimeout(resolve, waitMs));
+        await new Promise((resolve) => setTimeout(resolve, waitMs));
         retries++;
         continue;
       }
-      
+
       return response;
     } catch (error) {
-      console.error('Request failed:', error);
+      console.error("Request failed:", error);
       throw error;
     }
   }
 
-  throw new Error('Max retries exceeded');
+  throw new Error("Max retries exceeded");
 }
 ```
 
@@ -216,23 +218,23 @@ async function fetchWithBackoff(url) {
   while (retries < maxRetries) {
     try {
       const response = await fetch(url);
-      
+
       if (response.status === 429) {
         // Calculate backoff with jitter
         const backoff = Math.pow(2, retries) * 1000 + Math.random() * 1000;
         console.log(`Retrying in ${backoff}ms`);
-        await new Promise(resolve => setTimeout(resolve, backoff));
+        await new Promise((resolve) => setTimeout(resolve, backoff));
         retries++;
         continue;
       }
-      
+
       return response;
     } catch (error) {
       retries++;
     }
   }
 
-  throw new Error('Request failed after retries');
+  throw new Error("Request failed after retries");
 }
 ```
 
@@ -269,6 +271,7 @@ curl http://localhost:8001/stats
 **Symptoms**: All requests return 429, even with low traffic
 
 **Causes**:
+
 1. Rate limit value is too low
 2. Multiple containers counting against limit
 3. Health checks consuming quota
@@ -292,6 +295,7 @@ kubectl top pods -n <namespace>
 **Symptoms**: No 429 responses even with high traffic
 
 **Causes**:
+
 1. BackendTrafficPolicy not applied
 2. Policy not connected to route
 3. Envoy Gateway not running
@@ -314,6 +318,7 @@ kubectl describe backendtrafficpolicy rate-limit -n <namespace>
 **Symptoms**: Valid traffic being rejected
 
 **Causes**:
+
 1. Rate limit too low for actual traffic
 2. Burst traffic exceeding limit
 3. Connection pooling causing spikes
@@ -321,12 +326,14 @@ kubectl describe backendtrafficpolicy rate-limit -n <namespace>
 **Solutions**:
 
 1. **Analyze traffic pattern**:
+
    ```bash
    # Check average requests per second
    kubectl logs -f deployment -n <namespace> | grep requests
    ```
 
 2. **Increase rate limit**:
+
    ```
    UI: Edit deployment → Global Configuration → Increase Requests Per Second
    ```
@@ -368,9 +375,9 @@ spec:
   rateLimit:
     local:
       rules:
-      - limit:
-          requests: 1000
-          unit: Second
+        - limit:
+            requests: 1000
+            unit: Second
 ```
 
 Allow for 10-20% burst beyond this limit.
@@ -414,5 +421,6 @@ Requests Per Second: 100 (for low-traffic service)
 ---
 
 For more information:
+
 - [Envoy Gateway Documentation](https://gateway.envoyproxy.io/)
 - [BackendTrafficPolicy API](https://gateway.envoyproxy.io/latest/api/extension_types.html#backendtrafficpolicy)

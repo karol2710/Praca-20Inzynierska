@@ -11,33 +11,36 @@ Common issues and solutions for KubeChart.
 **Solutions**:
 
 1. **Check if application is running**:
+
    ```bash
    # For local development
    pnpm dev
-   
+
    # For Docker
    docker ps | grep kubechart
-   
+
    # For Kubernetes
    kubectl get pods -n kubechart
    ```
 
 2. **Check port is correct**:
+
    ```bash
    # Default port is 8080
    curl http://localhost:8080
-   
+
    # For Kubernetes
    kubectl port-forward -n kubechart svc/kubechart 8080:8080
    curl http://localhost:8080
    ```
 
 3. **Check firewall**:
+
    ```bash
    # Linux
    sudo ufw status
    sudo ufw allow 8080
-   
+
    # macOS
    # System Preferences > Security & Privacy > Firewall
    ```
@@ -51,15 +54,17 @@ Common issues and solutions for KubeChart.
 **Solutions**:
 
 1. **Verify user exists**:
+
    ```bash
    # Connect to database
    psql $DATABASE_URL
-   
+
    # Check users table
    SELECT * FROM users WHERE username = 'your_username';
    ```
 
 2. **Reset password**:
+
    ```bash
    # Create new account with different username
    # Or delete user and recreate
@@ -79,6 +84,7 @@ Common issues and solutions for KubeChart.
 **Solutions**:
 
 1. **Clear localStorage**:
+
    ```javascript
    // In browser console
    localStorage.clear();
@@ -88,7 +94,7 @@ Common issues and solutions for KubeChart.
 2. **Check token in browser**:
    ```javascript
    // In console
-   console.log(localStorage.getItem('token'));
+   console.log(localStorage.getItem("token"));
    ```
 
 ## Database Issues
@@ -100,6 +106,7 @@ Common issues and solutions for KubeChart.
 **Solutions**:
 
 1. **Verify database is running**:
+
    ```bash
    # Check if PostgreSQL is running
    psql --version
@@ -107,24 +114,27 @@ Common issues and solutions for KubeChart.
    ```
 
 2. **Check connection string**:
+
    ```bash
    echo $DATABASE_URL
    # Should be: postgresql://user:password@host:port/database
    ```
 
 3. **Test connection**:
+
    ```bash
    psql $DATABASE_URL -c "SELECT 1;"
    ```
 
 4. **For Docker**:
+
    ```bash
    # Check if db container is running
    docker ps | grep postgres
-   
+
    # Check container logs
    docker logs <container_id>
-   
+
    # Try connecting
    docker exec -it <container_id> psql -U kubechart
    ```
@@ -136,12 +146,14 @@ Common issues and solutions for KubeChart.
 **Solutions**:
 
 1. **Check if database exists**:
+
    ```bash
    psql $DATABASE_URL -c "\dt"
    # Should list tables
    ```
 
 2. **Create tables**:
+
    ```sql
    -- Create users table
    CREATE TABLE users (
@@ -175,11 +187,13 @@ Common issues and solutions for KubeChart.
 **Solutions**:
 
 1. **Check if user exists**:
+
    ```bash
    psql $DATABASE_URL -c "SELECT * FROM users WHERE username = 'your_user';"
    ```
 
 2. **Delete duplicate user**:
+
    ```bash
    psql $DATABASE_URL -c "DELETE FROM users WHERE username = 'your_user';"
    ```
@@ -197,18 +211,21 @@ Common issues and solutions for KubeChart.
 **Solutions**:
 
 1. **Check kubectl configuration**:
+
    ```bash
    kubectl config current-context
    kubectl cluster-info
    ```
 
 2. **Switch context**:
+
    ```bash
    kubectl config get-contexts
    kubectl config use-context <context-name>
    ```
 
 3. **Verify kubeconfig path**:
+
    ```bash
    echo $KUBECONFIG
    # Should point to valid kubeconfig file
@@ -227,12 +244,14 @@ Common issues and solutions for KubeChart.
 **Solutions**:
 
 1. **Check service account permissions**:
+
    ```bash
    kubectl auth can-i create deployments \
      --as=system:serviceaccount:kubechart:kubechart
    ```
 
 2. **Check ClusterRole**:
+
    ```bash
    kubectl describe clusterrole kubechart
    ```
@@ -249,16 +268,18 @@ Common issues and solutions for KubeChart.
 **Solutions**:
 
 1. **Create namespace manually**:
+
    ```bash
    kubectl create namespace <namespace-name>
    ```
 
 2. **Grant permissions to create namespaces**:
+
    ```bash
    # Update ClusterRole to include:
    kubectl edit clusterrole kubechart
-   
-   # Add under "": 
+
+   # Add under "":
    # - apiGroups: [""]
    #   resources: ["namespaces"]
    #   verbs: ["get", "list", "watch", "create"]
@@ -271,11 +292,13 @@ Common issues and solutions for KubeChart.
 **Solutions**:
 
 1. **Check pod status**:
+
    ```bash
    kubectl describe pod <pod-name> -n <namespace>
    ```
 
 2. **View pod logs**:
+
    ```bash
    kubectl logs <pod-name> -n <namespace>
    ```
@@ -300,19 +323,21 @@ Common issues and solutions for KubeChart.
    - At least one workload configured
 
 2. **Check browser console**:
+
    ```javascript
    // Open browser developer tools (F12)
    // Check Console tab for error messages
    ```
 
 3. **Check server logs**:
+
    ```bash
    # For development
    pnpm dev  # Check terminal output
-   
+
    # For Docker
    docker logs -f <container_id>
-   
+
    # For Kubernetes
    kubectl logs -f -n kubechart deployment/kubechart
    ```
@@ -324,17 +349,20 @@ Common issues and solutions for KubeChart.
 **Solutions**:
 
 1. **Check deployment details**:
+
    ```bash
    kubectl describe deployment <name> -n <namespace>
    ```
 
 2. **Check pod status**:
+
    ```bash
    kubectl get pods -n <namespace>
    kubectl logs <pod-name> -n <namespace>
    ```
 
 3. **Check resource availability**:
+
    ```bash
    kubectl describe node
    ```
@@ -351,11 +379,13 @@ Common issues and solutions for KubeChart.
 **Solutions**:
 
 1. **Check deletion status**:
+
    ```bash
    kubectl get deployment <name> -n <namespace>
    ```
 
 2. **Force delete**:
+
    ```bash
    kubectl delete deployment <name> \
      --grace-period=0 --force -n <namespace>
@@ -375,6 +405,7 @@ Common issues and solutions for KubeChart.
 **Solutions**:
 
 1. **Check YAML config in database**:
+
    ```bash
    psql $DATABASE_URL -c \
      "SELECT yaml_config FROM deployments WHERE name = 'your-deployment';" \
@@ -382,6 +413,7 @@ Common issues and solutions for KubeChart.
    ```
 
 2. **Verify deployment exists**:
+
    ```bash
    kubectl get all -n <namespace>
    ```
@@ -399,6 +431,7 @@ Common issues and solutions for KubeChart.
 **Solutions**:
 
 1. **Check if resource is deletable**:
+
    ```
    Only user workloads and HTTPRoute can be deleted:
    - Pod
@@ -426,11 +459,13 @@ Common issues and solutions for KubeChart.
 **Solutions**:
 
 1. **View generated YAML**:
+
    ```
    UI: Click "View YAML" button
    ```
 
 2. **Validate YAML**:
+
    ```bash
    kubectl apply -f deployment.yaml --dry-run=client
    ```
@@ -448,21 +483,23 @@ Common issues and solutions for KubeChart.
 **Solutions**:
 
 1. **Check indentation**:
+
    ```yaml
    # Correct
    spec:
      replicas: 3
-   
+
    # Wrong
    spec:
     replicas: 3  # Only 1 space
    ```
 
 2. **Check quotes**:
+
    ```yaml
    # Correct
    image: "nginx:latest"
-   
+
    # Sometimes OK
    image: nginx:latest
    ```
@@ -480,6 +517,7 @@ Common issues and solutions for KubeChart.
 **Solutions**:
 
 1. **Check server performance**:
+
    ```bash
    # For Kubernetes
    kubectl top pods -n kubechart
@@ -487,6 +525,7 @@ Common issues and solutions for KubeChart.
    ```
 
 2. **Check database performance**:
+
    ```bash
    # Check slow queries
    psql $DATABASE_URL -c "SELECT * FROM pg_stat_statements;"
@@ -508,11 +547,13 @@ Common issues and solutions for KubeChart.
 **Solutions**:
 
 1. **Check memory limits**:
+
    ```bash
    kubectl describe pod <pod-name> -n kubechart
    ```
 
 2. **Increase memory limit**:
+
    ```bash
    # Edit deployment
    kubectl edit deployment kubechart -n kubechart
@@ -533,17 +574,20 @@ Common issues and solutions for KubeChart.
 **Solutions**:
 
 1. **Check Docker is running**:
+
    ```bash
    docker --version
    docker ps
    ```
 
 2. **Build with verbose output**:
+
    ```bash
    docker build --progress=plain -t kubechart:latest .
    ```
 
 3. **Check Dockerfile**:
+
    ```dockerfile
    # Verify Dockerfile exists and is correct
    cat Dockerfile
@@ -561,11 +605,13 @@ Common issues and solutions for KubeChart.
 **Solutions**:
 
 1. **Check container logs**:
+
    ```bash
    docker logs <container_id>
    ```
 
 2. **Run with interactive terminal**:
+
    ```bash
    docker run -it kubechart:latest sh
    # Try to start application manually
@@ -595,20 +641,22 @@ Common issues and solutions for KubeChart.
    - File permissions
 
 4. **Restart Services**:
+
    ```bash
    # Stop and restart
    Ctrl+C (for dev server)
    pnpm dev
-   
+
    # Or for Kubernetes
    kubectl rollout restart deployment/kubechart -n kubechart
    ```
 
 5. **Clear Cache**:
+
    ```bash
    # Browser
    Clear cache (Ctrl+Shift+Delete)
-   
+
    # Application
    rm -rf node_modules pnpm-lock.yaml
    pnpm install
@@ -627,6 +675,7 @@ If you can't resolve the issue:
 ---
 
 See also:
+
 - [Getting Started](GETTING_STARTED.md)
 - [Kubernetes Integration](KUBERNETES.md)
 - [Deployment Guide](DEPLOYMENT.md)

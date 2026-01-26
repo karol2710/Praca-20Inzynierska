@@ -9,6 +9,7 @@ Envoy Gateway is a modern, extensible proxy that manages ingress traffic. KubeCh
 ## What is Envoy Gateway
 
 Envoy Gateway provides:
+
 - **Modern API Gateway**: Based on Kubernetes Gateway API
 - **Traffic Routing**: URL-based and header-based routing
 - **Rate Limiting**: Per-route and global limits
@@ -81,22 +82,22 @@ metadata:
 spec:
   gatewayClassName: envoy
   listeners:
-  - name: http
-    protocol: HTTP
-    port: 80
-    allowedRoutes:
-      namespaces:
-        from: All
-  - name: https
-    protocol: HTTPS
-    port: 443
-    tls:
-      mode: Terminate
-      certificateRefs:
-      - name: tls-secret
-    allowedRoutes:
-      namespaces:
-        from: All
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: All
+    - name: https
+      protocol: HTTPS
+      port: 443
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: tls-secret
+      allowedRoutes:
+        namespaces:
+          from: All
 ```
 
 ### Apply Gateway
@@ -124,22 +125,22 @@ metadata:
 spec:
   # Connect to gateway
   parentRefs:
-  - name: envoy-gateway
-    namespace: envoy-gateway-system
-  
+    - name: envoy-gateway
+      namespace: envoy-gateway-system
+
   # Hostnames
   hostnames:
-  - app.example.com
-  
+    - app.example.com
+
   # Routing rules
   rules:
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /
-    backendRefs:
-    - name: myapp-service
-      port: 8080
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: myapp-service
+          port: 8080
 ```
 
 ### Route with Multiple Backends
@@ -151,28 +152,28 @@ metadata:
   name: traffic-split
 spec:
   parentRefs:
-  - name: envoy-gateway
+    - name: envoy-gateway
   hostnames:
-  - app.example.com
+    - app.example.com
   rules:
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /api
-    backendRefs:
-    - name: api-service
-      port: 8080
-      weight: 80
-    - name: api-service-canary
-      port: 8080
-      weight: 20
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /
-    backendRefs:
-    - name: web-service
-      port: 3000
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api
+      backendRefs:
+        - name: api-service
+          port: 8080
+          weight: 80
+        - name: api-service-canary
+          port: 8080
+          weight: 20
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: web-service
+          port: 3000
 ```
 
 ### Route with Headers
@@ -184,22 +185,22 @@ metadata:
   name: header-routing
 spec:
   parentRefs:
-  - name: envoy-gateway
+    - name: envoy-gateway
   hostnames:
-  - app.example.com
+    - app.example.com
   rules:
-  # Route requests with custom header to service
-  - matches:
-    - headers:
-      - name: X-Version
-        value: v2
-    backendRefs:
-    - name: app-service-v2
-      port: 8080
-  # Default route
-  - backendRefs:
-    - name: app-service-v1
-      port: 8080
+    # Route requests with custom header to service
+    - matches:
+        - headers:
+            - name: X-Version
+              value: v2
+      backendRefs:
+        - name: app-service-v2
+          port: 8080
+    # Default route
+    - backendRefs:
+        - name: app-service-v1
+          port: 8080
 ```
 
 ## Traffic Management
@@ -216,15 +217,15 @@ metadata:
   namespace: my-namespace
 spec:
   targetRefs:
-  - group: ""
-    kind: Service
-    name: myapp-service
+    - group: ""
+      kind: Service
+      name: myapp-service
   rateLimit:
     local:
       rules:
-      - limit:
-          requests: 1000
-          unit: Second
+        - limit:
+            requests: 1000
+            unit: Second
 ```
 
 ### Timeout Configuration
@@ -236,9 +237,9 @@ metadata:
   name: timeout-policy
 spec:
   targetRefs:
-  - group: ""
-    kind: Service
-    name: myapp-service
+    - group: ""
+      kind: Service
+      name: myapp-service
   timeout:
     tcp:
       connect: 10s
@@ -255,9 +256,9 @@ metadata:
   name: circuit-breaker
 spec:
   targetRefs:
-  - group: ""
-    kind: Service
-    name: myapp-service
+    - group: ""
+      kind: Service
+      name: myapp-service
   circuitBreaker:
     consecutiveErrorThreshold: 5
     interval: 30s
@@ -311,13 +312,13 @@ metadata:
   name: envoy-gateway
 spec:
   listeners:
-  - name: https
-    protocol: HTTPS
-    port: 443
-    tls:
-      mode: Terminate
-      certificateRefs:
-      - name: myapp-tls
+    - name: https
+      protocol: HTTPS
+      port: 443
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: myapp-tls
 ```
 
 ## Advanced Routing
@@ -331,19 +332,19 @@ metadata:
   name: canary-route
 spec:
   parentRefs:
-  - name: envoy-gateway
+    - name: envoy-gateway
   hostnames:
-  - app.example.com
+    - app.example.com
   rules:
-  # 90% traffic to stable
-  - backendRefs:
-    - name: app-stable
-      port: 8080
-      weight: 90
-    # 10% traffic to canary
-    - name: app-canary
-      port: 8080
-      weight: 10
+    # 90% traffic to stable
+    - backendRefs:
+        - name: app-stable
+          port: 8080
+          weight: 90
+        # 10% traffic to canary
+        - name: app-canary
+          port: 8080
+          weight: 10
 ```
 
 ### Blue-Green Deployment
@@ -518,6 +519,7 @@ kubectl get svc -n <namespace>
 ### 1. Use HTTPRoute for Public APIs
 
 Instead of exposing services directly, use HTTPRoute for:
+
 - Central traffic control
 - Rate limiting
 - Authentication/authorization
@@ -527,21 +529,21 @@ Instead of exposing services directly, use HTTPRoute for:
 
 ```yaml
 listeners:
-- name: http
-  protocol: HTTP
-  port: 80
-- name: https
-  protocol: HTTPS
-  port: 443
+  - name: http
+    protocol: HTTP
+    port: 80
+  - name: https
+    protocol: HTTPS
+    port: 443
 ```
 
 ### 3. Use Meaningful Hostnames
 
 ```yaml
 hostnames:
-- api.example.com      # APIs
-- app.example.com      # Web app
-- admin.example.com    # Admin panel
+  - api.example.com # APIs
+  - app.example.com # Web app
+  - admin.example.com # Admin panel
 ```
 
 ### 4. Implement Health Checks
@@ -562,6 +564,7 @@ readinessProbe:
 ### 5. Monitor Traffic
 
 Use metrics and logs to track:
+
 - Request rate
 - Error rate
 - Latency
@@ -577,6 +580,7 @@ Use metrics and logs to track:
 ---
 
 For more information:
+
 - [Envoy Gateway Documentation](https://gateway.envoyproxy.io/)
 - [Gateway API](https://gateway.api.kubernetes.io/)
 - [HTTPRoute API](https://gateway.networking.k8s.io/v1beta1/httproute)

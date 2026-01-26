@@ -21,6 +21,7 @@ Namespace: my-app-prod
 ```
 
 **Rules**:
+
 - Lowercase alphanumeric and hyphens
 - Maximum 63 characters
 - Cannot be changed after creation (immutable)
@@ -36,11 +37,13 @@ Domain: example.com
 ```
 
 **Usage**:
+
 - Used for HTTPRoute creation
 - Creates TLS certificates if cert-manager is configured
 - Enables domain-based routing
 
 **Examples**:
+
 - `example.com`
 - `app.example.com`
 - `staging.example.com`
@@ -54,17 +57,20 @@ Requests Per Second: 1000
 ```
 
 **What it does**:
+
 - Creates BackendTrafficPolicy resource
 - Limits traffic to specified requests per second
 - Applies to entire namespace
 - Uses Envoy Gateway rate limiting
 
 **When to use**:
+
 - Protect against DDoS
 - Manage API quotas
 - Control resource usage
 
 **Example values**:
+
 - `100` - Low traffic applications
 - `1000` - Medium traffic
 - `10000` - High traffic
@@ -81,22 +87,26 @@ Memory Limit: 2Gi
 ```
 
 **What it does**:
+
 - Creates ResourceQuota resource
 - Limits total CPU/memory for all pods
 - Prevents resource exhaustion
 - Enforces hard limits
 
 **Request vs Limit**:
+
 - **Request**: Minimum guaranteed resources
 - **Limit**: Maximum allowed resources
 
 **Resource Units**:
+
 - CPU: `m` (millicores), e.g., `100m` = 0.1 CPU
 - Memory: `Mi` (mebibytes), `Gi` (gibibytes)
 
 **Example configurations**:
 
-*Small namespace*:
+_Small namespace_:
+
 ```
 CPU Request: 500m (0.5 CPU)
 Memory Request: 512Mi
@@ -104,7 +114,8 @@ CPU Limit: 2000m (2 CPUs)
 Memory Limit: 4Gi
 ```
 
-*Medium namespace*:
+_Medium namespace_:
+
 ```
 CPU Request: 2000m (2 CPUs)
 Memory Request: 2Gi
@@ -112,7 +123,8 @@ CPU Limit: 8000m (8 CPUs)
 Memory Limit: 16Gi
 ```
 
-*Large namespace*:
+_Large namespace_:
+
 ```
 CPU Request: 4000m (4 CPUs)
 Memory Request: 4Gi
@@ -159,9 +171,9 @@ spec:
   rateLimit:
     local:
       rules:
-      - limit:
-          requests: 1000
-          unit: Second
+        - limit:
+            requests: 1000
+            unit: Second
 ```
 
 ## Configuration Examples
@@ -279,7 +291,7 @@ Set limit to 5000 req/s (25% buffer)
 dev-namespace:
   - Lower resource quotas
   - Higher rate limits (for testing)
-  
+
 staging-namespace:
   - Medium resource quotas
   - Production-like limits
@@ -296,6 +308,7 @@ prod-namespace:
 **Symptom**: Pods failing to start with quota exceeded error
 
 **Solution**:
+
 ```bash
 # Check quota usage
 kubectl describe resourcequota -n <namespace>
@@ -310,6 +323,7 @@ kubectl patch resourcequota quota -n <namespace> \
 **Symptom**: Valid requests being rejected with 429 Too Many Requests
 
 **Solution**:
+
 1. Check current traffic: `kubectl logs deployment -n <namespace>`
 2. Increase rate limit via UI or kubectl
 3. Monitor and adjust
@@ -319,6 +333,7 @@ kubectl patch resourcequota quota -n <namespace> \
 **Symptom**: Error when creating deployment in existing namespace
 
 **Solution**:
+
 ```bash
 # List existing namespaces
 kubectl get namespaces
@@ -341,6 +356,7 @@ Memory Limit: 512Mi
 ### Recommended Values by Workload Type
 
 **Deployment (stateless web app)**:
+
 ```
 CPU Request: 100m - 500m
 Memory Request: 128Mi - 512Mi
@@ -349,6 +365,7 @@ Memory Limit: 512Mi - 1Gi
 ```
 
 **StatefulSet (database)**:
+
 ```
 CPU Request: 500m - 2000m
 Memory Request: 512Mi - 2Gi
@@ -357,6 +374,7 @@ Memory Limit: 2Gi - 8Gi
 ```
 
 **Job (batch processing)**:
+
 ```
 CPU Request: 500m - 2000m
 Memory Request: 256Mi - 1Gi

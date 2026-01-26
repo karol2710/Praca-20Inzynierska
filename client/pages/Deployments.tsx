@@ -1,6 +1,15 @@
 import { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
-import { Copy, Trash2, RotateCcw, ExternalLink, Edit, Boxes, X, Plus } from "lucide-react";
+import {
+  Copy,
+  Trash2,
+  RotateCcw,
+  ExternalLink,
+  Edit,
+  Boxes,
+  X,
+  Plus,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface Deployment {
@@ -126,11 +135,14 @@ export default function Deployments() {
     try {
       setResourcesLoading(true);
       const token = localStorage.getItem("token");
-      const response = await fetch(`/api/deployments/${deployment.id}/resources`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `/api/deployments/${deployment.id}/resources`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
 
       if (response.ok) {
         const data = await response.json();
@@ -160,17 +172,24 @@ export default function Deployments() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`/api/deployments/${deploymentId}/resources`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `/api/deployments/${deploymentId}/resources`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(resource),
         },
-        body: JSON.stringify(resource),
-      });
+      );
 
       if (response.ok) {
-        setResources(resources.filter((r) => !(r.name === resource.name && r.kind === resource.kind)));
+        setResources(
+          resources.filter(
+            (r) => !(r.name === resource.name && r.kind === resource.kind),
+          ),
+        );
         setError(null);
       } else {
         const data = await response.json();
@@ -382,9 +401,13 @@ export default function Deployments() {
               </div>
               <div className="flex-1 overflow-auto p-6">
                 {resourcesLoading ? (
-                  <p className="text-foreground/60 text-center py-8">Loading resources...</p>
+                  <p className="text-foreground/60 text-center py-8">
+                    Loading resources...
+                  </p>
                 ) : resources.length === 0 ? (
-                  <p className="text-foreground/60 text-center py-8">No resources deployed</p>
+                  <p className="text-foreground/60 text-center py-8">
+                    No resources deployed
+                  </p>
                 ) : (
                   <div className="space-y-3">
                     {resources.map((resource, idx) => (

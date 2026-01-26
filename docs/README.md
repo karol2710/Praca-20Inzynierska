@@ -5,29 +5,35 @@ Welcome to KubeChart documentation! This guide covers everything you need to kno
 ## 📚 Documentation Index
 
 ### Getting Started
+
 - **[Getting Started](GETTING_STARTED.md)** - Quick start guide to set up and run KubeChart locally
 - **[Installation](INSTALLATION.md)** - Installation instructions for different environments
 
 ### Core Concepts
+
 - **[Architecture](ARCHITECTURE.md)** - System design, components, and how they work together
 - **[Features](FEATURES.md)** - Overview of KubeChart's capabilities and features
 
 ### Deployment & Operations
+
 - **[Deployment Guide](DEPLOYMENT.md)** - How to deploy KubeChart and manage deployments
 - **[Kubernetes Integration](KUBERNETES.md)** - Kubernetes-specific setup and operations
 - **[Docker & Container Setup](DOCKER.md)** - Docker configuration and containerization
 
 ### Configuration & Management
+
 - **[RBAC Configuration](RBAC.md)** - Role-based access control setup and best practices
 - **[Resource Management](RESOURCES.md)** - Managing Kubernetes resources, quotas, and limits
 - **[Global Configuration](GLOBAL_CONFIG.md)** - Application-wide settings and configurations
 
 ### Development
+
 - **[Development Guide](DEVELOPMENT.md)** - Setting up development environment and guidelines
 - **[Project Structure](PROJECT_STRUCTURE.md)** - Directory layout and file organization
 - **[API Reference](API.md)** - REST API endpoints and usage
 
 ### Advanced Topics
+
 - **[Gateway Integration](GATEWAY.md)** - Envoy Gateway and traffic management setup
 - **[Rate Limiting](RATE_LIMITING.md)** - Configuring rate limits for workloads
 - **[Network Policies](NETWORK_POLICIES.md)** - Network security configuration
@@ -35,14 +41,14 @@ Welcome to KubeChart documentation! This guide covers everything you need to kno
 
 ## 🚀 Quick Links
 
-| Need | Link |
-|------|------|
-| Set up KubeChart in 5 minutes | [Getting Started](GETTING_STARTED.md) |
-| Deploy an application | [Deployment Guide](DEPLOYMENT.md) |
-| Configure access control | [RBAC Configuration](RBAC.md) |
-| Integration with Kubernetes | [Kubernetes Integration](KUBERNETES.md) |
-| Develop a new feature | [Development Guide](DEVELOPMENT.md) |
-| Fix common problems | [Troubleshooting](TROUBLESHOOTING.md) |
+| Need                          | Link                                    |
+| ----------------------------- | --------------------------------------- |
+| Set up KubeChart in 5 minutes | [Getting Started](GETTING_STARTED.md)   |
+| Deploy an application         | [Deployment Guide](DEPLOYMENT.md)       |
+| Configure access control      | [RBAC Configuration](RBAC.md)           |
+| Integration with Kubernetes   | [Kubernetes Integration](KUBERNETES.md) |
+| Develop a new feature         | [Development Guide](DEVELOPMENT.md)     |
+| Fix common problems           | [Troubleshooting](TROUBLESHOOTING.md)   |
 
 ## 📋 Requirements
 
@@ -87,18 +93,21 @@ Welcome to KubeChart documentation! This guide covers everything you need to kno
 ## 📝 Table of Contents by Role
 
 ### For Developers
+
 1. [Development Guide](DEVELOPMENT.md)
 2. [Project Structure](PROJECT_STRUCTURE.md)
 3. [API Reference](API.md)
 4. [Architecture](ARCHITECTURE.md)
 
 ### For Operators/DevOps
+
 1. [Deployment Guide](DEPLOYMENT.md)
 2. [Kubernetes Integration](KUBERNETES.md)
 3. [RBAC Configuration](RBAC.md)
 4. [Resource Management](RESOURCES.md)
 
 ### For End Users
+
 1. [Getting Started](GETTING_STARTED.md)
 2. [Features](FEATURES.md)
 3. [Global Configuration](GLOBAL_CONFIG.md)
