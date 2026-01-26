@@ -1,7 +1,4 @@
 #!/bin/bash
-
-# Setup script for KubeChart
-#!/bin/bash
 set -e
 
 REPO1_URL="https://github.com/prometheus-operator/kube-prometheus.git"
