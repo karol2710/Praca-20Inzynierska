@@ -20,6 +20,8 @@ import {
   handleDeleteDeployment,
   handleGetDeploymentForEdit,
   handleUpdateDeployment,
+  handleGetDeploymentResources,
+  handleDeleteDeploymentResource,
 } from "./routes/deployments.js";
 import { authMiddleware } from "./auth.js";
 import { initializeDatabase } from "./db.js";
@@ -149,6 +151,16 @@ export async function createServer() {
     "/api/deployments/:deploymentId",
     authMiddleware,
     handleDeleteDeployment,
+  );
+  app.get(
+    "/api/deployments/:deploymentId/resources",
+    authMiddleware,
+    handleGetDeploymentResources,
+  );
+  app.delete(
+    "/api/deployments/:deploymentId/resources",
+    authMiddleware,
+    handleDeleteDeploymentResource,
   );
 
   return app;
