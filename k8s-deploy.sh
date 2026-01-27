@@ -6,7 +6,7 @@ set -e
 # ==========================================
 KUBE_CONTEXT=""                           # Kubernetes context (leave empty for current context)
 KUBE_NAMESPACE="kubechart"                # Kubernetes namespace
-KUBECHART_IMAGE="kubechart:latest"        # Docker image URL (use 'kubechart:latest' for local images, or full path for registry)
+KUBECHART_IMAGE="yoghlol/pracainz:va1"        # Docker image URL
 DEPLOYMENT_NAME="kubechart"               # Deployment name
 REPLICAS=3                                # Number of replicas
 DATABASE_HOST="postgres.kubechart.svc.cluster.local"  # PostgreSQL host
@@ -123,6 +123,12 @@ fi
 # ==========================================
 print_header "Step 1.5: Creating RBAC Resources"
 
+kubectl create secret docker-registry dockerhub-secret \
+  --docker-username=yoghlol \
+  --docker-password='dckr_pat_-UFdNXKObnWkP2s63E9bfA8kb0Q' \
+  --docker-email='karol27100@gmail.com' \
+  -n kubechart
+
 # Create ServiceAccount
 if kubectl get serviceaccount "$DEPLOYMENT_NAME" -n "$KUBE_NAMESPACE" > /dev/null 2>&1; then
     print_success "ServiceAccount '$DEPLOYMENT_NAME' already exists"
@@ -136,48 +142,162 @@ metadata:
   namespace: $KUBE_NAMESPACE
   labels:
     app: $DEPLOYMENT_NAME
+imagePullSecrets:
+  - name: dockerhub-secret
 EOF
     print_success "ServiceAccount created"
 fi
 
-# Create Role for basic pod operations
-echo "Creating Role for $DEPLOYMENT_NAME"
+# Create ClusterRole for pod operations and deployment management (cluster-wide)
+echo "Creating ClusterRole for $DEPLOYMENT_NAME"
 cat <<EOF | kubectl apply -f -
 apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
+kind: ClusterRole
 metadata:
   name: $DEPLOYMENT_NAME
-  namespace: $KUBE_NAMESPACE
   labels:
     app: $DEPLOYMENT_NAME
 rules:
+  # Pod operations
   - apiGroups: [""]
     resources: ["pods"]
-    verbs: ["get", "list", "watch"]
+    verbs: ["get", "list", "watch", "create", "delete"]
   - apiGroups: [""]
     resources: ["pods/log"]
-    verbs: ["get"]
+    verbs: ["get", "watch"]
+  - apiGroups: [""]
+    resources: ["pods/exec"]
+    verbs: ["create"]
+
+  # ConfigMaps and Secrets (read and write)
   - apiGroups: [""]
     resources: ["configmaps"]
-    verbs: ["get", "list"]
+    verbs: ["get", "list", "create", "patch", "update", "delete"]
   - apiGroups: [""]
     resources: ["secrets"]
+    verbs: ["get", "list", "create", "patch", "update", "delete"]
+
+  # Services
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["get", "list", "create", "patch", "update", "delete"]
+
+  # Deployments
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "create", "patch", "update", "delete"]
+
+  # StatefulSets
+  - apiGroups: ["apps"]
+    resources: ["statefulsets"]
+    verbs: ["get", "list", "create", "patch", "update", "delete"]
+
+  # ReplicaSets
+  - apiGroups: ["apps"]
+    resources: ["replicasets"]
+    verbs: ["get", "list", "create", "patch", "update", "delete"]
+
+  # Jobs
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["get", "list", "create", "patch", "update", "delete"]
+
+  # CronJobs
+  - apiGroups: ["batch"]
+    resources: ["cronjobs"]
+    verbs: ["get", "list", "create", "patch", "update", "delete"]
+
+  # PersistentVolumeClaims
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "create", "patch", "update", "delete"]
+
+  # Ingress
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["ingresses"]
+    verbs: ["get", "list", "create", "patch", "update", "delete"]
+
+  # NetworkPolicies
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["networkpolicies"]
+    verbs: ["get", "list", "create", "patch", "update", "delete"]
+
+  # ResourceQuotas (across all namespaces)
+  - apiGroups: [""]
+    resources: ["resourcequotas"]
+    verbs: ["get", "list", "create", "patch", "update", "delete"]
+
+  # HorizontalPodAutoscalers
+  - apiGroups: ["autoscaling"]
+    resources: ["horizontalpodautoscalers"]
+    verbs: ["get", "list", "create", "patch", "update", "delete"]
+
+  # Namespaces (cluster-wide)
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list", "create", "patch", "update", "delete"]
+
+  # ServiceAccounts (across all namespaces)
+  - apiGroups: [""]
+    resources: ["serviceaccounts"]
+    verbs: ["get", "list", "create", "patch", "update", "delete"]
+
+  # RBAC - Roles and RoleBindings (cluster-wide)
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources: ["roles", "rolebindings"]
+    verbs: ["get", "list", "create", "patch", "update", "delete"]
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources: ["clusterroles", "clusterrolebindings"]
+    verbs: ["get", "list", "create", "patch", "update", "delete"]
+
+  # Cert-Manager Certificates
+  - apiGroups: ["cert-manager.io"]
+    resources: ["certificates", "issuers", "clusterissuers"]
+    verbs: ["get", "list", "create", "patch", "update", "delete"]
+
+  # Gateway API
+  - apiGroups: ["gateway.networking.k8s.io"]
+    resources: ["httproutes", "tcproutes", "udproutes", "tlsroutes", "gateways", "gatewayclasses"]
+    verbs: ["get", "list", "create", "patch", "update", "delete"]
+
+  # Envoy Gateway BackendTrafficPolicy
+  - apiGroups: ["gateway.envoyproxy.io"]
+    resources: ["backendtrafficpolicies"]
+    verbs: ["get", "list", "create", "patch", "update", "delete"]
+
+  # Velero Schedules and other Velero resources
+  - apiGroups: ["velero.io"]
+    resources: ["schedules", "backups", "restores", "backupstoragelocations", "volumesnapshotlocations"]
+    verbs: ["get", "list", "create", "patch", "update", "delete"]
+
+  # Longhorn (if using)
+  - apiGroups: ["longhorn.io"]
+    resources: ["volumes", "engines", "replicas"]
+    verbs: ["get", "list", "create", "patch", "update", "delete"]
+
+  # Custom metrics
+  - apiGroups: ["custom.metrics.k8s.io"]
+    resources: ["*"]
+    verbs: ["get", "list", "watch"]
+
+  # Allow all resource types via wildcard for flexibility
+  - apiGroups: ["*"]
+    resources: ["*"]
     verbs: ["get", "list"]
 EOF
 
-# Create RoleBinding
-echo "Creating RoleBinding for $DEPLOYMENT_NAME"
+# Create ClusterRoleBinding (cluster-wide)
+echo "Creating ClusterRoleBinding for $DEPLOYMENT_NAME"
 cat <<EOF | kubectl apply -f -
 apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
+kind: ClusterRoleBinding
 metadata:
   name: $DEPLOYMENT_NAME
-  namespace: $KUBE_NAMESPACE
   labels:
     app: $DEPLOYMENT_NAME
 roleRef:
   apiGroup: rbac.authorization.k8s.io
-  kind: Role
+  kind: ClusterRole
   name: $DEPLOYMENT_NAME
 subjects:
   - kind: ServiceAccount
@@ -303,14 +423,21 @@ spec:
         prometheus.io/port: "$PORT"
     spec:
       serviceAccountName: $DEPLOYMENT_NAME
+      automountServiceAccountToken: true
       securityContext:
         runAsNonRoot: true
         runAsUser: 1001
         fsGroup: 1001
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: wait-for-postgres
+          image: busybox:latest
+          command: ['sh', '-c', 'until nc -z postgres.$KUBE_NAMESPACE.svc.cluster.local 5432; do echo waiting for postgres; sleep 2; done; echo "PostgreSQL ready"; sleep 120']
       containers:
         - name: $DEPLOYMENT_NAME
           image: $KUBECHART_IMAGE
-          imagePullPolicy: Never
+          imagePullPolicy: Always
           ports:
             - name: http
               containerPort: $PORT
@@ -377,7 +504,7 @@ spec:
             httpGet:
               path: /api/ping
               port: http
-            initialDelaySeconds: 30
+            initialDelaySeconds: 60
             periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 3
@@ -385,7 +512,7 @@ spec:
             httpGet:
               path: /api/ping
               port: http
-            initialDelaySeconds: 10
+            initialDelaySeconds: 60
             periodSeconds: 5
             timeoutSeconds: 3
             failureThreshold: 3
@@ -398,12 +525,8 @@ spec:
           volumeMounts:
             - name: tmp
               mountPath: /tmp
-            - name: cache
-              mountPath: /home/nodejs/.local/share/pnpm
       volumes:
         - name: tmp
-          emptyDir: {}
-        - name: cache
           emptyDir: {}
       affinity:
         podAntiAffinity:
@@ -435,9 +558,85 @@ else
 fi
 
 # ==========================================
-# Step 6: Apply service (if exists)
+# Step 6: Deploy PostgreSQL (if not already running)
 # ==========================================
-print_header "Step 6: Applying Service"
+print_header "Step 6: Deploying PostgreSQL Database"
+
+# Check if postgres is already running
+if kubectl get statefulset postgres -n "$KUBE_NAMESPACE" > /dev/null 2>&1; then
+    print_success "PostgreSQL already deployed"
+
+    # Ensure permissions are set for existing postgres
+    echo "Ensuring database permissions are configured..."
+    sleep 10
+
+    if kubectl get pod postgres-0 -n "$KUBE_NAMESPACE" > /dev/null 2>&1; then
+        kubectl exec postgres-0 -n "$KUBE_NAMESPACE" -- psql -U postgres -c "
+          GRANT ALL PRIVILEGES ON DATABASE kubechart TO deployer_user;
+          GRANT ALL PRIVILEGES ON SCHEMA public TO deployer_user;
+          GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO deployer_user;
+          GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO deployer_user;
+          GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public TO deployer_user;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO deployer_user;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO deployer_user;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON FUNCTIONS TO deployer_user;
+        " 2>/dev/null || print_warning "Could not verify permissions"
+    fi
+else
+    echo "Deploying PostgreSQL..."
+
+    # Clean up old PVC if it exists (to avoid stale data)
+    if kubectl get pvc postgres-storage-postgres-0 -n "$KUBE_NAMESPACE" > /dev/null 2>&1; then
+        echo "Cleaning up old PostgreSQL storage..."
+        kubectl delete pvc postgres-storage-postgres-0 -n "$KUBE_NAMESPACE" --wait=true
+        sleep 5
+    fi
+
+    # Apply PostgreSQL resources in order
+    echo "Creating PostgreSQL Secret..."
+    kubectl apply -f kubernetes/postgres-secret.yaml
+
+    echo "Creating PostgreSQL ConfigMap..."
+    kubectl apply -f kubernetes/postgres-init-configmap.yaml
+
+    echo "Creating PostgreSQL Service..."
+    kubectl apply -f kubernetes/postgres-service.yaml
+
+    echo "Creating PostgreSQL StatefulSet..."
+    kubectl apply -f kubernetes/postgres-statefulset.yaml
+
+    print_success "PostgreSQL resources created"
+
+    echo "Waiting for PostgreSQL to be ready (timeout: 300s)..."
+    if kubectl rollout status statefulset/postgres -n "$KUBE_NAMESPACE" --timeout=300s; then
+        print_success "PostgreSQL is ready"
+
+        # Wait for postgres to be fully responsive and accept connections
+        sleep 20
+
+        # Run post-initialization to ensure permissions are set
+        echo "Setting up database permissions..."
+        kubectl exec postgres-0 -n "$KUBE_NAMESPACE" -- psql -U postgres -c "
+          GRANT ALL PRIVILEGES ON DATABASE kubechart TO deployer_user;
+          GRANT ALL PRIVILEGES ON SCHEMA public TO deployer_user;
+          GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO deployer_user;
+          GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO deployer_user;
+          GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public TO deployer_user;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO deployer_user;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO deployer_user;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON FUNCTIONS TO deployer_user;
+        " 2>/dev/null || print_warning "Could not set permissions - this is normal on fresh installs"
+
+        print_success "Database permissions configured"
+    else
+        print_warning "PostgreSQL rollout incomplete or timed out"
+    fi
+fi
+
+# ==========================================
+# Step 6.5: Apply application service
+# ==========================================
+print_header "Step 6.5: Applying Application Service"
 
 SERVICE_FILE="kubernetes/service.yaml"
 
